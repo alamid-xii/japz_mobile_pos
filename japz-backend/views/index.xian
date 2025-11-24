@@ -1,0 +1,18 @@
+{{>head}}
+<table>
+  <tr>
+    <th>name</th><th>description</th><th>price</th>
+    <th>category</th><th>stocks</th><th>Action</th>
+  </tr>
+  {{#each products}}
+  <tr>
+    <td>{{name}}</td>
+    <td>{{description}}</td>
+    <td>{{price}}</td>
+    <td>{{category}}</td>
+    <td>{{stocks}}</td>
+    <td><a href="/edit/{{id}}">edit</a></td>
+  </tr>
+  {{/each}}
+</table>
+{{>footer}}
