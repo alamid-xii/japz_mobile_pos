@@ -1,6 +1,6 @@
 // app/(admin)/employees.tsx
 import { useRouter, useFocusEffect } from 'expo-router';
-import { ChevronDown, ChevronRight, Truck, UserCheck, Users, UtensilsCrossed, Trash2 } from 'lucide-react-native';
+import { ChevronDown, ChevronRight, Truck, UserCheck, Users, UtensilsCrossed, Edit } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
@@ -67,41 +67,35 @@ export default function EmployeesScreen() {
     setExpanded(expanded === id ? null : id);
   };
 
-  const handleDelete = (id: number, name: string) => {
+  const handleStatusToggle = async (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const action = currentStatus === 'active' ? 'Deactivate' : 'Activate';
+    const employee = employees.find(emp => emp.id === id);
+    
     Alert.alert(
-      'Delete Employee',
-      `Are you sure you want to delete ${name}?`,
+      `${action} Employee`,
+      `Are you sure you want to ${action.toLowerCase()} ${employee?.name}?`,
       [
-        { text: 'Cancel', onPress: () => {}, style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Delete',
+          text: action,
           onPress: async () => {
             try {
-              await employeeAPI.delete(id);
-              setEmployees(employees.filter(emp => emp.id !== id));
-              Alert.alert('Success', 'Employee deleted successfully');
+              await employeeAPI.update(id, { status: newStatus });
+              setEmployees(
+                employees.map(emp =>
+                  emp.id === id ? { ...emp, status: newStatus as 'active' | 'inactive' } : emp
+                )
+              );
+              Alert.alert('Success', `Employee ${action.toLowerCase()}d successfully`);
             } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.error || 'Failed to delete employee');
+              Alert.alert('Error', error.response?.data?.error || 'Failed to update employee status');
             }
           },
-          style: 'destructive',
+          style: currentStatus === 'active' ? 'destructive' : 'default',
         },
       ]
     );
-  };
-
-  const handleStatusToggle = async (id: number, currentStatus: string) => {
-    try {
-      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-      const response = await employeeAPI.update(id, { status: newStatus });
-      setEmployees(
-        employees.map(emp =>
-          emp.id === id ? { ...emp, status: newStatus as 'active' | 'inactive' } : emp
-        )
-      );
-    } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.error || 'Failed to update employee status');
-    }
   };
 
   return (
@@ -277,7 +271,7 @@ export default function EmployeesScreen() {
 
                   <TouchableOpacity
                     style={{
-                      backgroundColor: '#FEE2E2',
+                      backgroundColor: '#FFCE1B',
                       paddingVertical: Sizes.spacing.sm,
                       paddingHorizontal: Sizes.spacing.md,
                       borderRadius: Sizes.radius.sm,
@@ -286,18 +280,21 @@ export default function EmployeesScreen() {
                       justifyContent: 'center',
                       gap: Sizes.spacing.sm,
                     }}
-                    onPress={() => handleDelete(employee.id, employee.name)}
+                    onPress={() => router.push({
+                      pathname: '/admin/employee-edit',
+                      params: { id: employee.id }
+                    } as any)}
                   >
-                    <Trash2 size={16} color="#991B1B" />
+                    <Edit size={16} color="#030213" />
                     <Text
                       style={{
                         textAlign: 'center',
-                        color: '#991B1B',
+                        color: '#030213',
                         fontWeight: '600',
                         fontSize: Sizes.typography.sm,
                       }}
                     >
-                      Delete
+                      Edit Employee
                     </Text>
                   </TouchableOpacity>
                 </View>

@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Check } from 'lucide-react-native';
+import { ArrowLeft, Check, X } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
-import { employeeAPI, kitchenStationAPI } from '../../services/api';
+import { employeeAPI, menuCategoryAPI } from '../../services/api';
 
 interface FormData {
   name: string;
@@ -14,12 +14,14 @@ interface FormData {
   password: string;
   confirmPassword: string;
   assignedStationId?: number;
+  assignedCategories?: number[];
 }
 
-interface KitchenStation {
+interface MenuCategory {
   id: number;
   name: string;
-  category: string;
+  description: string;
+  icon: string;
 }
 
 const roles = ['cashier', 'kitchen'];
@@ -35,26 +37,27 @@ export default function EmployeeFormScreen() {
     password: '',
     confirmPassword: '',
     assignedStationId: undefined,
+    assignedCategories: [],
   });
-  const [showStationDropdown, setShowStationDropdown] = useState(false);
-  const [kitchenStations, setKitchenStations] = useState<KitchenStation[]>([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
   const [loading, setLoading] = useState(false);
-  const [stationsLoading, setStationsLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   useEffect(() => {
-    loadKitchenStations();
+    loadMenuCategories();
   }, []);
 
-  const loadKitchenStations = async () => {
+  const loadMenuCategories = async () => {
     try {
-      setStationsLoading(true);
-      const response = await kitchenStationAPI.getAll();
-      setKitchenStations(response.data);
+      setCategoriesLoading(true);
+      const response = await menuCategoryAPI.getAll();
+      setMenuCategories(response.data);
     } catch (error) {
-      console.error('Error loading kitchen stations:', error);
-      Alert.alert('Error', 'Failed to load kitchen stations');
+      console.error('Error loading menu categories:', error);
+      Alert.alert('Error', 'Failed to load menu categories');
     } finally {
-      setStationsLoading(false);
+      setCategoriesLoading(false);
     }
   };
 
@@ -65,14 +68,28 @@ export default function EmployeeFormScreen() {
     }));
   };
 
+  const toggleCategory = (categoryId: number) => {
+    setFormData(prev => {
+      const categories = prev.assignedCategories || [];
+      const isSelected = categories.includes(categoryId);
+      
+      return {
+        ...prev,
+        assignedCategories: isSelected
+          ? categories.filter(id => id !== categoryId)
+          : [...categories, categoryId],
+      };
+    });
+  };
+
   const handleSubmit = async () => {
     if (!formData.name || !formData.email || !formData.phone || !formData.password || !formData.confirmPassword) {
       Alert.alert('Validation Error', 'Please fill in all required fields');
       return;
     }
 
-    if (formData.role === 'kitchen' && !formData.assignedStationId) {
-      Alert.alert('Validation Error', 'Please assign a kitchen station');
+    if (formData.role === 'kitchen' && (!formData.assignedCategories || formData.assignedCategories.length === 0)) {
+      Alert.alert('Validation Error', 'Please assign at least one menu category');
       return;
     }
 
@@ -95,6 +112,7 @@ export default function EmployeeFormScreen() {
         password: formData.password,
         role: formData.role,
         assignedStationId: formData.assignedStationId,
+        assignedCategories: formData.assignedCategories,
         joinDate: formData.joinDate,
       });
 
@@ -228,7 +246,7 @@ export default function EmployeeFormScreen() {
                 onPress={() => {
                   handleInputChange('role', role as any);
                   if (role !== 'kitchen') {
-                    handleInputChange('assignedStationId', 0);
+                    setFormData(prev => ({ ...prev, assignedCategories: [] }));
                   }
                 }}
               >
@@ -247,13 +265,13 @@ export default function EmployeeFormScreen() {
           </View>
         </View>
 
-        {/* Kitchen Station Selection - Only show if kitchen role is selected */}
+        {/* Menu Category Selection - Only show if kitchen role is selected */}
         {formData.role === 'kitchen' && (
           <View style={{ marginBottom: Sizes.spacing.lg }}>
             <Text style={{ fontSize: Sizes.typography.sm, fontWeight: '600', marginBottom: Sizes.spacing.sm, color: Colors.light.foreground }}>
-              Assign Kitchen Station *
+              Assign Menu Categories *
             </Text>
-            {stationsLoading ? (
+            {categoriesLoading ? (
               <ActivityIndicator size="large" color={Colors.light.primary} />
             ) : (
               <>
@@ -266,14 +284,44 @@ export default function EmployeeFormScreen() {
                     paddingVertical: Sizes.spacing.md,
                     backgroundColor: Colors.light.card,
                   }}
-                  onPress={() => setShowStationDropdown(!showStationDropdown)}
+                  onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
                 >
-                  <Text style={{ fontSize: Sizes.typography.base, color: formData.assignedStationId ? Colors.light.foreground : Colors.light.mutedForeground }}>
-                    {formData.assignedStationId ? kitchenStations.find(s => s.id === formData.assignedStationId)?.name : 'Select a station'}
+                  <Text style={{ fontSize: Sizes.typography.base, color: formData.assignedCategories && formData.assignedCategories.length > 0 ? Colors.light.foreground : Colors.light.mutedForeground }}>
+                    {formData.assignedCategories && formData.assignedCategories.length > 0
+                      ? `${formData.assignedCategories.length} ${formData.assignedCategories.length === 1 ? 'category' : 'categories'} selected`
+                      : 'Select categories'}
                   </Text>
                 </TouchableOpacity>
 
-                {showStationDropdown && (
+                {/* Selected Categories Display */}
+                {formData.assignedCategories && formData.assignedCategories.length > 0 && (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Sizes.spacing.xs, marginTop: Sizes.spacing.sm }}>
+                    {formData.assignedCategories.map((categoryId) => {
+                      const category = menuCategories.find(c => c.id === categoryId);
+                      return category ? (
+                        <View
+                          key={categoryId}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: '#FFF8DC',
+                            paddingVertical: 6,
+                            paddingHorizontal: 12,
+                            borderRadius: 16,
+                            gap: 6,
+                          }}
+                        >
+                          <Text style={{ fontSize: Sizes.typography.sm, color: '#030213' }}>{category.name}</Text>
+                          <TouchableOpacity onPress={() => toggleCategory(categoryId)}>
+                            <X size={14} color="#666" />
+                          </TouchableOpacity>
+                        </View>
+                      ) : null;
+                    })}
+                  </View>
+                )}
+
+                {showCategoryDropdown && (
                   <View style={{
                     borderWidth: 1,
                     borderColor: Colors.light.border,
@@ -282,28 +330,50 @@ export default function EmployeeFormScreen() {
                     backgroundColor: Colors.light.card,
                     overflow: 'hidden',
                   }}>
-                    {kitchenStations.map((station) => (
-                      <TouchableOpacity
-                        key={station.id}
-                        style={{
-                          paddingHorizontal: Sizes.spacing.md,
-                          paddingVertical: Sizes.spacing.md,
-                          borderBottomWidth: 1,
-                          borderBottomColor: Colors.light.border,
-                        }}
-                        onPress={() => {
-                          handleInputChange('assignedStationId', station.id);
-                          setShowStationDropdown(false);
-                        }}
-                      >
-                        <Text style={{ fontSize: Sizes.typography.base, color: Colors.light.foreground }}>
-                          {station.name}
-                        </Text>
-                        <Text style={{ fontSize: Sizes.typography.xs, color: Colors.light.mutedForeground }}>
-                          {station.category}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                    {menuCategories.map((category) => {
+                      const isSelected = formData.assignedCategories?.includes(category.id) || false;
+                      return (
+                        <TouchableOpacity
+                          key={category.id}
+                          style={{
+                            paddingHorizontal: Sizes.spacing.md,
+                            paddingVertical: Sizes.spacing.md,
+                            borderBottomWidth: 1,
+                            borderBottomColor: Colors.light.border,
+                            backgroundColor: isSelected ? '#FFF8DC' : 'transparent',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                          onPress={() => toggleCategory(category.id)}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: Sizes.typography.base, color: Colors.light.foreground, fontWeight: isSelected ? '600' : '400' }}>
+                              {category.name}
+                            </Text>
+                            {category.description && (
+                              <Text style={{ fontSize: Sizes.typography.xs, color: Colors.light.mutedForeground }}>
+                                {category.description}
+                              </Text>
+                            )}
+                          </View>
+                          {isSelected && (
+                            <View
+                              style={{
+                                width: 20,
+                                height: 20,
+                                borderRadius: 10,
+                                backgroundColor: '#FFCE1B',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <Check size={14} color="#030213" />
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 )}
               </>

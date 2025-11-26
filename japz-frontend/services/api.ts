@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'http://10.241.65.96:3000'; // Your PC's IP address
+const API_BASE_URL = 'http://10.41.87.96:3000'; // Your PC's IP address
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -52,6 +52,7 @@ export const employeeAPI = {
     password: string;
     role: 'cashier' | 'kitchen';
     assignedStationId?: number;
+    assignedCategories?: number[];
     joinDate?: string;
   }) =>
     api.post('/api/employees', data),
@@ -64,6 +65,65 @@ export const employeeAPI = {
 
   delete: (id: string | number) =>
     api.delete(`/api/employees/${id}`),
+};
+
+export const menuCategoryAPI = {
+  getAll: () =>
+    api.get('/api/menu-categories'),
+
+  create: (data: {
+    name: string;
+    description?: string;
+    icon?: string;
+  }) =>
+    api.post('/api/menu-categories', data),
+
+  update: (id: string | number, data: {
+    name?: string;
+    description?: string;
+    icon?: string;
+    status?: 'active' | 'inactive';
+  }) =>
+    api.put(`/api/menu-categories/${id}`, data),
+
+  delete: (id: string | number) =>
+    api.delete(`/api/menu-categories/${id}`),
+};
+
+export const menuItemAPI = {
+  getAll: () =>
+    api.get('/api/menu-items'),
+
+  getByCategory: (categoryId: string | number) =>
+    api.get(`/api/menu-items/category/${categoryId}`),
+
+  create: (data: {
+    name: string;
+    categoryId: number;
+    price: number;
+    description?: string;
+    hasSize?: boolean;
+    sizes?: string[];
+    hasFlavor?: boolean;
+    flavors?: string[];
+  }) =>
+    api.post('/api/menu-items', data),
+
+  update: (id: string | number, data: {
+    name?: string;
+    categoryId?: number;
+    price?: number;
+    description?: string;
+    status?: 'available' | 'unavailable';
+    hasSize?: boolean;
+    sizes?: string[];
+    hasFlavor?: boolean;
+    flavors?: string[];
+  }) =>
+    api.put(`/api/menu-items/${id}`, data),
+
+  delete: (id: string | number) =>
+    api.delete(`/api/menu-items/${id}`),
 };
 
 export default api;

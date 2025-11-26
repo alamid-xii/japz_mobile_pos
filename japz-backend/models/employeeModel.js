@@ -38,6 +38,11 @@ export const Employee = sequelize.define("Employee", {
       key: 'id'
     }
   },
+  assignedCategories: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: null
+  },
   status: {
     type: DataTypes.ENUM('active', 'inactive'),
     defaultValue: 'active',

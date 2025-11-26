@@ -1,5 +1,4 @@
-
-    /*
+/*
     MIT License
     
     Copyright (c) 2025 Christian I. Cabrera || XianFire Framework
@@ -23,41 +22,43 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     */
-    
-import { Sequelize } from "sequelize";
+
 import { sequelize } from "./models/db.js";
 import { User } from "./models/userModel.js";
-import { Employee } from "./models/employeeModel.js";
-import { KitchenStation } from "./models/kitchenStationModel.js";
-import { MenuCategory } from "./models/menuCategoryModel.js";
-import { MenuItem } from "./models/menuItemModel.js";
-import inquirer from "inquirer";
+import bcrypt from "bcrypt";
 
-// Server-level connection (no database selected)
-const rootSequelize = new Sequelize("mysql://root:@localhost:3306/");
+async function seed() {
+  try {
+    await sequelize.authenticate();
+    console.log("✅ Connected to MySQL database!");
 
-const { createDb } = await inquirer.prompt([
-  {
-    type: "confirm",
-    name: "createDb",
-    message: "Database 'japz_backend' may not exist. Create it?",
-    default: true,
-  },
-]);
+    // Check if admin already exists
+    const existingAdmin = await User.findOne({ where: { email: 'admin@gmail.com' } });
+    
+    if (existingAdmin) {
+      console.log("ℹ️  Admin account already exists. Skipping seed.");
+      process.exit(0);
+    }
 
-if (createDb) {
-  await rootSequelize.query("CREATE DATABASE IF NOT EXISTS japz_backend;");
-  console.log("✅ Database created (if it did not exist)");
+    // Hash password
+    const hashedPassword = await bcrypt.hash('password', 10);
+
+    // Create admin user
+    await User.create({
+      name: 'Admin',
+      email: 'admin@gmail.com',
+      password: hashedPassword,
+      role: 'admin'
+    });
+
+    console.log("✅ Admin account created successfully!");
+    console.log("📧 Email: admin@gmail.com");
+    console.log("🔑 Password: password");
+  } catch (err) {
+    console.error("❌ Seeding failed:", err);
+  } finally {
+    process.exit();
+  }
 }
 
-try {
-  await sequelize.authenticate();
-  console.log("✅ Connected to MySQL database!");
-  await sequelize.sync({ force: true }); // Drops and recreates tables
-  console.log("✅ Tables created for all models!");
-} catch (err) {
-  console.error("❌ Migration failed:", err);
-} finally {
-  process.exit();
-}
-
+seed();
