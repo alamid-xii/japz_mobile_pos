@@ -25,6 +25,7 @@
 
 import { sequelize } from "./models/db.js";
 import { User } from "./models/userModel.js";
+import { Employee } from "./models/employeeModel.js";
 import bcrypt from "bcrypt";
 
 async function seed() {
@@ -34,31 +35,64 @@ async function seed() {
 
     // Check if admin already exists
     const existingAdmin = await User.findOne({ where: { email: 'admin@gmail.com' } });
+    const existingCashierUser = await User.findOne({ where: { email: 'cashier@gmail.com' } });
+    const existingCashierEmployee = await Employee.findOne({ where: { email: 'cashier@gmail.com' } });
     
-    if (existingAdmin) {
-      console.log("ℹ️  Admin account already exists. Skipping seed.");
-      process.exit(0);
+    if (existingAdmin && existingCashierUser && existingCashierEmployee) {
+      console.log("ℹ️  Admin and Cashier accounts already exist. Skipping seed.");
+      return;
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash('password', 10);
 
-    // Create admin user
-    await User.create({
-      name: 'Admin',
-      email: 'admin@gmail.com',
-      password: hashedPassword,
-      role: 'admin'
-    });
+    // Create admin user if not exists
+    if (!existingAdmin) {
+      await User.create({
+        name: 'Admin',
+        email: 'admin@gmail.com',
+        password: hashedPassword,
+        role: 'admin'
+      });
+      console.log("✅ Admin account created successfully!");
+      console.log("📧 Email: admin@gmail.com");
+      console.log("🔑 Password: password");
+    }
 
-    console.log("✅ Admin account created successfully!");
-    console.log("📧 Email: admin@gmail.com");
-    console.log("🔑 Password: password");
+    // Create cashier user if not exists
+    if (!existingCashierUser) {
+      await User.create({
+        name: 'Cashier',
+        email: 'cashier@gmail.com',
+        password: hashedPassword,
+        role: 'cashier'
+      });
+      console.log("✅ Cashier account created successfully!");
+      console.log("📧 Email: cashier@gmail.com");
+      console.log("🔑 Password: password");
+    }
+
+    // Create cashier employee record if not exists
+    if (!existingCashierEmployee) {
+      await Employee.create({
+        name: 'Cashier',
+        email: 'cashier@gmail.com',
+        phone: '09123456789',
+        password: hashedPassword,
+        role: 'cashier',
+        status: 'active',
+        joinDate: new Date().toISOString().split('T')[0]
+      });
+      console.log("✅ Cashier employee record created successfully!");
+    }
   } catch (err) {
     console.error("❌ Seeding failed:", err);
-  } finally {
-    process.exit();
+    throw err;
   }
 }
 
-seed();
+export { seed };
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  seed().finally(() => process.exit());
+}

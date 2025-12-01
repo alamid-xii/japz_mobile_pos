@@ -1,7 +1,13 @@
 // styles/cashierStyles.ts
-import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
+import { StyleSheet, TextStyle, ViewStyle, Dimensions } from 'react-native';
 import { Colors, Sizes } from '../constants/colors';
 import { GlobalStyles } from './globalStyles';
+
+// Responsive scaling helper
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const BASE_WIDTH = 375; // reference device width (iPhone 8 / baseline)
+const SCALE = Math.max(0.8, Math.min(1.3, SCREEN_WIDTH / BASE_WIDTH));
+const scaled = (value: number) => Math.round(value * SCALE);
 
 type CombinedStyle = ViewStyle & TextStyle;
 
@@ -40,17 +46,24 @@ export const cashierStyles = StyleSheet.create<Record<string, CombinedStyle>>({
 
   // Categories
   categoriesScroll: {
-    paddingHorizontal: Sizes.spacing.lg,
-    paddingVertical: Sizes.spacing.md,
+    paddingHorizontal: scaled(Sizes.spacing.lg),
+    paddingVertical: scaled(Sizes.spacing.md),
+    minHeight: scaled(48),
     borderBottomWidth: 1,
     borderBottomColor: Colors.light.border,
   } as CombinedStyle,
   categoryButton: {
     backgroundColor: Colors.light.muted,
     borderRadius: Sizes.radius.lg,
-    paddingHorizontal: Sizes.spacing.lg,
-    paddingVertical: Sizes.spacing.md,
-    marginRight: Sizes.spacing.sm,
+    paddingHorizontal: scaled(Sizes.spacing.md + 4),
+    paddingVertical: scaled(Sizes.spacing.sm),
+    marginRight: scaled(Sizes.spacing.sm),
+    minWidth: scaled(88),
+    maxWidth: scaled(180),
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    height: scaled(36),
   } as CombinedStyle,
   categoryButtonActive: {
     backgroundColor: Colors.brand.primary,
@@ -59,6 +72,9 @@ export const cashierStyles = StyleSheet.create<Record<string, CombinedStyle>>({
     ...GlobalStyles.body,
     color: Colors.light.foreground,
     fontWeight: Sizes.fontWeight.medium as any,
+    textAlign: 'center',
+    fontSize: scaled(Sizes.typography.sm),
+    lineHeight: scaled(Sizes.typography.sm * 1.5),
   } as CombinedStyle,
   categoryButtonTextActive: {
     color: Colors.brand.primaryDark,
@@ -67,18 +83,64 @@ export const cashierStyles = StyleSheet.create<Record<string, CombinedStyle>>({
   // Menu Grid
   menuGrid: {
     flex: 1,
-    padding: Sizes.spacing.lg,
+    padding: scaled(Sizes.spacing.lg),
   } as CombinedStyle,
-  menuItem: {
+  productCard: {
     backgroundColor: Colors.light.card,
     borderRadius: Sizes.radius.lg,
-    padding: Sizes.spacing.lg,
-    margin: Sizes.spacing.xs,
+    paddingVertical: scaled(Sizes.spacing.lg),
+    paddingHorizontal: scaled(Sizes.spacing.lg),
+    marginVertical: scaled(Sizes.spacing.xs),
+    marginHorizontal: scaled(Sizes.spacing.xs / 1.5),
+    alignItems: 'stretch',
+    justifyContent: 'space-between',
+    flex: 1,
+    minHeight: scaled(80),
+    maxWidth: '48%',
+    flexBasis: '48%',
+    ...GlobalStyles.shadowSm,
+  } as CombinedStyle,
+  productImage: {
+    width: '100%',
+    height: scaled(80),
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    minHeight: 100,
-    ...GlobalStyles.shadowSm,
+    marginBottom: scaled(Sizes.spacing.sm),
+  } as CombinedStyle,
+  productBody: {
+    paddingVertical: scaled(Sizes.spacing.sm),
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CombinedStyle,
+  productFooter: {
+    paddingTop: scaled(Sizes.spacing.sm),
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CombinedStyle,
+  productName: {
+    ...GlobalStyles.body,
+    textAlign: 'center',
+    marginBottom: scaled(Sizes.spacing.xs),
+    fontWeight: Sizes.fontWeight.medium as any,
+  } as CombinedStyle,
+  productPrice: {
+    ...GlobalStyles.body,
+    color: Colors.brand.primary,
+    fontWeight: Sizes.fontWeight.bold as any,
+  } as CombinedStyle,
+  addToCartButton: {
+    flexDirection: 'row',
+    gap: scaled(Sizes.spacing.sm),
+    alignItems: 'center',
+    paddingHorizontal: scaled(Sizes.spacing.md),
+    paddingVertical: scaled(Sizes.spacing.sm),
+    borderRadius: Sizes.radius.md,
+    backgroundColor: Colors.light.muted,
+  } as CombinedStyle,
+  addToCartButtonText: {
+    ...GlobalStyles.body,
+    color: Colors.light.foreground,
+    fontWeight: Sizes.fontWeight.medium as any,
   } as CombinedStyle,
   menuItemName: {
     ...GlobalStyles.body,
@@ -155,6 +217,28 @@ export const cashierStyles = StyleSheet.create<Record<string, CombinedStyle>>({
     fontWeight: Sizes.fontWeight.bold as any,
     fontSize: Sizes.typography.sm,
   } as CombinedStyle,
+  cartButton: {
+    padding: scaled(Sizes.spacing.sm),
+    borderRadius: scaled(Sizes.radius.md),
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CombinedStyle,
+  cartBadge: {
+    position: 'absolute',
+    top: -scaled(6),
+    right: -scaled(6),
+    backgroundColor: Colors.brand.primary,
+    width: scaled(20),
+    height: scaled(20),
+    borderRadius: scaled(10),
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as CombinedStyle,
+  cartBadgeText: {
+    color: '#fff',
+    fontSize: scaled(12),
+    fontWeight: Sizes.fontWeight.bold as any,
+  } as CombinedStyle,
   cartTotal: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -173,8 +257,11 @@ export const cashierStyles = StyleSheet.create<Record<string, CombinedStyle>>({
   checkoutButton: {
     backgroundColor: Colors.brand.primary,
     borderRadius: Sizes.radius.lg,
-    padding: Sizes.spacing.lg,
+    paddingVertical: Sizes.spacing.md,
+    paddingHorizontal: Sizes.spacing.xl,
+    alignSelf: 'center',
     alignItems: 'center',
+    marginBottom: Sizes.spacing.md,
     ...GlobalStyles.shadowSm,
   } as CombinedStyle,
   checkoutButtonText: {

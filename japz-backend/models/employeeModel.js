@@ -50,10 +50,4 @@ export const Employee = sequelize.define("Employee", {
   }
 });
 
-// Define association
-Employee.belongsTo(KitchenStation, { 
-  foreignKey: 'assignedStationId',
-  as: 'station'
-});
-
 export { sequelize };

@@ -1,7 +1,9 @@
 import { useRouter } from 'expo-router';
 import { ChevronDown } from 'lucide-react-native';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -44,6 +46,14 @@ export default function SettingsScreen() {
     stations: false,
     maintenance: false,
   });
+
+  // Prevent back navigation
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => subscription.remove();
+    }, [])
+  );
 
   const toggleSetting = (id: string) => {
     setSettings(settings.map(s =>

@@ -1,5 +1,8 @@
 import { BarChart3 } from 'lucide-react-native';
+import { useCallback } from 'react';
 import { ScrollView, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 
 interface DailySales {
@@ -24,6 +27,14 @@ export default function SalesForecastScreen() {
   const avgDailySales = Math.round(totalWeekSales / salesData.length);
   const totalOrders = salesData.reduce((sum, d) => sum + d.orders, 0);
   const bestDay = salesData.reduce((prev, curr) => curr.sales > prev.sales ? curr : prev);
+
+  // Prevent back navigation
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => subscription.remove();
+    }, [])
+  );
 
   return (
     <View style={{ flex: 1, marginTop: Sizes.spacing.lg }}>

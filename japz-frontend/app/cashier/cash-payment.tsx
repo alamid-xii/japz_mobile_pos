@@ -1,7 +1,12 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useState, useEffect } from 'react';
+import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { generateOrderNumber } from '../../utils/helpers';
 import { Colors, Sizes } from '../../constants/colors';
+import { scaled } from '../../utils/responsive';
+import { useAuth } from '../../hooks/useAuth';
+import { ordersAPI } from '../../services/api';
 
 interface CashPaymentState {
   totalAmount: number;
@@ -11,11 +16,41 @@ interface CashPaymentState {
 
 export default function CashPaymentScreen() {
   const router = useRouter();
+  const { total: totalParam, items: itemsParam, itemCount, paymentMethod: paymentMethodParam } = useLocalSearchParams();
+  const { user } = useAuth();
+
   const [state, setState] = useState<CashPaymentState>({
-    totalAmount: 1650, // Example total
+    totalAmount: Number(totalParam ? parseFloat(totalParam as string) : 0) || 0,
     amountReceived: '',
     notes: '',
   });
+
+  const [orderItems, setOrderItems] = useState<any[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'digital'>(
+    (paymentMethodParam && ['cash', 'card', 'digital'].includes(paymentMethodParam as string)) 
+      ? (paymentMethodParam as 'cash' | 'card' | 'digital') 
+      : 'cash'
+  );
+
+  useEffect(() => {
+    if (totalParam) {
+      const t = Number(parseFloat(totalParam as string) || 0);
+      setState(prev => ({ ...prev, totalAmount: t }));
+    }
+    if (itemsParam) {
+      try {
+        const parsed = typeof itemsParam === 'string' ? JSON.parse(itemsParam as string) : itemsParam;
+        setOrderItems(parsed || []);
+      } catch (e) {
+        console.warn('Failed to parse items param', e);
+        setOrderItems([]);
+      }
+    }
+    if (paymentMethodParam) {
+      setPaymentMethod(paymentMethodParam as 'cash' | 'card' | 'digital');
+    }
+  }, [totalParam, itemsParam, paymentMethodParam]);
 
   const amountReceived = parseFloat(state.amountReceived || '0');
   const change = amountReceived - state.totalAmount;
@@ -25,9 +60,66 @@ export default function CashPaymentScreen() {
     setState({ ...state, amountReceived: amount.toString() });
   };
 
-  const handleComplete = () => {
-    if (isValidPayment) {
-      router.push('/cashier/receipt');
+  const handleComplete = async () => {
+    if (!isValidPayment) return;
+
+    setIsProcessing(true);
+
+    try {
+      // Build order object
+      const order = {
+        id: Date.now().toString(),
+        orderNumber: generateOrderNumber(),
+        items: orderItems.map((it: any) => ({
+          id: String(it.id),
+          name: it.name,
+          price: Number(it.price || 0),
+          quantity: it.quantity || 1,
+          category: it.category || '',
+          total: Number(it.price || 0) * (it.quantity || 1),
+        })),
+        status: 'pending',
+        total: state.totalAmount,
+        cashier: user?.name || 'Unknown Cashier',
+        payment: {
+          method: paymentMethod,
+          amount: state.totalAmount,
+          amountReceived: amountReceived,
+          change: Math.round((amountReceived - state.totalAmount) * 100) / 100,
+        },
+        createdAt: new Date().toISOString(),
+      };
+
+      const payload = {
+        orderNumber: order.orderNumber,
+        cashierId: user?.id ? parseInt(user.id as string) : undefined,
+        cashier: order.cashier,
+        subtotal: order.items.reduce((s: number, it: any) => s + (Number(it.total) || 0), 0),
+        discount: 0,
+        total: order.total,
+        payment: order.payment,
+        items: order.items.map((it: any) => ({ id: it.id, name: it.name, price: it.price, quantity: it.quantity, total: it.total })),
+        status: 'pending',
+        createdAt: order.createdAt,
+      };
+
+      // Try to send order to backend
+      try {
+        const res = await Promise.race([
+          ordersAPI.create(payload),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Order save timeout')), 25000)),
+        ]);
+        const createdOrder = res?.data?.order || null;
+
+        // Navigate to receipt screen with server order if available
+        router.push({ pathname: '/cashier/receipt', params: { order: JSON.stringify(createdOrder || order) } });
+      } catch (err) {
+        console.error('Failed to send order to server, using local data', err);
+        // Still navigate to receipt even if backend fails
+        router.push({ pathname: '/cashier/receipt', params: { order: JSON.stringify(order) } });
+      }
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -36,10 +128,10 @@ export default function CashPaymentScreen() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: Colors.light.background }}
-      contentContainerStyle={{ padding: Sizes.spacing.lg }}
+      contentContainerStyle={{ padding: scaled(Sizes.spacing.lg) }}
     >
       <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
-        Cash Payment
+        {paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} Payment
       </Text>
 
       {/* Amount Due */}
@@ -47,7 +139,7 @@ export default function CashPaymentScreen() {
         <Text style={{ color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.sm }}>
           Amount Due
         </Text>
-        <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700', color: Colors.light.primary }}>
+          <Text style={{ fontSize: scaled(Sizes.typography.xl), fontWeight: '700', color: Colors.light.primary }}>
           ₱{state.totalAmount.toFixed(2)}
         </Text>
       </View>
@@ -61,10 +153,10 @@ export default function CashPaymentScreen() {
           style={{
             borderWidth: 2,
             borderColor: amountReceived > 0 ? (isValidPayment ? '#10B981' : '#EF4444') : Colors.light.border,
-            borderRadius: Sizes.radius.md,
-            padding: Sizes.spacing.md,
+            borderRadius: scaled(Sizes.radius.md),
+            padding: scaled(Sizes.spacing.md),
             color: Colors.light.foreground,
-            fontSize: Sizes.typography.lg,
+            fontSize: scaled(Sizes.typography.lg),
             fontWeight: '600',
           }}
           placeholder="0.00"
@@ -146,7 +238,7 @@ export default function CashPaymentScreen() {
             padding: Sizes.spacing.md,
             color: Colors.light.foreground,
             fontSize: Sizes.typography.base,
-            minHeight: 80,
+            minHeight: scaled(80),
           }}
           placeholder="Additional notes..."
           placeholderTextColor={Colors.light.mutedForeground}
@@ -159,23 +251,39 @@ export default function CashPaymentScreen() {
       {/* Complete Button */}
       <TouchableOpacity
         style={{
-          backgroundColor: isValidPayment ? Colors.light.primary : Colors.light.muted,
+          backgroundColor: isValidPayment && !isProcessing ? Colors.light.primary : Colors.light.muted,
           borderRadius: Sizes.radius.md,
           padding: Sizes.spacing.lg,
           alignItems: 'center',
+          opacity: isProcessing ? 0.6 : 1,
         }}
         onPress={handleComplete}
-        disabled={!isValidPayment}
+        disabled={!isValidPayment || isProcessing}
       >
-        <Text
-          style={{
-            color: isValidPayment ? '#fff' : Colors.light.mutedForeground,
-            fontWeight: '700',
-            fontSize: Sizes.typography.base,
-          }}
-        >
-          Complete Transaction
-        </Text>
+        {isProcessing ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: Sizes.spacing.md }}>
+            <ActivityIndicator color="#fff" size="small" />
+            <Text
+              style={{
+                color: '#fff',
+                fontWeight: '700',
+                fontSize: Sizes.typography.base,
+              }}
+            >
+              Processing...
+            </Text>
+          </View>
+        ) : (
+          <Text
+            style={{
+              color: isValidPayment ? '#fff' : Colors.light.mutedForeground,
+              fontWeight: '700',
+              fontSize: Sizes.typography.base,
+            }}
+          >
+            Complete Transaction
+          </Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );

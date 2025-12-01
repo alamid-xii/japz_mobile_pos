@@ -1,8 +1,9 @@
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Banknote, Check, CreditCard, Smartphone } from 'lucide-react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
+import { scaled } from '../../utils/responsive';
 
 interface Payment {
   method: 'cash' | 'card' | 'digital';
@@ -22,29 +23,47 @@ const getPaymentIcon = (method: string) => {
 };
 
 export default function PaymentSelectionScreen() {
+  const { total: cartTotal, items: cartItems, itemCount } = useLocalSearchParams();
   const router = useRouter();
   const [payment, setPayment] = useState<Payment>({
     method: 'cash',
-    amount: 1500,
+    amount: parseFloat(cartTotal as string) || 0,
     discount: 0,
     vat: 0,
   });
   const [discountPercent, setDiscountPercent] = useState('0');
 
+  useEffect(() => {
+    if (cartTotal) {
+      setPayment(prev => ({
+        ...prev,
+        amount: parseFloat(cartTotal as string),
+      }));
+    }
+  }, [cartTotal]);
+
   const subtotal = payment.amount;
   const discountAmount = (subtotal * parseFloat(discountPercent || '0')) / 100;
   const afterDiscount = subtotal - discountAmount;
-  const vatAmount = (afterDiscount * 0.12); // 12% VAT
-  const total = afterDiscount + vatAmount;
+  const vatAmount = 0; // No VAT
+  const total = afterDiscount;
 
   const handleProceed = () => {
-    router.push('/cashier/cash-payment');
+    router.push({
+      pathname: '/cashier/cash-payment',
+      params: {
+        total: total.toFixed(2),
+        items: cartItems || null,
+        itemCount: itemCount || null,
+        paymentMethod: payment.method,
+      },
+    });
   };
 
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: Colors.light.background }}
-      contentContainerStyle={{ padding: Sizes.spacing.lg }}
+      contentContainerStyle={{ padding: scaled(Sizes.spacing.lg) }}
     >
       <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
         Select Payment Method
@@ -57,13 +76,13 @@ export default function PaymentSelectionScreen() {
             key={method}
             style={{
               backgroundColor: payment.method === method ? Colors.light.primary : Colors.light.card,
-              borderRadius: Sizes.radius.md,
-              padding: Sizes.spacing.md,
+              borderRadius: scaled(Sizes.radius.md),
+              padding: scaled(Sizes.spacing.md),
               borderWidth: 2,
               borderColor: payment.method === method ? Colors.light.primary : Colors.light.border,
               flexDirection: 'row',
               alignItems: 'center',
-              gap: Sizes.spacing.md,
+              gap: scaled(Sizes.spacing.md),
             }}
             onPress={() => setPayment({ ...payment, method })}
           >
@@ -81,8 +100,8 @@ export default function PaymentSelectionScreen() {
               </Text>
             </View>
             {payment.method === method && (
-              <View style={{ width: 18, alignItems: 'center' }}>
-                <Check size={18} color="#fff" />
+              <View style={{ width: scaled(18), alignItems: 'center' }}>
+                <Check size={scaled(18)} color="#fff" />
               </View>
             )}
           </TouchableOpacity>
@@ -137,10 +156,13 @@ export default function PaymentSelectionScreen() {
 
       <TouchableOpacity
         style={{
-          backgroundColor: Colors.light.primary,
-          borderRadius: Sizes.radius.md,
-          padding: Sizes.spacing.lg,
-          alignItems: 'center',
+          backgroundColor: 'black',
+              borderRadius: Sizes.radius.lg,
+              paddingVertical: Sizes.spacing.md,
+              paddingHorizontal: Sizes.spacing.xl,
+              alignSelf: 'center',
+              alignItems: 'center',
+              marginBottom: Sizes.spacing.md
         }}
         onPress={handleProceed}
       >

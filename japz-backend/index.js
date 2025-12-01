@@ -34,6 +34,7 @@ import cors from "cors";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { sequelize } from "./models/userModel.js";
+import { User, Employee, Order, OrderItem, Payment, MenuItem } from "./models/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

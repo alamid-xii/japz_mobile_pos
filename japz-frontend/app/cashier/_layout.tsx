@@ -25,11 +25,12 @@ export default function CashierLayout() {
   return (
     <Stack>
       <Stack.Screen name="pos" options={{ headerShown: false }} />
-      <Stack.Screen name="active-orders" options={{ title: 'Active Orders' }} />
-      <Stack.Screen name="order-history" options={{ title: 'Order History' }} />
+      <Stack.Screen name="active-orders" options={{ headerShown: false }} />
+      <Stack.Screen name="order-history" options={{ headerShown: false }} />
       <Stack.Screen name="payment-selection" options={{ title: 'Payment Method' }} />
-      <Stack.Screen name="cash-payment" options={{ title: 'Cash Payment' }} />
+      <Stack.Screen name="cash-payment" options={{ title: 'Payment' }} />
       <Stack.Screen name="receipt" options={{ title: 'Receipt', headerShown: false }} />
+      <Stack.Screen name="profile" options={{ title: 'Profile', headerShown: false }} />
     </Stack>
   );
 }

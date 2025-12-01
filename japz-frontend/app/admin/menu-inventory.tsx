@@ -1,6 +1,8 @@
 import { Cake, ChevronDown, ChevronRight, Droplets, Leaf, Plus, UtensilsCrossed, X } from 'lucide-react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, Modal, Alert, ActivityIndicator } from 'react-native';
+import { useFocusEffect as useNavFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 import { menuCategoryAPI, menuItemAPI } from '../../services/api';
 import { useFocusEffect } from 'expo-router';
@@ -93,6 +95,14 @@ export default function MenuInventoryScreen() {
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Prevent back navigation
+  useNavFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => subscription.remove();
+    }, [])
+  );
+
   // Load data from backend
   useFocusEffect(
     React.useCallback(() => {
@@ -137,9 +147,11 @@ export default function MenuInventoryScreen() {
     }
   };
 
-  const filteredItems = items.filter(item =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || item.categoryId?.toString() === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const toggleExpandCategory = (id: string) => {
     setExpandedCategory(expandedCategory === id ? null : id);
@@ -664,10 +676,7 @@ export default function MenuInventoryScreen() {
           backgroundColor: '#FFCE1B',
           justifyContent: 'center',
           alignItems: 'center',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3,
+          boxShadow: '0px 2px 3px rgba(0, 0, 0, 0.25)',
           elevation: 5,
         }}
         onPress={() => {

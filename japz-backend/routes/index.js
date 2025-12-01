@@ -3,6 +3,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { sequelize } from "../models/db.js";
 import { homePage } from "../controllers/homeController.js";
 import { loginPage, registerPage, forgotPasswordPage, dashboardPage, loginUser, registerUser, logoutUser } from "../controllers/authController.js";
 import { User } from "../models/userModel.js";
@@ -10,6 +11,9 @@ import { Employee } from "../models/employeeModel.js";
 import { KitchenStation } from "../models/kitchenStationModel.js";
 import { MenuCategory } from "../models/menuCategoryModel.js";
 import { MenuItem } from "../models/menuItemModel.js";
+import { Order } from "../models/orderModel.js";
+import { OrderItem } from "../models/orderItemModel.js";
+import { Payment } from "../models/paymentModel.js";
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
@@ -124,9 +128,14 @@ router.post("/api/auth/logout", (req, res) => {
 // Get current user (protected route)
 router.get("/api/auth/user", verifyToken, async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id);
+    // Try to find in User table first
+    let user = await User.findByPk(req.user.id);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      // If not found, check Employee table
+      user = await Employee.findByPk(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
     }
     res.json({
       user: { id: user.id, name: user.name, email: user.email, role: user.role }
@@ -573,6 +582,189 @@ router.delete("/api/menu-items/:id", verifyToken, async (req, res) => {
 
     await item.destroy();
     res.json({ message: 'Menu item deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ========== ORDERS API ==========
+
+// Create order
+router.post("/api/orders", verifyToken, async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { orderNumber, cashierId, cashier, subtotal, discount, total, payment, items, status, createdAt, customerName } = req.body;
+
+    if (!orderNumber || !total || !items || !payment) {
+      await transaction.rollback();
+      return res.status(400).json({ error: 'Order number, total, items, and payment required' });
+    }
+
+    // Create order
+    const order = await Order.create({
+      orderNumber,
+      cashierId: cashierId || req.user.id,
+      customerName,
+      subtotal: parseFloat(subtotal || total),
+      discount: parseFloat(discount || 0),
+      total: parseFloat(total),
+      status: status || 'completed'
+    }, { transaction });
+
+    // Create order items
+    const orderItems = await Promise.all(items.map(item =>
+      OrderItem.create({
+        orderId: order.id,
+        menuItemId: parseInt(item.id),
+        name: item.name,
+        price: parseFloat(item.price),
+        quantity: parseInt(item.quantity),
+        total: parseFloat(item.total),
+        modifiers: item.modifiers || null
+      }, { transaction })
+    ));
+
+    // Create payment
+    const paymentRecord = await Payment.create({
+      orderId: order.id,
+      method: payment.method,
+      amount: parseFloat(payment.amount),
+      amountReceived: payment.amountReceived ? parseFloat(payment.amountReceived) : null,
+      change: payment.change ? parseFloat(payment.change) : null,
+      status: 'completed'
+    }, { transaction });
+
+    await transaction.commit();
+
+    res.status(201).json({
+      message: 'Order created successfully',
+      order: {
+        ...order.toJSON(),
+        items: orderItems,
+        payment: paymentRecord
+      }
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Order creation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all orders (with optional status filter)
+router.get("/api/orders", verifyToken, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const where = status ? { status } : {};
+
+    const orders = await Order.findAll({
+      where,
+      include: [
+        {
+          model: OrderItem,
+          as: 'items'
+        },
+        {
+          model: Payment,
+          as: 'payments'
+        },
+        {
+          model: User,
+          as: 'cashier',
+          attributes: ['id', 'name']
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get order by ID
+router.get("/api/orders/:id", verifyToken, async (req, res) => {
+  try {
+    const order = await Order.findByPk(req.params.id, {
+      include: [
+        {
+          model: OrderItem,
+          as: 'items'
+        },
+        {
+          model: Payment,
+          as: 'payments'
+        },
+        {
+          model: User,
+          as: 'cashier',
+          attributes: ['id', 'name']
+        }
+      ]
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update order status
+router.put("/api/orders/:id/status", verifyToken, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const validStatuses = ['pending', 'preparing', 'ready', 'completed', 'cancelled'];
+
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const order = await Order.findByPk(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    order.status = status;
+    await order.save();
+
+    res.json({
+      message: 'Order status updated successfully',
+      order
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ========== PAYMENTS API ==========
+
+// Create payment (usually done with order creation)
+router.post("/api/payments", verifyToken, async (req, res) => {
+  try {
+    const { orderId, method, amount, amountReceived, change } = req.body;
+
+    if (!orderId || !method || !amount) {
+      return res.status(400).json({ error: 'Order ID, method, and amount required' });
+    }
+
+    const payment = await Payment.create({
+      orderId,
+      method,
+      amount,
+      amountReceived,
+      change,
+      status: 'completed'
+    });
+
+    res.status(201).json({
+      message: 'Payment created successfully',
+      payment
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

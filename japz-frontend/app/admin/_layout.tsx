@@ -1,20 +1,33 @@
 // app/(admin)/_layout.tsx
 import { Tabs, useRouter } from 'expo-router';
 import { LayoutDashboard, MessageCircle, Package, Settings, TrendingUp, Users } from 'lucide-react-native';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function AdminLayout() {
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      router.push('/auth/login' as any);
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted && isInitialized && (!user || user.role !== 'admin')) {
+      router.replace('/auth/login' as any);
     }
-  }, [user, router])
+  }, [user, isInitialized, isMounted, router]);
+
+  if (!isInitialized || !isMounted) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#FFCE1B" />
+      </View>
+    );
+  }
 
   if (!user || user.role !== 'admin') {
     return (

@@ -31,6 +31,11 @@ import { Employee } from "./models/employeeModel.js";
 import { KitchenStation } from "./models/kitchenStationModel.js";
 import { MenuCategory } from "./models/menuCategoryModel.js";
 import { MenuItem } from "./models/menuItemModel.js";
+import { Order } from "./models/orderModel.js";
+import { OrderItem } from "./models/orderItemModel.js";
+import { Payment } from "./models/paymentModel.js";
+import { seed } from "./seed.js";
+import { seedMenu } from "./seedMenu.js";
 import inquirer from "inquirer";
 
 // Server-level connection (no database selected)
@@ -55,6 +60,12 @@ try {
   console.log("✅ Connected to MySQL database!");
   await sequelize.sync({ force: true }); // Drops and recreates tables
   console.log("✅ Tables created for all models!");
+  
+  // Run seeds
+  console.log("🌱 Running seeds...");
+  await seed();
+  await seedMenu();
+  console.log("✅ All seeds completed!");
 } catch (err) {
   console.error("❌ Migration failed:", err);
 } finally {

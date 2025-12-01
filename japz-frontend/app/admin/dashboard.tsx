@@ -1,6 +1,9 @@
 // app/(admin)/dashboard.tsx
 import { BarChart3, MessageCircle, Package, Settings, TrendingUp, Users } from 'lucide-react-native';
+import { useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -37,6 +40,14 @@ const getActivityIcon = (iconName: string) => {
 
 export default function DashboardScreen() {
   const { user } = useAuth();
+
+  // Prevent back navigation
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => subscription.remove();
+    }, [])
+  );
   
   return (
     <View style={{ flex: 1, marginTop: Sizes.spacing.lg }}>

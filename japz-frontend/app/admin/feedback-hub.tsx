@@ -1,6 +1,8 @@
 import { ChevronDown, Star } from 'lucide-react-native';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 
 interface Feedback {
@@ -76,6 +78,14 @@ export default function FeedbackHubScreen() {
   const [filterStatus, setFilterStatus] = useState<'all' | Feedback['status']>('all');
   const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
   const [timePeriod, setTimePeriod] = useState<'all' | 'day' | 'week' | 'month'>('all');
+
+  // Prevent back navigation
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => subscription.remove();
+    }, [])
+  );
 
   const filteredFeedback = feedback.filter(f =>
     filterStatus === 'all' || f.status === filterStatus

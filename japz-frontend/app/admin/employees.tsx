@@ -1,8 +1,10 @@
 // app/(admin)/employees.tsx
-import { useRouter, useFocusEffect } from 'expo-router';
-import { ChevronDown, ChevronRight, Truck, UserCheck, Users, UtensilsCrossed, Edit } from 'lucide-react-native';
+import { useRouter, useFocusEffect as useExpoFocusEffect } from 'expo-router';
+import { ChevronDown, ChevronRight, Truck, UserCheck, Users, UtensilsCrossed, Edit, Plus } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
+import { useFocusEffect as useNavFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 import { employeeAPI } from '../../services/api';
 
@@ -38,6 +40,14 @@ export default function EmployeesScreen() {
   const [expanded, setExpanded] = useState<number | null>(null);
   const [filterRole, setFilterRole] = useState<'all' | 'cashier' | 'kitchen'>('all');
 
+  // Prevent back navigation
+  useNavFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => subscription.remove();
+    }, [])
+  );
+
   const loadEmployees = async () => {
     try {
       setLoading(true);
@@ -51,7 +61,7 @@ export default function EmployeesScreen() {
     }
   };
 
-  useFocusEffect(
+  useExpoFocusEffect(
     useCallback(() => {
       loadEmployees();
     }, [])
@@ -104,26 +114,9 @@ export default function EmployeesScreen() {
         style={{ flex: 1, backgroundColor: Colors.light.background }}
         contentContainerStyle={{ padding: Sizes.spacing.lg }}
       >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Sizes.spacing.lg }}>
-          <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700' }}>
-            Employee Management
-          </Text>
-          <TouchableOpacity
-            style={{
-              backgroundColor: '#FFCE1B',
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onPress={() => router.push('/admin/employee-form')}
-          >
-            <Text style={{ fontSize: 24, fontWeight: '700', color: '#fff'}}>
-              +
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
+          Employee Management
+        </Text>
 
         {/* Search */}
         <TextInput
@@ -131,7 +124,7 @@ export default function EmployeesScreen() {
             borderWidth: 1,
             borderColor: Colors.light.border,
             borderRadius: Sizes.radius.md,
-            padding: Sizes.spacing.md,
+            padding: Sizes.spacing.sm,
             color: Colors.light.foreground,
             marginBottom: Sizes.spacing.md,
             fontSize: Sizes.typography.base,
@@ -306,14 +299,31 @@ export default function EmployeesScreen() {
         ) : (
           <View style={{ alignItems: 'center', paddingVertical: Sizes.spacing.xl }}>
             <Text style={{ color: Colors.light.mutedForeground, fontSize: Sizes.typography.base }}>
-              No employees found
-            </Text>
-          </View>
-        )}
-
-        {/* Add Employee Button */}
-        
+            No employees found
+          </Text>
+        </View>
+      )}
       </ScrollView>
+
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          bottom: Sizes.spacing.md + 1,
+          right: Sizes.spacing.lg,
+          width: 56,
+          height: 56,
+          borderRadius: 28,
+          backgroundColor: '#FFCE1B',
+          justifyContent: 'center',
+          alignItems: 'center',
+          boxShadow: '0px 2px 3px rgba(0, 0, 0, 0.25)',
+          elevation: 5,
+        }}
+        onPress={() => router.push('/admin/employee-form')}
+      >
+        <Plus size={28} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 }

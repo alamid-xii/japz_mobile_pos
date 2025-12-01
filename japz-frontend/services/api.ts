@@ -126,4 +126,53 @@ export const menuItemAPI = {
     api.delete(`/api/menu-items/${id}`),
 };
 
+export const ordersAPI = {
+  create: (data: {
+    orderNumber: string;
+    cashierId?: number;
+    cashier?: string;
+    subtotal?: number;
+    discount?: number;
+    total: number;
+    payment: {
+      method: 'cash' | 'card' | 'digital';
+      amount: number;
+      amountReceived?: number;
+      change?: number;
+    };
+    items: Array<{
+      id: string;
+      name: string;
+      price: number;
+      quantity: number;
+      total: number;
+      modifiers?: any;
+    }>;
+    status?: string;
+    createdAt?: string;
+    customerName?: string;
+  }) =>
+    api.post('/api/orders', data),
+
+  getAll: (status?: string) =>
+    api.get('/api/orders', { params: { status } }),
+
+  getById: (id: string | number) =>
+    api.get(`/api/orders/${id}`),
+
+  updateStatus: (id: string | number, status: string) =>
+    api.put(`/api/orders/${id}/status`, { status }),
+};
+
+export const paymentsAPI = {
+  create: (data: {
+    orderId: number;
+    method: 'cash' | 'card' | 'digital';
+    amount: number;
+    amountReceived?: number;
+    change?: number;
+  }) =>
+    api.post('/api/payments', data),
+};
+
 export default api;

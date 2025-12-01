@@ -109,13 +109,14 @@ export default function LoginScreen() {
             {loading ? 'Logging in...' : 'Login'}
           </Text>
         </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity style={authStyles.linkButton} onPress={() => router.push('./registration')}>
+        <TouchableOpacity style={authStyles.linkButton} onPress={() => router.push('./registration')}>
         <Text>
           Don't have an account? <Text style={[authStyles.linkHighlight, authStyles.linkText]}>Register here</Text>
         </Text>
       </TouchableOpacity>
+      </View>
+
+      
     </ScrollView>
     </KeyboardAvoidingView>
   );

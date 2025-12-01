@@ -1,8 +1,13 @@
-import { Banknote, CreditCard, Smartphone } from 'lucide-react-native';
-import { useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Banknote, CreditCard, Smartphone, ChevronDown } from 'lucide-react-native';
+import { useState, useEffect, useCallback } from 'react';
+import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 import { CashierBottomNav } from '../../components/shared/CashierBottomNav';
 import { Colors, Sizes } from '../../constants/colors';
+import { scaled } from '../../utils/responsive';
+import { ordersAPI } from '../../services/api';
+import { cashierStyles } from '../../styles/cashierStyles';
 
 interface HistoryOrder {
   id: string;
@@ -26,73 +31,156 @@ const getPaymentMethodIcon = (method: string) => {
   }
 };
 
-const mockHistory: HistoryOrder[] = [
-  {
-    id: '1',
-    orderNumber: 'ORD-001',
-    date: '2024-01-15',
-    time: '14:30',
-    customerName: 'Juan Dela Cruz',
-    items: 3,
-    totalAmount: 1650,
-    paymentMethod: 'cash',
-    cashier: 'Maria',
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-002',
-    date: '2024-01-15',
-    time: '13:45',
-    customerName: 'Pedro Garcia',
-    items: 2,
-    totalAmount: 1200,
-    paymentMethod: 'card',
-    cashier: 'Juan',
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-003',
-    date: '2024-01-14',
-    time: '19:20',
-    customerName: 'Maria Santos',
-    items: 4,
-    totalAmount: 2100,
-    paymentMethod: 'digital',
-    cashier: 'Maria',
-  },
-];
-
 export default function OrderHistoryScreen() {
   const [search, setSearch] = useState('');
   const [selectedPayment, setSelectedPayment] = useState<'all' | 'cash' | 'card' | 'digital'>('all');
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [orders, setOrders] = useState<HistoryOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const filteredOrders = mockHistory.filter(order => {
+  const fetchOrders = async () => {
+    try {
+      setError(null);
+      const res = await ordersAPI.getAll();
+      const ordersData = res.data || [];
+      // Filter for completed orders only
+      const completedOrders = ordersData.filter((o: any) => o.status === 'completed');
+      // map order shape to HistoryOrder
+      const history = completedOrders.map((o: any) => ({
+        id: String(o.id),
+        orderNumber: o.orderNumber,
+        date: o.createdAt, // Keep as ISO string for accurate date comparison
+        time: new Date(o.createdAt).toLocaleTimeString(),
+        customerName: o.customerName || '-',
+        items: o.items ? o.items.length : 0,
+        totalAmount: parseFloat(o.total || 0),
+        paymentMethod: o.payments?.[0]?.method || 'cash',
+        cashier: o.cashier?.name || '-',
+      }));
+      setOrders(history);
+    } catch (e: any) {
+      console.error('Failed to load orders from server', e);
+      setError(e.response?.data?.error || 'Failed to load order history');
+      setOrders([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  // Prevent back navigation
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => subscription.remove();
+    }, [])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchOrders();
+  };
+
+  const isWithinPeriod = (orderDate: string, period: string) => {
+    const now = new Date();
+    const orderDateObj = new Date(orderDate);
+    const diffTime = now.getTime() - orderDateObj.getTime();
+    const diffDays = diffTime / (1000 * 3600 * 24);
+    switch (period) {
+      case 'today': return diffDays < 1;
+      case 'week': return diffDays < 7;
+      case 'month': return diffDays < 30;
+      default: return true;
+    }
+  };
+
+  const filteredOrders = orders.filter(order => {
     const matchSearch =
       order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
       order.customerName.toLowerCase().includes(search.toLowerCase());
     const matchPayment = selectedPayment === 'all' || order.paymentMethod === selectedPayment;
-    return matchSearch && matchPayment;
+    const matchPeriod = selectedPeriod === 'all' || isWithinPeriod(order.date, selectedPeriod);
+    return matchSearch && matchPayment && matchPeriod;
   });
 
   const toggleExpand = (id: string) => {
     setExpanded(expanded === id ? null : id);
   };
 
-  const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+  const totalRevenue = filteredOrders.length > 0 
+    ? filteredOrders.reduce((sum, order) => sum + (parseFloat(String(order.totalAmount)) || 0), 0)
+    : 0;
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1, backgroundColor: Colors.light.background }}
-        contentContainerStyle={{ padding: Sizes.spacing.lg }}
-      >
-        <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
-          Order History
-        </Text>
+      {/* Header */}
+      <View style={cashierStyles.header}>
+        <Text style={cashierStyles.title}>Order History</Text>
+        <TouchableOpacity 
+          style={{ flexDirection: 'row', alignItems: 'center', gap: Sizes.spacing.sm }}
+          onPress={() => setIsDropdownOpen(!isDropdownOpen)}
+        >
+          <Text style={{ color: Colors.light.foreground, fontSize: Sizes.typography.sm }}>
+            {selectedPeriod === 'all' ? 'All Time' : selectedPeriod.charAt(0).toUpperCase() + selectedPeriod.slice(1)}
+          </Text>
+          <ChevronDown size={16} color={Colors.light.foreground} />
+        </TouchableOpacity>
+      </View>
+
+      {isDropdownOpen && (
+        <View style={{ backgroundColor: Colors.light.card, borderBottomWidth: 1, borderBottomColor: Colors.light.border }}>
+          {(['all', 'today', 'week', 'month'] as const).map((period) => (
+            <TouchableOpacity
+              key={period}
+              style={{ padding: Sizes.spacing.md, borderBottomWidth: period !== 'month' ? 1 : 0, borderBottomColor: Colors.light.border }}
+              onPress={() => {
+                setSelectedPeriod(period);
+                setIsDropdownOpen(false);
+              }}
+            >
+              <Text style={{ color: Colors.light.foreground, textTransform: 'capitalize' }}>
+                {period === 'all' ? 'All Time' : period}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.light.background }}>
+          <ActivityIndicator size="large" color={Colors.brand.primary} />
+          <Text style={{ marginTop: Sizes.spacing.md, color: Colors.light.mutedForeground }}>Loading order history...</Text>
+        </View>
+      ) : error ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.light.background, padding: Sizes.spacing.lg }}>
+          <Text style={{ fontSize: Sizes.typography.base, color: '#EF4444', textAlign: 'center'}}>
+            {error}
+          </Text>
+          <TouchableOpacity
+            style={{ backgroundColor: Colors.brand.primary, paddingVertical: Sizes.spacing.sm, paddingHorizontal: Sizes.spacing.lg, borderRadius: Sizes.radius.md }}
+            onPress={fetchOrders}
+          >
+            <Text style={{ color: '#030213', fontWeight: '600' }}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ScrollView
+          style={{ flex: 1, backgroundColor: Colors.light.background }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.brand.primary]} />}
+        >
+          <View style={{ padding: scaled(Sizes.spacing.md) }}>
 
         {/* Summary Card */}
-        <View style={{ backgroundColor: Colors.light.card, borderRadius: Sizes.radius.md, padding: Sizes.spacing.lg, marginBottom: Sizes.spacing.lg }}>
+        <View style={{ backgroundColor: Colors.light.card, borderRadius: Sizes.radius.md, padding: scaled(Sizes.spacing.lg) }}>
           <Text style={{ color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.sm }}>
             Total Revenue (Filtered)
           </Text>
@@ -125,7 +213,7 @@ export default function OrderHistoryScreen() {
         <Text style={{ fontSize: Sizes.typography.sm, fontWeight: '600', marginBottom: Sizes.spacing.sm, color: Colors.light.mutedForeground }}>
           Payment Method
         </Text>
-        <View style={{ flexDirection: 'row', gap: Sizes.spacing.sm, marginBottom: Sizes.spacing.lg }}>
+        <View style={{ flexDirection: 'row', gap: scaled(Sizes.spacing.sm), marginBottom: scaled(Sizes.spacing.lg) }}>
           {(['all', 'cash', 'card', 'digital'] as const).map((method) => (
             <TouchableOpacity
               key={method}
@@ -176,7 +264,7 @@ export default function OrderHistoryScreen() {
                     {order.orderNumber}
                   </Text>
                   <Text style={{ color: Colors.light.mutedForeground, fontSize: Sizes.typography.sm }}>
-                    {order.date} • {order.time}
+                    {new Date(order.date).toLocaleDateString()} • {order.time}
                   </Text>
                 </View>
                 <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', color: Colors.light.primary }}>
@@ -188,7 +276,7 @@ export default function OrderHistoryScreen() {
                 <Text style={{ color: Colors.light.mutedForeground }}>
                   {order.customerName}
                 </Text>
-                <View style={{ width: 18 }}>
+                <View style={{ width: scaled(18) }}>
                   {getPaymentMethodIcon(order.paymentMethod)}
                 </View>
               </View>
@@ -218,7 +306,9 @@ export default function OrderHistoryScreen() {
             </Text>
           </View>
         )}
-      </ScrollView>
+        </View>
+        </ScrollView>
+      )}
       <CashierBottomNav currentScreen="history" />
     </View>
   );
