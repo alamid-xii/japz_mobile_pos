@@ -19,23 +19,10 @@ interface MenuItem {
   id: string;
   name: string;
   category: string;
+  categoryId: number | string;
   price: number;
   status: 'available' | 'unavailable';
 }
-
-const mockCategories: Category[] = [
-  { id: '1', name: 'Main Dishes', description: 'Lunch and dinner main courses', itemCount: 12, icon: 'dish' },
-  { id: '2', name: 'Appetizers', description: 'Starters and side dishes', itemCount: 8, icon: 'leaf' },
-  { id: '3', name: 'Beverages', description: 'Drinks and smoothies', itemCount: 15, icon: 'droplets' },
-  { id: '4', name: 'Desserts', description: 'Sweet treats and pastries', itemCount: 10, icon: 'cake' },
-];
-
-const mockItems: MenuItem[] = [
-  { id: '1', name: 'Chicken Adobo', category: 'Main Dishes', price: 250, status: 'available' },
-  { id: '2', name: 'Beef Sinigang', category: 'Main Dishes', price: 280, status: 'available' },
-  { id: '3', name: 'Iced Tea', category: 'Beverages', price: 75, status: 'unavailable' },
-  { id: '4', name: 'Turon', category: 'Desserts', price: 50, status: 'available' },
-];
 
 const statusColors = {
   available: '#10B981',
@@ -137,7 +124,7 @@ export default function MenuInventoryScreen() {
         id: item.id.toString(),
         name: item.name,
         category: item.category?.name || 'Unknown',
-        categoryId: item.categoryId,
+        categoryId: item.categoryId || item.MenuCategoryId || item.category?.id || 0,
         price: parseFloat(item.price),
         status: item.status,
       }));
@@ -149,7 +136,7 @@ export default function MenuInventoryScreen() {
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || item.categoryId?.toString() === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || (item.categoryId && item.categoryId.toString() === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 

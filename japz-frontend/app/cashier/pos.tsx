@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
+import { fetchEmojis } from 'emojibase';
 import { CashierBottomNav } from '../../components/shared/CashierBottomNav';
 import { menuCategoryAPI, menuItemAPI } from '../../services/api';
 import { Sizes } from '../../constants/colors';
@@ -35,23 +36,48 @@ interface CartItem extends Product {
   quantity: number;
 }
 
-// Helper function to get category icon
+// Helper function to get category icon using emojibase library
 const getCategoryIcon = (categoryName: string): string => {
   const name = categoryName.toLowerCase();
-  if (name.includes('main') || name.includes('course')) return '🍽️';
-  if (name.includes('beverage') || name.includes('drink')) return '🥤';
-  if (name.includes('appetizer') || name.includes('snack')) return '🍟';
-  if (name.includes('dessert') || name.includes('sweet')) return '🍰';
-  if (name.includes('salad')) return '🥗';
-  if (name.includes('soup')) return '🍲';
-  if (name.includes('pizza')) return '🍕';
-  if (name.includes('burger') || name.includes('sandwich')) return '🍔';
-  if (name.includes('pasta')) return '🍝';
-  if (name.includes('rice') || name.includes('noodle')) return '🍜';
-  if (name.includes('chicken')) return '🍗';
-  if (name.includes('fish') || name.includes('seafood')) return '🐟';
-  if (name.includes('beef') || name.includes('meat')) return '🥩';
-  return '🍽️'; // Default
+  
+  // Map category names to emoji characters
+  const categoryMap: { [key: string]: string } = {
+    'main': '🍽️',
+    'course': '🍽️',
+    'beverage': '🍹',
+    'drink': '🧃',
+    'coffee': '☕',
+    'cooler': '🍧',
+    'appetizer': '🥟',
+    'snack': '🍘',
+    'fries': '🍟',
+    'dessert': '🍰',
+    'sweet': '🍪',
+    'salad': '🥗',
+    'soup': '🍲',
+    'pizza': '🍕',
+    'burger': '🍔',
+    'sandwich': '🥪',
+    'pasta': '🍝',
+    'rice': '🍚',
+    'noodle': '🍜',
+    'chicken': '🍗',
+    'fish': '🍣',
+    'seafood': '🦞',
+    'beef': '🥩',
+    'meat': '🍖',
+    'vegetable': '🥦',
+    'fruit': '🍎',
+  };
+  
+  // Find matching category and return emoji
+  for (const [key, emojiChar] of Object.entries(categoryMap)) {
+    if (name.includes(key)) {
+      return emojiChar;
+    }
+  }
+  
+  return '🍽️'; // Default fallback
 };
 
 export default function POSScreen() {

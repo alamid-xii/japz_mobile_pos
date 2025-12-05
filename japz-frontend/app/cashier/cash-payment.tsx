@@ -109,7 +109,7 @@ export default function CashPaymentScreen() {
           ordersAPI.create(payload),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Order save timeout')), 25000)),
         ]);
-        const createdOrder = res?.data?.order || null;
+        const createdOrder = (res as any)?.data?.order || null;
 
         // Navigate to receipt screen with server order if available
         router.push({ pathname: '/cashier/receipt', params: { order: JSON.stringify(createdOrder || order) } });

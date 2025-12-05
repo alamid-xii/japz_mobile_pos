@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { ChevronDown } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
-import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Switch, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
@@ -73,8 +73,24 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/auth/login' as any);
+    Alert.alert(
+      'Logout Confirmation',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.push('/auth/login' as any);
+          }
+        }
+      ]
+    );
   };
 
   return (
