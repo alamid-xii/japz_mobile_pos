@@ -11,10 +11,11 @@ export const adminStyles = StyleSheet.create<Record<string, CombinedStyle>>({
     backgroundColor: Colors.light.background,
   } as CombinedStyle,
   header: {
-    padding: Sizes.spacing.xl,
-    paddingTop: Sizes.spacing.xl + 40, // Account for status bar
+    paddingHorizontal: Sizes.spacing.lg,
+    paddingVertical: Sizes.spacing.md,
+    paddingTop: Sizes.spacing.lg + 30, // Account for status bar
     backgroundColor: Colors.light.background,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderBottomColor: Colors.light.border,
   } as CombinedStyle,
   title: {

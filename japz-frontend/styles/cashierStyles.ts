@@ -5,7 +5,7 @@ import { GlobalStyles } from './globalStyles';
 
 // Responsive scaling helper
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BASE_WIDTH = 375; // reference device width (iPhone 8 / baseline)
+const BASE_WIDTH = 375;
 const SCALE = Math.max(0.8, Math.min(1.3, SCREEN_WIDTH / BASE_WIDTH));
 const scaled = (value: number) => Math.round(value * SCALE);
 
@@ -20,11 +20,14 @@ export const cashierStyles = StyleSheet.create<Record<string, CombinedStyle>>({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: Sizes.spacing.lg,
-    paddingTop: Sizes.spacing.lg + 40,
+    paddingHorizontal: Sizes.spacing.md,
+    paddingVertical: Sizes.spacing.sm,
+    paddingTop: Sizes.spacing.sm + 30,
     backgroundColor: Colors.light.background,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderBottomColor: Colors.light.border,
+    fontWeight:'700',
+    color:'#FFD700',
   } as CombinedStyle,
   title: {
     ...GlobalStyles.h1,
@@ -91,13 +94,10 @@ export const cashierStyles = StyleSheet.create<Record<string, CombinedStyle>>({
     paddingVertical: scaled(Sizes.spacing.lg),
     paddingHorizontal: scaled(Sizes.spacing.lg),
     marginVertical: scaled(Sizes.spacing.xs),
-    marginHorizontal: scaled(Sizes.spacing.xs / 1.5),
     alignItems: 'stretch',
     justifyContent: 'space-between',
-    flex: 1,
+    width: '47%',
     minHeight: scaled(80),
-    maxWidth: '48%',
-    flexBasis: '48%',
     ...GlobalStyles.shadowSm,
   } as CombinedStyle,
   productImage: {
@@ -135,7 +135,7 @@ export const cashierStyles = StyleSheet.create<Record<string, CombinedStyle>>({
     paddingHorizontal: scaled(Sizes.spacing.md),
     paddingVertical: scaled(Sizes.spacing.sm),
     borderRadius: Sizes.radius.md,
-    backgroundColor: Colors.light.muted,
+    backgroundColor: '#FFFFCC',
   } as CombinedStyle,
   addToCartButtonText: {
     ...GlobalStyles.body,
@@ -183,32 +183,42 @@ export const cashierStyles = StyleSheet.create<Record<string, CombinedStyle>>({
   cartItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Sizes.spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    paddingVertical: Sizes.spacing.md,
+    paddingHorizontal: Sizes.spacing.md,
+    marginBottom: Sizes.spacing.md,
+    backgroundColor: Colors.light.card,
+    borderRadius: Sizes.radius.md,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.brand.primary,
+    gap: Sizes.spacing.md,
   } as CombinedStyle,
   cartItemInfo: {
     flex: 1,
   } as CombinedStyle,
   cartItemName: {
     ...GlobalStyles.body,
-    marginBottom: 2,
+    marginBottom: Sizes.spacing.xs,
+    fontWeight: Sizes.fontWeight.bold as any,
+    fontSize: Sizes.typography.base,
   } as CombinedStyle,
   cartItemPrice: {
     ...GlobalStyles.body,
     color: Colors.light.mutedForeground,
     fontSize: Sizes.typography.sm,
+    marginBottom: Sizes.spacing.xs,
   } as CombinedStyle,
   cartItemTotal: {
     ...GlobalStyles.body,
-    fontWeight: Sizes.fontWeight.medium as any,
-    marginRight: Sizes.spacing.sm,
+    fontWeight: Sizes.fontWeight.bold as any,
+    fontSize: Sizes.typography.base,
+    color: Colors.brand.primary,
+    marginRight: Sizes.spacing.md,
   } as CombinedStyle,
   removeButton: {
     backgroundColor: Colors.light.destructive,
     borderRadius: Sizes.radius.sm,
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
   } as CombinedStyle,

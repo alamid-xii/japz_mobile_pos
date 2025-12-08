@@ -3,14 +3,14 @@ export const Colors = {
   // Light Theme
   light: {
     background: '#ffffff',
-    foreground: 'oklch(0.145 0 0)', // #252525 equivalent
+    foreground: '#252525', // oklch(0.145 0 0) equivalent
     card: '#ffffff',
-    cardForeground: 'oklch(0.145 0 0)',
-    popover: 'oklch(1 0 0)', // #ffffff
-    popoverForeground: 'oklch(0.145 0 0)',
+    cardForeground: '#252525',
+    popover: '#ffffff', // oklch(1 0 0)
+    popoverForeground: '#252525',
     primary: '#030213',
-    primaryForeground: 'oklch(1 0 0)', // #ffffff
-    secondary: 'oklch(0.95 0.0058 264.53)', // #f2f2f8
+    primaryForeground: '#ffffff', // oklch(1 0 0)
+    secondary: '#f2f2f8', // oklch(0.95 0.0058 264.53)
     secondaryForeground: '#030213',
     muted: '#ececf0',
     mutedForeground: '#717182',
@@ -22,55 +22,55 @@ export const Colors = {
     input: 'transparent',
     inputBackground: '#f3f3f5',
     switchBackground: '#cbced4',
-    ring: 'oklch(0.708 0 0)', // #b4b4b4
-    chart1: 'oklch(0.646 0.222 41.116)', // #d47716
-    chart2: 'oklch(0.6 0.118 184.704)', // #0d9488
-    chart3: 'oklch(0.398 0.07 227.392)', // #3b82f6
-    chart4: 'oklch(0.828 0.189 84.429)', // #eab308
-    chart5: 'oklch(0.769 0.188 70.08)', // #f59e0b
-    sidebar: 'oklch(0.985 0 0)', // #fbfbfb
-    sidebarForeground: 'oklch(0.145 0 0)',
+    ring: '#b4b4b4', // oklch(0.708 0 0)
+    chart1: '#d47716', // oklch(0.646 0.222 41.116)
+    chart2: '#0d9488', // oklch(0.6 0.118 184.704)
+    chart3: '#3b82f6', // oklch(0.398 0.07 227.392)
+    chart4: '#eab308', // oklch(0.828 0.189 84.429)
+    chart5: '#f59e0b', // oklch(0.769 0.188 70.08)
+    sidebar: '#fbfbfb', // oklch(0.985 0 0)
+    sidebarForeground: '#252525',
     sidebarPrimary: '#030213',
-    sidebarPrimaryForeground: 'oklch(0.985 0 0)',
-    sidebarAccent: 'oklch(0.97 0 0)', // #f7f7f7
-    sidebarAccentForeground: 'oklch(0.205 0 0)', // #343434
-    sidebarBorder: 'oklch(0.922 0 0)', // #ebebeb
-    sidebarRing: 'oklch(0.708 0 0)',
+    sidebarPrimaryForeground: '#fbfbfb',
+    sidebarAccent: '#f7f7f7', // oklch(0.97 0 0)
+    sidebarAccentForeground: '#343434', // oklch(0.205 0 0)
+    sidebarBorder: '#ebebeb', // oklch(0.922 0 0)
+    sidebarRing: '#b4b4b4',
   },
   // Dark Theme
   dark: {
-    background: 'oklch(0.145 0 0)', // #252525
-    foreground: 'oklch(0.985 0 0)', // #fbfbfb
-    card: 'oklch(0.145 0 0)',
-    cardForeground: 'oklch(0.985 0 0)',
-    popover: 'oklch(0.145 0 0)',
-    popoverForeground: 'oklch(0.985 0 0)',
-    primary: 'oklch(0.985 0 0)', // #fbfbfb
-    primaryForeground: 'oklch(0.205 0 0)', // #343434
-    secondary: 'oklch(0.269 0 0)', // #454545
-    secondaryForeground: 'oklch(0.985 0 0)',
-    muted: 'oklch(0.269 0 0)',
-    mutedForeground: 'oklch(0.708 0 0)', // #b4b4b4
-    accent: 'oklch(0.269 0 0)',
-    accentForeground: 'oklch(0.985 0 0)',
-    destructive: 'oklch(0.396 0.141 25.723)', // #dc2626
-    destructiveForeground: 'oklch(0.637 0.237 25.331)', // #f87171
-    border: 'oklch(0.269 0 0)', // #454545
-    input: 'oklch(0.269 0 0)',
-    ring: 'oklch(0.439 0 0)', // #707070
-    chart1: 'oklch(0.488 0.243 264.376)', // #6366f1
-    chart2: 'oklch(0.696 0.17 162.48)', // #10b981
-    chart3: 'oklch(0.769 0.188 70.08)', // #f59e0b
-    chart4: 'oklch(0.627 0.265 303.9)', // #8b5cf6
-    chart5: 'oklch(0.645 0.246 16.439)', // #ef4444
-    sidebar: 'oklch(0.205 0 0)', // #343434
-    sidebarForeground: 'oklch(0.985 0 0)',
-    sidebarPrimary: 'oklch(0.488 0.243 264.376)', // #6366f1
-    sidebarPrimaryForeground: 'oklch(0.985 0 0)',
-    sidebarAccent: 'oklch(0.269 0 0)', // #454545
-    sidebarAccentForeground: 'oklch(0.985 0 0)',
-    sidebarBorder: 'oklch(0.269 0 0)',
-    sidebarRing: 'oklch(0.439 0 0)',
+    background: '#252525', // oklch(0.145 0 0)
+    foreground: '#fbfbfb', // oklch(0.985 0 0)
+    card: '#252525',
+    cardForeground: '#fbfbfb',
+    popover: '#252525',
+    popoverForeground: '#fbfbfb',
+    primary: '#fbfbfb', // oklch(0.985 0 0)
+    primaryForeground: '#343434', // oklch(0.205 0 0)
+    secondary: '#454545', // oklch(0.269 0 0)
+    secondaryForeground: '#fbfbfb',
+    muted: '#454545', // oklch(0.269 0 0)
+    mutedForeground: '#b4b4b4', // oklch(0.708 0 0)
+    accent: '#454545', // oklch(0.269 0 0)
+    accentForeground: '#fbfbfb',
+    destructive: '#dc2626', // oklch(0.396 0.141 25.723)
+    destructiveForeground: '#f87171', // oklch(0.637 0.237 25.331)
+    border: '#454545', // oklch(0.269 0 0)
+    input: '#454545',
+    ring: '#707070', // oklch(0.439 0 0)
+    chart1: '#6366f1', // oklch(0.488 0.243 264.376)
+    chart2: '#10b981', // oklch(0.696 0.17 162.48)
+    chart3: '#f59e0b', // oklch(0.769 0.188 70.08)
+    chart4: '#8b5cf6', // oklch(0.627 0.265 303.9)
+    chart5: '#ef4444', // oklch(0.645 0.246 16.439)
+    sidebar: '#343434', // oklch(0.205 0 0)
+    sidebarForeground: '#fbfbfb',
+    sidebarPrimary: '#6366f1', // oklch(0.488 0.243 264.376)
+    sidebarPrimaryForeground: '#fbfbfb',
+    sidebarAccent: '#454545', // oklch(0.269 0 0)
+    sidebarAccentForeground: '#fbfbfb',
+    sidebarBorder: '#454545',
+    sidebarRing: '#707070',
   },
   // Brand Colors
   brand: {

@@ -27,7 +27,7 @@ export default function LoginScreen() {
       if (result?.role === 'cashier') {
         router.replace('/cashier/pos' as any);
       } else if (result?.role === 'kitchen') {
-        router.replace('/kitchen/display' as any);
+        router.replace('/kitchen/incoming' as any);
       } else {
         // Default to admin dashboard for admin users
         router.replace('/admin/dashboard' as any);
@@ -109,14 +109,13 @@ export default function LoginScreen() {
             {loading ? 'Logging in...' : 'Login'}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={authStyles.linkButton} onPress={() => router.push('./registration')}>
+      </View>
+
+      <TouchableOpacity style={authStyles.linkButton} onPress={() => router.push('./registration')}>
         <Text>
           Don't have an account? <Text style={[authStyles.linkHighlight, authStyles.linkText]}>Register here</Text>
         </Text>
       </TouchableOpacity>
-      </View>
-
-      
     </ScrollView>
     </KeyboardAvoidingView>
   );

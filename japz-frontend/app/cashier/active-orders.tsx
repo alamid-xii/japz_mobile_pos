@@ -2,20 +2,34 @@ import { useState, useEffect, useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-import { CashierBottomNav } from '../../components/shared/CashierBottomNav';
+import { Clock } from 'lucide-react-native';
 import { Colors, Sizes } from '../../constants/colors';
 import { scaled } from '../../utils/responsive';
 import { ordersAPI } from '../../services/api';
 import { cashierStyles } from '../../styles/cashierStyles';
+
+interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price?: number;
+  total?: number;
+  modifiers?: {
+    size?: string;
+    flavors?: string[];
+    notes?: string;
+  };
+}
 
 interface Order {
   id: string;
   orderNumber: string;
   customerName: string;
   status: 'pending' | 'preparing' | 'ready' | 'completed';
-  items: string[];
+  items: OrderItem[];
   totalAmount: number;
   createdAt: string;
+  timestamp: string;
   expandedId: string | null;
 }
 
@@ -24,6 +38,38 @@ const statusColors = {
   preparing: '#3B82F6',
   ready: '#10B981',
   completed: '#6B7280',
+};
+
+const getWaitTime = (createdAt: string) => {
+  try {
+    const created = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - created.getTime();
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    
+    if (minutes === 0) {
+      return `${seconds}s`;
+    } else if (minutes < 60) {
+      return `${minutes}m ${seconds}s`;
+    } else {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return `${hours}h ${mins}m`;
+    }
+  } catch (error) {
+    return '0s';
+  }
+};
+
+const getCardBackgroundColor = (status: string) => {
+  switch (status) {
+    case 'pending': return '#FFFFCC';
+    case 'preparing': return '#ADD8E6';
+    case 'ready': return '#D4F1D4';
+    default: return Colors.light.card;
+  }
 };
 
 export default function ActiveOrdersScreen() {
@@ -45,9 +91,17 @@ export default function ActiveOrdersScreen() {
         orderNumber: o.orderNumber,
         customerName: o.customerName || 'Walk-in Customer',
         status: o.status,
-        items: o.items ? o.items.map((item: any) => item.name) : [],
+        items: o.items ? o.items.map((item: any) => ({
+          id: item.id,
+          name: item.menuItem?.name || item.name,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.total,
+          modifiers: item.modifiers,
+        })) : [],
         totalAmount: parseFloat(o.total || 0),
-        createdAt: new Date(o.createdAt).toLocaleTimeString(),
+        createdAt: o.createdAt,
+        timestamp: o.createdAt,
         expandedId: null,
       }));
       setOrders(activeOrders);
@@ -62,6 +116,13 @@ export default function ActiveOrdersScreen() {
 
   useEffect(() => {
     fetchOrders();
+    
+    // Set up auto-refresh every 3 seconds
+    const interval = setInterval(() => {
+      fetchOrders();
+    }, 3000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Prevent back navigation
@@ -81,95 +142,139 @@ export default function ActiveOrdersScreen() {
     setExpanded(expanded === id ? null : id);
   };
 
-  const updateOrderStatus = async (id: string, newStatus: 'pending' | 'preparing' | 'ready' | 'completed') => {
-    try {
-      await ordersAPI.updateStatus(id, newStatus);
-      // Update local state
-      setOrders(orders.map(order => 
-        order.id === id ? { ...order, status: newStatus } : order
-      ));
-    } catch (e) {
-      console.error('Failed to update order status', e);
-      // Still update local state for better UX
-      setOrders(orders.map(order => 
-        order.id === id ? { ...order, status: newStatus } : order
-      ));
-    }
-  };
-
   const renderOrderCard = (order: Order) => (
     <TouchableOpacity
       key={order.id}
       style={{
-        backgroundColor: Colors.light.card,
+        backgroundColor: getCardBackgroundColor(order.status),
         borderRadius: Sizes.radius.md,
         padding: Sizes.spacing.md,
         marginBottom: Sizes.spacing.md,
         borderLeftWidth: 4,
         borderLeftColor: statusColors[order.status],
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
       }}
       onPress={() => toggleExpand(order.id)}
     >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Sizes.spacing.sm }}>
-        <Text style={{ fontSize: Sizes.typography.base, fontWeight: '700' }}>
-          {order.orderNumber}
-        </Text>
-        <View
-          style={{
-            backgroundColor: statusColors[order.status],
-            paddingHorizontal: Sizes.spacing.sm,
-            paddingVertical: 4,
-            borderRadius: Sizes.radius.sm,
-          }}
-        >
-          <Text style={{ color: '#fff', fontSize: Sizes.typography.xs, fontWeight: '600', textTransform: 'capitalize' }}>
+      {/* Order Header */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: Sizes.spacing.md }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: Sizes.typography.base, fontWeight: '700', color: '#030213' }}>
+            Order {order.orderNumber}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: Sizes.spacing.xs, gap: Sizes.spacing.xs }}>
+            <Clock size={12} color={statusColors[order.status]} />
+            <Text style={{ color: statusColors[order.status], fontWeight: '600', fontSize: Sizes.typography.xs }}>
+              {getWaitTime(order.createdAt)}
+            </Text>
+          </View>
+        </View>
+        <View style={{
+          paddingHorizontal: Sizes.spacing.md,
+          paddingVertical: Sizes.spacing.xs,
+          borderRadius: Sizes.radius.md,
+          backgroundColor: statusColors[order.status],
+        }}>
+          <Text style={{
+            color: '#fff',
+            fontSize: Sizes.typography.xs,
+            fontWeight: '700',
+            letterSpacing: 0.5,
+            textTransform: 'uppercase',
+          }}>
             {order.status}
           </Text>
         </View>
       </View>
 
-      <Text style={{ color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.sm }}>
-        {order.customerName}
-      </Text>
+      {/* Order Info Box */}
+      <View style={{ 
+        backgroundColor: `${statusColors[order.status]}15`,
+        paddingHorizontal: Sizes.spacing.md,
+        paddingVertical: Sizes.spacing.sm,
+        borderRadius: Sizes.radius.md,
+        marginBottom: Sizes.spacing.md,
+      }}>
+        <Text style={{ fontSize: Sizes.typography.sm, fontWeight: '600', color: '#030213' }}>
+          {order.items.length} item(s) • ₱{order.totalAmount.toFixed(2)}
+        </Text>
+        {order.customerName && order.customerName !== 'Walk-in Customer' && (
+          <Text style={{ fontSize: Sizes.typography.xs, color: Colors.light.mutedForeground, marginTop: Sizes.spacing.xs }}>
+            Customer: {order.customerName}
+          </Text>
+        )}
+      </View>
 
-      <Text style={{ fontSize: Sizes.typography.sm, color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.sm }}>
-        {order.items.length} item(s) • ₱{order.totalAmount.toFixed(2)}
-      </Text>
-
+      {/* Expanded Items View */}
       {expanded === order.id && (
-        <View style={{ marginTop: Sizes.spacing.md, paddingTop: Sizes.spacing.md, borderTopWidth: 1, borderTopColor: Colors.light.border }}>
-          <Text style={{ fontWeight: '600', marginBottom: Sizes.spacing.sm }}>Items:</Text>
+        <View style={{ marginBottom: Sizes.spacing.md, paddingTop: Sizes.spacing.md, borderTopWidth: 1, borderTopColor: Colors.light.border }}>
+          <Text style={{ fontWeight: '600', marginBottom: Sizes.spacing.sm, color: '#030213' }}>Items:</Text>
           {order.items.map((item, idx) => (
-            <Text key={idx} style={{ color: Colors.light.mutedForeground, marginLeft: Sizes.spacing.md, marginBottom: 4 }}>
-              • {item}
-            </Text>
-          ))}
-
-          <View style={{ marginTop: Sizes.spacing.md, gap: Sizes.spacing.sm }}>
-            {(['pending', 'preparing', 'ready'] as const).map((status) => (
-              <TouchableOpacity
-                key={status}
-                style={{
-                  backgroundColor: order.status === status ? statusColors[status] : Colors.light.muted,
-                  paddingVertical: Sizes.spacing.sm,
-                  paddingHorizontal: Sizes.spacing.md,
-                  borderRadius: Sizes.radius.sm,
-                }}
-                onPress={() => updateOrderStatus(order.id, status)}
-              >
-                <Text
-                  style={{
-                    color: order.status === status ? '#fff' : Colors.light.mutedForeground,
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    textTransform: 'capitalize',
-                  }}
-                >
-                  Mark as {status}
+            <View key={idx} style={{ 
+              marginBottom: idx < order.items.length - 1 ? Sizes.spacing.md : 0,
+              paddingBottom: idx < order.items.length - 1 ? Sizes.spacing.md : 0,
+              borderBottomWidth: idx < order.items.length - 1 ? 1 : 0,
+              borderBottomColor: Colors.light.border,
+            }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: Sizes.spacing.xs }}>
+                <Text style={{ 
+                  color: Colors.light.foreground, 
+                  fontSize: Sizes.typography.base, 
+                  fontWeight: '700', 
+                  flex: 1 
+                }}>
+                  {item.quantity}× {item.name}
                 </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                {item.total !== undefined && item.total !== null && (
+                  <Text style={{
+                    color: statusColors[order.status],
+                    fontSize: Sizes.typography.base,
+                    fontWeight: '700',
+                    marginLeft: Sizes.spacing.sm,
+                  }}>
+                    ₱{(typeof item.total === 'number' ? item.total : parseFloat(item.total || 0)).toFixed(2)}
+                  </Text>
+                )}
+              </View>
+
+              {item.modifiers && typeof item.modifiers === 'object' && (
+                <View style={{ marginTop: Sizes.spacing.xs, marginLeft: Sizes.spacing.sm, paddingLeft: Sizes.spacing.md, borderLeftWidth: 2, borderLeftColor: statusColors[order.status] }}>
+                  {item.modifiers.size && (
+                    <Text style={{
+                      color: Colors.light.mutedForeground,
+                      fontSize: Sizes.typography.sm,
+                      marginTop: Sizes.spacing.xs,
+                    }}>
+                      📏 Size: {item.modifiers.size}
+                    </Text>
+                  )}
+                  {item.modifiers.flavors && Array.isArray(item.modifiers.flavors) && item.modifiers.flavors.length > 0 && (
+                    <Text style={{
+                      color: Colors.light.mutedForeground,
+                      fontSize: Sizes.typography.sm,
+                      marginTop: Sizes.spacing.xs,
+                    }}>
+                      🍨 Flavors: {item.modifiers.flavors.join(', ')}
+                    </Text>
+                  )}
+                  {item.modifiers.notes && (
+                    <Text style={{
+                      color: Colors.light.mutedForeground,
+                      fontSize: Sizes.typography.xs,
+                      fontStyle: 'italic',
+                      marginTop: Sizes.spacing.xs,
+                    }}>
+                      📝 Note: {item.modifiers.notes}
+                    </Text>
+                  )}
+                </View>
+              )}
+            </View>
+          ))}
         </View>
       )}
     </TouchableOpacity>
@@ -211,77 +316,74 @@ export default function ActiveOrdersScreen() {
           contentContainerStyle={{ flexGrow: 1 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.brand.primary]} />}
         >
-          <View style={{ padding: scaled(Sizes.spacing.lg) }}>
-          <View style={{ flexDirection: 'row', gap: scaled(Sizes.spacing.md), marginBottom: scaled(Sizes.spacing.lg) }}>
+          <View style={{ padding: scaled(Sizes.spacing.md) }}>
+          <View style={{ flexDirection: 'row', gap: scaled(Sizes.spacing.xs), marginBottom: scaled(Sizes.spacing.sm) }}>
           <TouchableOpacity 
             style={{ 
               flex: 1, 
-              backgroundColor: selectedStatus === 'pending' ? Colors.brand.primary : Colors.light.card, 
-              borderRadius: Sizes.radius.md, 
-              padding: Sizes.spacing.md, 
+              backgroundColor: selectedStatus === 'pending' ? '#FFD700' : '#F0F0F0', 
+              borderRadius: Sizes.radius.sm, 
+              padding: Sizes.spacing.sm, 
               alignItems: 'center',
+              justifyContent: 'center',
+              height: scaled(36),
               borderWidth: selectedStatus === 'pending' ? 2 : 0,
-              borderColor: Colors.brand.primary,
+              borderColor: '#FFD700',
             }}
             onPress={() => setSelectedStatus(selectedStatus === 'pending' ? null : 'pending')}
           >
-            <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', color: selectedStatus === 'pending' ? '#fff' : '#F59E0B' }}>
-              {pendingCount}
-            </Text>
-            <Text style={{ fontSize: Sizes.typography.sm, color: selectedStatus === 'pending' ? '#fff' : Colors.light.mutedForeground }}>
-              Pending
+            <Text style={{ fontSize: scaled(Sizes.typography.sm), fontWeight: '600', color: selectedStatus === 'pending' ? '#030213' : '#F59E0B' }}>
+              {pendingCount} Pending
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={{ 
               flex: 1, 
-              backgroundColor: selectedStatus === 'preparing' ? Colors.brand.primary : Colors.light.card, 
-              borderRadius: Sizes.radius.md, 
-              padding: Sizes.spacing.md, 
+              backgroundColor: selectedStatus === 'preparing' ? '#1E90FF' : '#F0F0F0', 
+              borderRadius: Sizes.radius.sm, 
+              padding: Sizes.spacing.sm, 
               alignItems: 'center',
+              justifyContent: 'center',
+              height: scaled(36),
               borderWidth: selectedStatus === 'preparing' ? 2 : 0,
-              borderColor: Colors.brand.primary,
+              borderColor: '#1E90FF',
             }}
             onPress={() => setSelectedStatus(selectedStatus === 'preparing' ? null : 'preparing')}
           >
-            <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', color: selectedStatus === 'preparing' ? '#fff' : '#3B82F6' }}>
-              {preparingCount}
-            </Text>
-            <Text style={{ fontSize: Sizes.typography.sm, color: selectedStatus === 'preparing' ? '#fff' : Colors.light.mutedForeground }}>
-              Preparing
+            <Text style={{ fontSize: scaled(Sizes.typography.sm), fontWeight: '600', color: selectedStatus === 'preparing' ? '#fff' : '#3B82F6' }}>
+              {preparingCount} Preparing
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={{ 
               flex: 1, 
-              backgroundColor: selectedStatus === 'ready' ? Colors.brand.primary : Colors.light.card, 
-              borderRadius: Sizes.radius.md, 
-              padding: Sizes.spacing.md, 
+              backgroundColor: selectedStatus === 'ready' ? '#32CD32' : '#F0F0F0', 
+              borderRadius: Sizes.radius.sm, 
+              padding: Sizes.spacing.sm, 
               alignItems: 'center',
+              justifyContent: 'center',
+              height: scaled(36),
               borderWidth: selectedStatus === 'ready' ? 2 : 0,
-              borderColor: Colors.brand.primary,
+              borderColor: '#32CD32',
             }}
             onPress={() => setSelectedStatus(selectedStatus === 'ready' ? null : 'ready')}
           >
-            <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', color: selectedStatus === 'ready' ? '#fff' : '#10B981' }}>
-              {readyCount}
-            </Text>
-            <Text style={{ fontSize: Sizes.typography.sm, color: selectedStatus === 'ready' ? '#fff' : Colors.light.mutedForeground }}>
-              Ready
+            <Text style={{ fontSize: scaled(Sizes.typography.sm), fontWeight: '600', color: selectedStatus === 'ready' ? '#fff' : '#10B981' }}>
+              {readyCount} Ready
             </Text>
           </TouchableOpacity>
         </View>
 
-          <Text style={{ fontSize: Sizes.typography.base, fontWeight: '700', marginBottom: Sizes.spacing.md }}>
+          <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700',marginTop: Sizes.spacing.sm, marginBottom: Sizes.spacing.sm }}>
             {selectedStatus ? `${selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)} Orders` : 'Active Orders'}
           </Text>
 
           {filteredOrders.length === 0 ? (
-            <View style={{ alignItems: 'center', paddingVertical: scaled(Sizes.spacing.xl * 2) }}>
-              <Text style={{ fontSize: Sizes.typography.lg, color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.sm }}>
+            <View style={{ alignItems: 'center', paddingVertical: scaled(Sizes.spacing.lg) }}>
+              <Text style={{ fontSize: Sizes.typography.base, color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.xs }}>
                 {selectedStatus ? `No ${selectedStatus} Orders` : 'No Active Orders'}
               </Text>
-              <Text style={{ fontSize: Sizes.typography.sm, color: Colors.light.mutedForeground, textAlign: 'center' }}>
+              <Text style={{ fontSize: Sizes.typography.xs, color: Colors.light.mutedForeground, textAlign: 'center' }}>
                 {selectedStatus ? `All orders have been moved from ${selectedStatus} status` : 'All orders have been completed'}
               </Text>
             </View>
@@ -291,7 +393,6 @@ export default function ActiveOrdersScreen() {
           </View>
         </ScrollView>
       )}
-      <CashierBottomNav currentScreen="orders" />
     </View>
   );
 }

@@ -336,25 +336,25 @@ export default function MenuInventoryScreen() {
         style={{ flex: 1, backgroundColor: Colors.light.background }}
         contentContainerStyle={{ padding: Sizes.spacing.lg }}
       >
-        <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
+        <Text style={{ fontSize: Sizes.typography['2xl'], fontWeight: '700', marginBottom: Sizes.spacing.sm, color:'#ffce1b' }}>
           Menu & Categories
         </Text>
 
         {/* Tab Navigation */}
-        <View style={{ flexDirection: 'row', gap: Sizes.spacing.md, marginBottom: Sizes.spacing.lg }}>
+        <View style={{ flexDirection: 'row', gap: Sizes.spacing.md, marginBottom: Sizes.spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.light.border }}>
           <TouchableOpacity
             style={{
               flex: 1,
               paddingVertical: Sizes.spacing.md,
-              borderRadius: Sizes.radius.md,
+              paddingBottom: Sizes.spacing.md - 2,
               alignItems: 'center',
-              backgroundColor: activeTab === 'menu' ? '#FFCE1B' : Colors.light.card,
-              borderWidth: 1,
-              borderColor: activeTab === 'menu' ? '#FFCE1B' : Colors.light.border,
+              backgroundColor: 'transparent',
+              borderBottomWidth: activeTab === 'menu' ? 3 : 0,
+              borderBottomColor: activeTab === 'menu' ? '#FFCE1B' : 'transparent',
             }}
             onPress={() => setActiveTab('menu')}
           >
-            <Text style={{ fontWeight: '700', color: activeTab === 'menu' ? '#030213' : Colors.light.foreground }}>
+            <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', color: activeTab === 'menu' ? '#FFCE1B' : Colors.light.foreground }}>
               Menu
             </Text>
           </TouchableOpacity>
@@ -362,15 +362,15 @@ export default function MenuInventoryScreen() {
             style={{
               flex: 1,
               paddingVertical: Sizes.spacing.md,
-              borderRadius: Sizes.radius.md,
+              paddingBottom: Sizes.spacing.md - 2,
               alignItems: 'center',
-              backgroundColor: activeTab === 'categories' ? '#FFCE1B' : Colors.light.card,
-              borderWidth: 1,
-              borderColor: activeTab === 'categories' ? '#FFCE1B' : Colors.light.border,
+              backgroundColor: 'transparent',
+              borderBottomWidth: activeTab === 'categories' ? 3 : 0,
+              borderBottomColor: activeTab === 'categories' ? '#FFCE1B' : 'transparent',
             }}
             onPress={() => setActiveTab('categories')}
           >
-            <Text style={{ fontWeight: '700', color: activeTab === 'categories' ? '#030213' : Colors.light.foreground }}>
+            <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', color: activeTab === 'categories' ? '#FFCE1B' : Colors.light.foreground }}>
               Categories
             </Text>
           </TouchableOpacity>

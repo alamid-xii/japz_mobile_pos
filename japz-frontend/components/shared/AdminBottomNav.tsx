@@ -57,15 +57,6 @@ export function AdminBottomNav({ currentScreen }: AdminBottomNavProps) {
               size={24}
               color={isActive ? Colors.brand.primary : Colors.light.mutedForeground}
             />
-            <Text
-              style={{
-                fontSize: Sizes.typography.xs,
-                color: isActive ? Colors.brand.primary : Colors.light.mutedForeground,
-                marginTop: Sizes.spacing.xs,
-              }}
-            >
-              {item.label}
-            </Text>
           </TouchableOpacity>
         );
       })}

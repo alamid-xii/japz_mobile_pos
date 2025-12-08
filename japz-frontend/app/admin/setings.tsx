@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ChevronDown } from 'lucide-react-native';
+import { ChevronDown, LogOut } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
 import { ScrollView, Switch, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -97,11 +97,24 @@ export default function SettingsScreen() {
     <View style={{ flex: 1, marginTop: Sizes.spacing.lg }}>
       <ScrollView
         style={{ flex: 1, backgroundColor: Colors.light.background }}
-        contentContainerStyle={{ padding: Sizes.spacing.lg, paddingBottom: Sizes.spacing.xl }}
+        contentContainerStyle={{ padding: Sizes.spacing.lg }}
       >
-        <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
-          System Settings
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Sizes.spacing.sm }}>
+          <Text style={{ fontSize: Sizes.typography['2xl'], fontWeight: '700', color: '#ffce1b' }}>
+            Settings
+          </Text>
+          <TouchableOpacity
+            onPress={handleLogout}
+            style={{
+              padding: Sizes.spacing.sm,
+              borderRadius: Sizes.radius.sm,
+              backgroundColor: Colors.light.muted,
+            }}
+          >
+            <LogOut size={20} color="#EF4444" />
+          </TouchableOpacity>
+        </View>
+        
 
         {/* Configuration Section */}
         <TouchableOpacity
@@ -355,21 +368,6 @@ export default function SettingsScreen() {
           </View>
         )}
 
-        {/* Logout Button - Always Visible Above Nav */}
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#DC2626',
-            borderRadius: Sizes.radius.md,
-            padding: Sizes.spacing.md,
-            alignItems: 'center',
-            marginBottom: 80,
-          }}
-          onPress={handleLogout}
-        >
-          <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>
-            Logout
-          </Text>
-        </TouchableOpacity>
       </ScrollView>
     </View>
   );

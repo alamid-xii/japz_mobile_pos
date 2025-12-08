@@ -114,7 +114,7 @@ export default function EmployeesScreen() {
         style={{ flex: 1, backgroundColor: Colors.light.background }}
         contentContainerStyle={{ padding: Sizes.spacing.lg }}
       >
-        <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
+        <Text style={{ fontSize: Sizes.typography['2xl'], fontWeight: '700', marginBottom: Sizes.spacing.sm, color:'#ffce1b' }}>
           Employee Management
         </Text>
 

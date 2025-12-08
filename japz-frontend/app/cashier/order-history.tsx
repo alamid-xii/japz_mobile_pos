@@ -1,9 +1,8 @@
-import { Banknote, CreditCard, Smartphone, ChevronDown } from 'lucide-react-native';
+import { Banknote, CreditCard, Smartphone, ChevronDown, Search } from 'lucide-react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-import { CashierBottomNav } from '../../components/shared/CashierBottomNav';
 import { Colors, Sizes } from '../../constants/colors';
 import { scaled } from '../../utils/responsive';
 import { ordersAPI } from '../../services/api';
@@ -22,7 +21,7 @@ interface HistoryOrder {
 }
 
 const getPaymentMethodIcon = (method: string) => {
-  const iconProps = { size: 16, color: Colors.light.primary };
+  const iconProps = { size: 16, color: '#030213' };
   switch (method) {
     case 'cash': return <Banknote {...iconProps} />;
     case 'card': return <CreditCard {...iconProps} />;
@@ -39,8 +38,9 @@ export default function OrderHistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week'>('today');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const fetchOrders = async () => {
     try {
@@ -97,19 +97,22 @@ export default function OrderHistoryScreen() {
     switch (period) {
       case 'today': return diffDays < 1;
       case 'week': return diffDays < 7;
-      case 'month': return diffDays < 30;
       default: return true;
     }
   };
 
-  const filteredOrders = orders.filter(order => {
-    const matchSearch =
-      order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(search.toLowerCase());
-    const matchPayment = selectedPayment === 'all' || order.paymentMethod === selectedPayment;
-    const matchPeriod = selectedPeriod === 'all' || isWithinPeriod(order.date, selectedPeriod);
-    return matchSearch && matchPayment && matchPeriod;
-  });
+  const filteredOrders = orders
+    .filter(order => {
+      const matchSearch =
+        order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
+        order.customerName.toLowerCase().includes(search.toLowerCase());
+      const matchPayment = selectedPayment === 'all' || order.paymentMethod === selectedPayment;
+      const matchPeriod = isWithinPeriod(order.date, selectedPeriod);
+      return matchSearch && matchPayment && matchPeriod;
+    })
+    .sort((a, b) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
 
   const toggleExpand = (id: string) => {
     setExpanded(expanded === id ? null : id);
@@ -128,26 +131,26 @@ export default function OrderHistoryScreen() {
           style={{ flexDirection: 'row', alignItems: 'center', gap: Sizes.spacing.sm }}
           onPress={() => setIsDropdownOpen(!isDropdownOpen)}
         >
-          <Text style={{ color: Colors.light.foreground, fontSize: Sizes.typography.sm }}>
-            {selectedPeriod === 'all' ? 'All Time' : selectedPeriod.charAt(0).toUpperCase() + selectedPeriod.slice(1)}
-          </Text>
-          <ChevronDown size={16} color={Colors.light.foreground} />
+        <Text style={{ color: '#030213', fontSize: Sizes.typography.sm }}>
+          {selectedPeriod.charAt(0).toUpperCase() + selectedPeriod.slice(1)}
+        </Text>
+          <ChevronDown size={16} color="#030213" />
         </TouchableOpacity>
       </View>
 
       {isDropdownOpen && (
         <View style={{ backgroundColor: Colors.light.card, borderBottomWidth: 1, borderBottomColor: Colors.light.border }}>
-          {(['all', 'today', 'week', 'month'] as const).map((period) => (
+          {(['today', 'week'] as const).map((period) => (
             <TouchableOpacity
               key={period}
-              style={{ padding: Sizes.spacing.md, borderBottomWidth: period !== 'month' ? 1 : 0, borderBottomColor: Colors.light.border }}
+              style={{ padding: Sizes.spacing.md, borderBottomWidth: period !== 'week' ? 1 : 0, borderBottomColor: Colors.light.border }}
               onPress={() => {
                 setSelectedPeriod(period);
                 setIsDropdownOpen(false);
               }}
             >
-              <Text style={{ color: Colors.light.foreground, textTransform: 'capitalize' }}>
-                {period === 'all' ? 'All Time' : period}
+              <Text style={{ color: '#030213', textTransform: 'capitalize' }}>
+                {period}
               </Text>
             </TouchableOpacity>
           ))}
@@ -156,7 +159,7 @@ export default function OrderHistoryScreen() {
 
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.light.background }}>
-          <ActivityIndicator size="large" color={Colors.brand.primary} />
+          <ActivityIndicator size="large" color={'#030213'} />
           <Text style={{ marginTop: Sizes.spacing.md, color: Colors.light.mutedForeground }}>Loading order history...</Text>
         </View>
       ) : error ? (
@@ -165,7 +168,13 @@ export default function OrderHistoryScreen() {
             {error}
           </Text>
           <TouchableOpacity
-            style={{ backgroundColor: Colors.brand.primary, paddingVertical: Sizes.spacing.sm, paddingHorizontal: Sizes.spacing.lg, borderRadius: Sizes.radius.md }}
+            style={{
+              backgroundColor: '#FFCE1B',
+              paddingVertical: Sizes.spacing.sm,
+              paddingHorizontal: Sizes.spacing.lg,
+              borderRadius: Sizes.radius.md,
+              marginTop: Sizes.spacing.md,
+            }}
             onPress={fetchOrders}
           >
             <Text style={{ color: '#030213', fontWeight: '600' }}>Retry</Text>
@@ -178,39 +187,45 @@ export default function OrderHistoryScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.brand.primary]} />}
         >
           <View style={{ padding: scaled(Sizes.spacing.md) }}>
-
-        {/* Summary Card */}
-        <View style={{ backgroundColor: Colors.light.card, borderRadius: Sizes.radius.md, padding: scaled(Sizes.spacing.lg) }}>
-          <Text style={{ color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.sm }}>
-            Total Revenue (Filtered)
-          </Text>
-          <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700', color: Colors.light.primary }}>
-            ₱{totalRevenue.toFixed(2)}
-          </Text>
-          <Text style={{ color: Colors.light.mutedForeground, marginTop: Sizes.spacing.sm, fontSize: Sizes.typography.sm }}>
-            {filteredOrders.length} order(s)
-          </Text>
+        {/* Summary Card - Compact */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffde68', borderRadius: Sizes.radius.md, padding: Sizes.spacing.md, marginBottom: Sizes.spacing.md, borderLeftWidth: 4, borderLeftColor: '#030213' }}>
+          <View>
+            <Text style={{ color: Colors.light.mutedForeground, fontSize: Sizes.typography.xs }}>
+              Total Revenue
+            </Text>
+            <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', color: '#030213', marginTop: 2 }}>
+              ₱{totalRevenue.toFixed(2)}
+            </Text>
+            <Text style={{ color: Colors.light.mutedForeground, fontSize: Sizes.typography.xs, marginTop: 2 }}>
+              {filteredOrders.length} order(s)
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => setShowSearch(!showSearch)}>
+            <Search size={24} color="#030213" />
+          </TouchableOpacity>
         </View>
 
-        {/* Search */}
-        <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: Colors.light.border,
-            borderRadius: Sizes.radius.md,
-            padding: Sizes.spacing.md,
-            color: Colors.light.foreground,
-            marginBottom: Sizes.spacing.md,
-            fontSize: Sizes.typography.base,
-          }}
-          placeholder="Search by order # or customer..."
-          placeholderTextColor={Colors.light.mutedForeground}
-          value={search}
-          onChangeText={setSearch}
-        />
+        {showSearch && (
+          <TextInput
+            style={{
+              borderWidth: 1,
+              borderColor: Colors.light.border,
+              borderRadius: Sizes.radius.md,
+              padding: Sizes.spacing.md,
+              color: '#030213',
+              marginBottom: Sizes.spacing.md,
+              fontSize: Sizes.typography.base,
+            }}
+            placeholder="Search by order # or customer..."
+            placeholderTextColor={Colors.light.mutedForeground}
+            value={search}
+            onChangeText={setSearch}
+            autoFocus
+          />
+        )}
 
         {/* Filter by Payment Method */}
-        <Text style={{ fontSize: Sizes.typography.sm, fontWeight: '600', marginBottom: Sizes.spacing.sm, color: Colors.light.mutedForeground }}>
+        <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '600', marginBottom: Sizes.spacing.sm, color: 'black' }}>
           Payment Method
         </Text>
         <View style={{ flexDirection: 'row', gap: scaled(Sizes.spacing.sm), marginBottom: scaled(Sizes.spacing.lg) }}>
@@ -222,16 +237,16 @@ export default function OrderHistoryScreen() {
                 paddingVertical: Sizes.spacing.sm,
                 paddingHorizontal: Sizes.spacing.md,
                 borderRadius: Sizes.radius.sm,
-                backgroundColor: selectedPayment === method ? Colors.light.primary : Colors.light.card,
+                backgroundColor: selectedPayment === method ? '#FFCE1B' : '#F0F0F0',
                 borderWidth: 1,
-                borderColor: selectedPayment === method ? Colors.light.primary : Colors.light.border,
+                borderColor: selectedPayment === method ? '#FFCE1B' : Colors.light.border,
                 alignItems: 'center',
               }}
               onPress={() => setSelectedPayment(method)}
             >
               <Text
                 style={{
-                  color: selectedPayment === method ? '#fff' : Colors.light.foreground,
+                  color: selectedPayment === method ? '#030213' : '#030213',
                   fontWeight: '600',
                   fontSize: Sizes.typography.sm,
                   textTransform: 'capitalize',
@@ -249,25 +264,25 @@ export default function OrderHistoryScreen() {
             <TouchableOpacity
               key={order.id}
               style={{
-                backgroundColor: Colors.light.card,
+                backgroundColor: '#FFFFCC',
                 borderRadius: Sizes.radius.md,
                 padding: Sizes.spacing.md,
                 marginBottom: Sizes.spacing.md,
                 borderLeftWidth: 4,
-                borderLeftColor: Colors.light.primary,
+                borderLeftColor: '#030213',
               }}
               onPress={() => toggleExpand(order.id)}
             >
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Sizes.spacing.sm }}>
                 <View>
-                  <Text style={{ fontSize: Sizes.typography.base, fontWeight: '700' }}>
+                  <Text style={{ fontSize: Sizes.typography.base, fontWeight: '700', color: '#030213' }}>
                     {order.orderNumber}
                   </Text>
                   <Text style={{ color: Colors.light.mutedForeground, fontSize: Sizes.typography.sm }}>
                     {new Date(order.date).toLocaleDateString()} • {order.time}
                   </Text>
                 </View>
-                <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', color: Colors.light.primary }}>
+                <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', color: '#030213' }}>
                   ₱{order.totalAmount.toFixed(2)}
                 </Text>
               </View>
@@ -285,15 +300,15 @@ export default function OrderHistoryScreen() {
                 <View style={{ marginTop: Sizes.spacing.md, paddingTop: Sizes.spacing.md, borderTopWidth: 1, borderTopColor: Colors.light.border }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: Sizes.spacing.sm }}>
                     <Text style={{ color: Colors.light.mutedForeground }}>Items:</Text>
-                    <Text style={{ fontWeight: '600' }}>{order.items}</Text>
+                    <Text style={{ fontWeight: '600', color: '#030213' }}>{order.items}</Text>
                   </View>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: Sizes.spacing.sm }}>
                     <Text style={{ color: Colors.light.mutedForeground }}>Payment:</Text>
-                    <Text style={{ fontWeight: '600', textTransform: 'capitalize' }}>{order.paymentMethod}</Text>
+                    <Text style={{ fontWeight: '600', color: '#030213', textTransform: 'capitalize' }}>{order.paymentMethod}</Text>
                   </View>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <Text style={{ color: Colors.light.mutedForeground }}>Cashier:</Text>
-                    <Text style={{ fontWeight: '600' }}>{order.cashier}</Text>
+                    <Text style={{ fontWeight: '600', color: '#030213' }}>{order.cashier}</Text>
                   </View>
                 </View>
               )}
@@ -309,7 +324,6 @@ export default function OrderHistoryScreen() {
         </View>
         </ScrollView>
       )}
-      <CashierBottomNav currentScreen="history" />
     </View>
   );
 }

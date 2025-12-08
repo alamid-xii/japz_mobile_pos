@@ -1,11 +1,12 @@
 // app/(admin)/dashboard.tsx
 import { BarChart3, MessageCircle, Package, Settings, TrendingUp, Users } from 'lucide-react-native';
 import { useCallback } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 import { useAuth } from '../../hooks/useAuth';
+import { scaled } from '../../utils/responsive';
 
 const stats = [
   { label: 'Monthly Revenue', value: '₱45,230', icon: 'revenue', trend: '+12.5%' },
@@ -29,7 +30,7 @@ const StatIcon = ({ icon, size }: { icon: string; size: number }) => {
 
 
 const getActivityIcon = (iconName: string) => {
-  const iconProps = { size: 16, color: Colors.light.mutedForeground };
+  const iconProps = { size: 16, color: 'black' };
   switch (iconName) {
     case 'Package': return <Package {...iconProps} />;
     case 'Users': return <Users {...iconProps} />;
@@ -52,14 +53,24 @@ export default function DashboardScreen() {
   return (
     <View style={{ flex: 1, marginTop: Sizes.spacing.lg }}>
       <ScrollView
-        style={{ flex: 1, backgroundColor: Colors.light.background }}
+        style={{ flex: 1, backgroundColor: Colors.light.background,  }}
         contentContainerStyle={{ padding: Sizes.spacing.lg }}
       >
         {/* Header */}
         <View style={{ marginBottom: Sizes.spacing.xl }}>
-          <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700', marginBottom: Sizes.spacing.sm }}>
-            Welcome back, {user?.name || 'Admin'}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: Sizes.spacing.sm, marginBottom: Sizes.spacing.sm }}>
+            <Image
+              source={require('../../assets/images/logo.jpg')}
+              style={{ width: scaled(36), height: scaled(36), borderRadius: scaled(8) }}
+            />
+            <Text style={{ 
+              fontSize: Sizes.typography['2xl'], 
+              fontWeight: '700',
+              color: '#ffce1b'
+            }}>
+              Welcome back, {user?.name || 'Admin'}
+            </Text>
+          </View>
           <Text style={{ color: Colors.light.mutedForeground, fontSize: Sizes.typography.sm }}>
             Here's what's happening today
           </Text>
@@ -73,7 +84,7 @@ export default function DashboardScreen() {
               style={{
                 flex: 1,
                 minWidth: '40%',
-                backgroundColor: '#FFFFCC',
+                backgroundColor: '#ffde68',
                 borderRadius: Sizes.radius.md,
                 padding: Sizes.spacing.md,
                 borderLeftWidth: 4,
@@ -100,8 +111,8 @@ export default function DashboardScreen() {
 
 
         {/* Recent Activity */}
-        <View style={{ backgroundColor: Colors.light.card, borderRadius: Sizes.radius.md, padding: Sizes.spacing.md }}>
-          <Text style={{ fontSize: Sizes.typography.base, fontWeight: '700', marginBottom: Sizes.spacing.md }}>
+        <View style={{  padding: Sizes.spacing.md, borderColor: '#FFD700', borderWidth: 1, borderRadius: Sizes.radius.md, backgroundColor: '#FFFFCC' }}>
+          <Text style={{ fontSize: Sizes.typography.base, fontWeight: '700', marginBottom: Sizes.spacing.md, color: 'black' }}>
             Recent Activity
           </Text>
           {[

@@ -1,6 +1,6 @@
 // app/cashier/pos.tsx
 import { useRouter } from 'expo-router';
-import { Minus, Plus, ShoppingCart } from 'lucide-react-native';
+import { Minus, Plus, ShoppingCart, ChevronLeft } from 'lucide-react-native';
 import { useState, useEffect, useCallback } from 'react';
 import {
   ScrollView,
@@ -13,10 +13,10 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchEmojis } from 'emojibase';
-import { CashierBottomNav } from '../../components/shared/CashierBottomNav';
 import { menuCategoryAPI, menuItemAPI } from '../../services/api';
-import { Sizes } from '../../constants/colors';
+import { Sizes, Colors } from '../../constants/colors';
 import { cashierStyles } from '../../styles/cashierStyles';
 import { scaled } from '../../utils/responsive';
 
@@ -30,10 +30,17 @@ interface Product {
   name: string;
   price: number;
   categoryId: number;
+  hasSize?: boolean;
+  sizes?: Array<{ name: string; price: number }>;
+  hasFlavor?: boolean;
+  flavors?: string[];
 }
 
 interface CartItem extends Product {
   quantity: number;
+  selectedSize?: string;
+  selectedFlavor?: string;
+  itemPrice: number;
 }
 
 // Helper function to get category icon using emojibase library
@@ -89,11 +96,40 @@ export default function POSScreen() {
   const [showCart, setShowCart] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // State for size/flavor selection modal
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [selectedProductForOptions, setSelectedProductForOptions] = useState<Product | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedFlavor, setSelectedFlavor] = useState<string>('');
 
   // Fetch categories and menu items on mount
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Reload cart from AsyncStorage whenever screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      const loadCart = async () => {
+        try {
+          const savedCart = await AsyncStorage.getItem('cashierCart');
+          if (savedCart) {
+            const parsedCart = JSON.parse(savedCart);
+            setCart(parsedCart);
+          } else {
+            // Cart was cleared, set to empty and close cart view
+            setCart([]);
+            setShowCart(false);
+          }
+        } catch (e) {
+          console.warn('Failed to load cart from storage', e);
+        }
+      };
+      
+      loadCart();
+    }, [])
+  );
 
   // Prevent back navigation
   useFocusEffect(
@@ -122,15 +158,52 @@ export default function POSScreen() {
       const itemsRes = await menuItemAPI.getAll();
       const itemsData = itemsRes.data?.data || itemsRes.data || [];
       
-      // Ensure prices are numbers
-      const formattedItems = itemsData.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        price: Number(item.price || 0),
-        categoryId: item.categoryId || item.MenuCategoryId || item.category_id,
-      }));
+      // Ensure prices are numbers and parse sizes
+      const formattedItems = itemsData.map((item: any) => {
+        // Parse sizes from "SizeName - ₱Price" format to objects
+        const parsedSizes: Array<{ name: string; price: number }> = [];
+        
+        if (item.sizes && Array.isArray(item.sizes)) {
+          item.sizes.forEach((sizeString: any) => {
+            if (typeof sizeString === 'string') {
+              const match = sizeString.match(/(.+?)\s*-\s*₱([\d.]+)/);
+              if (match) {
+                parsedSizes.push({ name: match[1].trim(), price: Number(match[2]) });
+              } else {
+                // If format doesn't match, just use the string as name with 0 price
+                parsedSizes.push({ name: sizeString, price: 0 });
+              }
+            } else if (typeof sizeString === 'object' && sizeString.name && sizeString.price) {
+              // Already in object format
+              parsedSizes.push({ name: sizeString.name, price: Number(sizeString.price) });
+            }
+          });
+        }
+
+        return {
+          id: item.id,
+          name: item.name,
+          price: Number(item.price || 0),
+          categoryId: item.categoryId || item.MenuCategoryId || item.category_id,
+          hasSize: item.hasSize || false,
+          sizes: parsedSizes,
+          hasFlavor: item.hasFlavor || false,
+          flavors: item.flavors || [],
+        };
+      });
       
       setProducts(formattedItems);
+
+      // Load saved cart from AsyncStorage
+      const savedCart = await AsyncStorage.getItem('cashierCart');
+      if (savedCart) {
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          setCart(parsedCart);
+        } catch (e) {
+          console.warn('Failed to parse saved cart', e);
+        }
+      }
     } catch (err: any) {
       console.error('Error fetching data:', err);
       setError(err.message || 'Failed to load menu');
@@ -139,41 +212,102 @@ export default function POSScreen() {
     }
   };
 
+  // Save cart to AsyncStorage whenever it changes
+  useEffect(() => {
+    const saveCart = async () => {
+      try {
+        await AsyncStorage.setItem('cashierCart', JSON.stringify(cart));
+      } catch (e) {
+        console.warn('Failed to save cart', e);
+      }
+    };
+    saveCart();
+  }, [cart]);
+
   const filteredProducts = selectedCategory
     ? products.filter(p => p.categoryId === selectedCategory)
     : products;
 
   const addToCart = (product: Product) => {
+    // If product has sizes or flavors, show options modal
+    if (product.hasSize || product.hasFlavor) {
+      setSelectedProductForOptions(product);
+      setSelectedSize('');
+      setSelectedFlavor('');
+      setShowOptionsModal(true);
+      return;
+    }
+
+    // Otherwise add directly
     setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+      const itemPrice = product.price;
+      const existingIndex = prev.findIndex(item => item.id === product.id && !item.selectedSize && !item.selectedFlavor);
+      
+      if (existingIndex !== -1) {
+        const updated = [...prev];
+        updated[existingIndex].quantity += 1;
+        return updated;
       }
-      return [...prev, { ...product, quantity: 1 }];
+      
+      return [...prev, { ...product, quantity: 1, itemPrice }];
     });
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart(prev => prev.filter(item => item.id !== productId));
+  const addSelectedOptionsToCart = () => {
+    if (!selectedProductForOptions) return;
+    
+    const product = selectedProductForOptions;
+    const sizePrice = selectedSize && product.sizes
+      ? (product.sizes.find((s: any) => s.name === selectedSize)?.price || product.price)
+      : product.price;
+    const itemPrice = sizePrice;
+
+    setCart(prev => {
+      const existingIndex = prev.findIndex(item =>
+        item.id === product.id &&
+        item.selectedSize === selectedSize &&
+        item.selectedFlavor === selectedFlavor
+      );
+
+      if (existingIndex !== -1) {
+        const updated = [...prev];
+        updated[existingIndex].quantity += 1;
+        return updated;
+      }
+
+      return [...prev, {
+        ...product,
+        quantity: 1,
+        selectedSize: selectedSize || undefined,
+        selectedFlavor: selectedFlavor || undefined,
+        itemPrice,
+      }];
+    });
+
+    // Close modal
+    setShowOptionsModal(false);
+    setSelectedSize('');
+    setSelectedFlavor('');
+    setSelectedProductForOptions(null);
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const removeFromCart = (index: number) => {
+    setCart(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateQuantity = (index: number, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(index);
     } else {
-      setCart(prev =>
-        prev.map(item =>
-          item.id === productId ? { ...item, quantity } : item
-        )
-      );
+      setCart(prev => {
+        const updated = [...prev];
+        updated[index].quantity = quantity;
+        return updated;
+      });
     }
   };
 
-  const cartTotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * item.quantity, 0);
+  const cartTotal = cart.reduce((sum, item) => sum + (item.itemPrice || item.price) * item.quantity, 0);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F8F8F8' }}>
@@ -204,31 +338,40 @@ export default function POSScreen() {
           // Cart View
           <ScrollView style={{ flex: 1, backgroundColor: '#F8F8F8' }}>
             <View style={{ padding: Sizes.spacing.lg }}>
+              {/* Back Button */}
+              <TouchableOpacity
+                style={{ marginBottom: Sizes.spacing.lg }}
+                onPress={() => setShowCart(false)}
+              >
+                <ChevronLeft size={28} color="#030213" />
+              </TouchableOpacity>
               {cart.length === 0 ? (
                 <Text style={{ textAlign: 'center', marginTop: 20, color: '#717182', fontSize: Sizes.typography.base }}>
                   Your cart is empty
                 </Text>
               ) : (
                 <>
-                  {cart.map(item => (
-                    <View key={item.id} style={cashierStyles.cartItem}>
+                  {cart.map((item, index) => (
+                    <View key={`${item.id}-${item.selectedSize}-${item.selectedFlavor}-${index}`} style={cashierStyles.cartItem}>
                       <View style={cashierStyles.cartItemInfo}>
                         <Text style={cashierStyles.cartItemName}>{item.name}</Text>
-                        <Text style={cashierStyles.cartItemPrice}>₱{Number(item.price || 0).toFixed(2)}</Text>
+                        {item.selectedSize && <Text style={{ fontSize: 12, color: '#717182' }}>Size: {item.selectedSize}</Text>}
+                        {item.selectedFlavor && <Text style={{ fontSize: 12, color: '#717182' }}>Flavor: {item.selectedFlavor}</Text>}
+                        <Text style={cashierStyles.cartItemPrice}>₱{Number(item.itemPrice || item.price || 0).toFixed(2)}</Text>
                       </View>
                       <View style={cashierStyles.quantityControl}>
-                        <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity - 1)}>
+                        <TouchableOpacity onPress={() => updateQuantity(index, item.quantity - 1)}>
                           <Minus size={18} color="#030213" />
                         </TouchableOpacity>
                         <Text style={{ marginHorizontal: 8, fontWeight: '600', color: '#030213' }}>{item.quantity}</Text>
-                        <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity + 1)}>
+                        <TouchableOpacity onPress={() => updateQuantity(index, item.quantity + 1)}>
                           <Plus size={18} color="#030213" />
                         </TouchableOpacity>
                       </View>
-                      <Text style={cashierStyles.cartItemTotal}>₱{(Number(item.price || 0) * item.quantity).toFixed(2)}</Text>
+                      <Text style={cashierStyles.cartItemTotal}>₱{(Number(item.itemPrice || item.price || 0) * item.quantity).toFixed(2)}</Text>
                       <TouchableOpacity
                         style={cashierStyles.removeButton}
-                        onPress={() => removeFromCart(item.id)}
+                        onPress={() => removeFromCart(index)}
                       >
                         <Text style={cashierStyles.removeButtonText}>✕</Text>
                       </TouchableOpacity>
@@ -278,35 +421,38 @@ export default function POSScreen() {
           </View>
         ) : (
           // Products View
-          <>
-            {/* Categories */}
-            <ScrollView
-              horizontal
-              contentContainerStyle={{ paddingHorizontal: scaled(Sizes.spacing.sm), marginTop: scaled(Sizes.spacing.sm), marginBottom: scaled(Sizes.spacing.lg) }}
-            >
-              {categories.map(cat => (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={[
-                    cashierStyles.categoryButton,
-                    selectedCategory === cat.id && cashierStyles.categoryButtonActive,
-                  ]}
-                  onPress={() => setSelectedCategory(cat.id)}
-                  activeOpacity={0.85}
-                >
-                  <Text
+          <View style={{ flex: 1 }}>
+            {/* Categories - Fixed at top with consistent width */}
+            <View style={{ borderBottomWidth: 1, borderBottomColor: Colors.light.border }}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: scaled(Sizes.spacing.sm), paddingVertical: scaled(Sizes.spacing.md) }}
+              >
+                {categories.map(cat => (
+                  <TouchableOpacity
+                    key={cat.id}
                     style={[
-                      cashierStyles.categoryButtonText,
-                      selectedCategory === cat.id && cashierStyles.categoryButtonTextActive,
+                      cashierStyles.categoryButton,
+                      selectedCategory === cat.id && cashierStyles.categoryButtonActive,
                     ]}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
+                    onPress={() => setSelectedCategory(cat.id)}
+                    activeOpacity={0.85}
                   >
-                    {cat.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+                    <Text
+                      style={[
+                        cashierStyles.categoryButtonText,
+                        selectedCategory === cat.id && cashierStyles.categoryButtonTextActive,
+                      ]}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
 
             {/* Products Grid (2-column flow) */}
             {filteredProducts.length === 0 ? (
@@ -318,18 +464,21 @@ export default function POSScreen() {
                 const currentCategory = categories.find(c => c.id === selectedCategory);
                 const categoryIcon = getCategoryIcon(currentCategory?.name || 'Unknown');
                 return (
-                  <ScrollView
-                    showsVerticalScrollIndicator={false}
+                  <FlatList
+                    data={filteredProducts}
+                    numColumns={2}
+                    keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={{
                       paddingBottom: scaled(Sizes.spacing.md),
                       paddingHorizontal: scaled(Sizes.spacing.md),
-                      flexDirection: 'row',
-                      flexWrap: 'wrap',
+                      paddingTop: scaled(Sizes.spacing.md),
+                    }}
+                    columnWrapperStyle={{
+                      gap: scaled(Sizes.spacing.md),
                       justifyContent: 'flex-start',
                     }}
-                  >
-                    {filteredProducts.map((item) => (
-                      <View key={item.id} style={cashierStyles.productCard}>
+                    renderItem={({ item }) => (
+                      <View style={cashierStyles.productCard}>
                         <View style={cashierStyles.productImage}>
                           <Text style={{ fontSize: scaled(48), textAlign: 'center' }}>{categoryIcon}</Text>
                         </View>
@@ -347,15 +496,138 @@ export default function POSScreen() {
                           </TouchableOpacity>
                         </View>
                       </View>
-                    ))}
-                  </ScrollView>
+                    )}
+                    scrollEnabled={true}
+                    showsVerticalScrollIndicator={false}
+                  />
                 );
               })()
             )}
-          </>
+          </View>
         )}
       </View>
-      <CashierBottomNav currentScreen="pos" />
+
+      {/* Size & Flavor Options Modal */}
+      {showOptionsModal && selectedProductForOptions && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 999,
+        }}>
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: scaled(12),
+            padding: scaled(Sizes.spacing.lg),
+            width: '85%',
+            maxHeight: '80%',
+          }}>
+            <Text style={{ fontSize: scaled(18), fontWeight: '700', marginBottom: scaled(Sizes.spacing.md) }}>
+              {selectedProductForOptions.name}
+            </Text>
+
+            {/* Size Selection */}
+            {selectedProductForOptions.hasSize && selectedProductForOptions.sizes && selectedProductForOptions.sizes.length > 0 && (
+              <View style={{ marginBottom: scaled(Sizes.spacing.lg) }}>
+                <Text style={{ fontSize: scaled(14), fontWeight: '600', marginBottom: scaled(Sizes.spacing.sm) }}>
+                  Select Size:
+                </Text>
+                <View style={{ gap: scaled(Sizes.spacing.sm) }}>
+                  {selectedProductForOptions.sizes.map((size: any, idx: number) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={{
+                        backgroundColor: selectedSize === size.name ? Colors.brand.primary : Colors.light.card,
+                        borderRadius: scaled(Sizes.radius.md),
+                        padding: scaled(Sizes.spacing.md),
+                        borderWidth: 2,
+                        borderColor: selectedSize === size.name ? Colors.brand.primary : Colors.light.border,
+                      }}
+                      onPress={() => setSelectedSize(size.name)}
+                    >
+                      <Text style={{
+                        color: selectedSize === size.name ? '#fff' : Colors.light.foreground,
+                        fontWeight: '600',
+                      }}>
+                        {size.name} - ₱{Number(size.price || 0).toFixed(2)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Flavor Selection */}
+            {selectedProductForOptions.hasFlavor && selectedProductForOptions.flavors && selectedProductForOptions.flavors.length > 0 && (
+              <View style={{ marginBottom: scaled(Sizes.spacing.lg) }}>
+                <Text style={{ fontSize: scaled(14), fontWeight: '600', marginBottom: scaled(Sizes.spacing.sm) }}>
+                  Select Flavor:
+                </Text>
+                <View style={{ gap: scaled(Sizes.spacing.sm) }}>
+                  {selectedProductForOptions.flavors.map((flavor: string, idx: number) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={{
+                        backgroundColor: selectedFlavor === flavor ? Colors.brand.primary : Colors.light.card,
+                        borderRadius: scaled(Sizes.radius.md),
+                        padding: scaled(Sizes.spacing.md),
+                        borderWidth: 2,
+                        borderColor: selectedFlavor === flavor ? Colors.brand.primary : Colors.light.border,
+                      }}
+                      onPress={() => setSelectedFlavor(flavor)}
+                    >
+                      <Text style={{
+                        color: selectedFlavor === flavor ? '#fff' : Colors.light.foreground,
+                        fontWeight: '600',
+                      }}>
+                        {flavor}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Action Buttons */}
+            <View style={{ flexDirection: 'row', gap: scaled(Sizes.spacing.md), marginTop: scaled(Sizes.spacing.lg) }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: Colors.light.border,
+                  borderRadius: scaled(Sizes.radius.md),
+                  padding: scaled(Sizes.spacing.md),
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  setShowOptionsModal(false);
+                  setSelectedProductForOptions(null);
+                  setSelectedSize('');
+                  setSelectedFlavor('');
+                }}
+              >
+                <Text style={{ color: Colors.light.foreground, fontWeight: '600' }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: Colors.brand.primary,
+                  borderRadius: scaled(Sizes.radius.md),
+                  padding: scaled(Sizes.spacing.md),
+                  alignItems: 'center',
+                }}
+                onPress={addSelectedOptionsToCart}
+              >
+                <Text style={{ color: '#fff', fontWeight: '600' }}>Add to Cart</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

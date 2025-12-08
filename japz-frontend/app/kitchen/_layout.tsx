@@ -1,36 +1,20 @@
+// app/kitchen/_layout.tsx
 import { Tabs, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { AlertCircle, CheckSquare, ClipboardList, User } from 'lucide-react-native';
+import { Colors } from '../../constants/colors';
+import { useAuth } from '../../hooks/useAuth';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useAuth } from '@/hooks/useAuth';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const { user, isInitialized } = useAuth();
+export default function KitchenLayout() {
+  const { user } = useAuth();
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isMounted && isInitialized && (!user || user.role !== 'kitchen')) {
-      router.replace('/auth/login' as any);
+    if (!user || user.role !== 'kitchen') {
+      router.push('/auth/login' as any);
     }
-  }, [user, isInitialized, isMounted, router]);
-
-  if (!isInitialized || !isMounted) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#FFCE1B" />
-      </View>
-    );
-  }
+  }, [user, router]);
 
   if (!user || user.role !== 'kitchen') {
     return (
@@ -43,22 +27,61 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        tabBarStyle: {
+          backgroundColor: Colors.light.card,
+          borderTopWidth: 1,
+          borderTopColor: Colors.light.border,
+          paddingTop: 5,
+        },
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#000000',
+        tabBarInactiveTintColor: '#FFCE1B',
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="incoming"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Incoming Orders',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <ClipboardList size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="completed"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Completed Orders',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <CheckSquare size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <User size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
         }}
       />
     </Tabs>

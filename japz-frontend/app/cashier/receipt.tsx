@@ -1,7 +1,10 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ChevronLeft } from 'lucide-react-native';
+import { ScrollView, Text, TouchableOpacity, View, Image } from 'react-native';
 import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, Sizes } from '../../constants/colors';
+import { cashierStyles } from '../../styles/cashierStyles';
 import { scaled } from '../../utils/responsive';
 
 interface ReceiptItem {
@@ -94,81 +97,122 @@ export default function ReceiptScreen() {
   };
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: Colors.light.background }}
-      contentContainerStyle={{ padding: scaled(Sizes.spacing.lg) }}
-    >
-      <View style={{ backgroundColor: Colors.light.card, borderRadius: Sizes.radius.lg, padding: scaled(Sizes.spacing.lg), marginBottom: scaled(Sizes.spacing.lg) }}>
-        {/* Header */}
-                <Text style={{ fontSize: scaled(Sizes.typography.lg), fontWeight: '700', textAlign: 'center', marginBottom: scaled(Sizes.spacing.lg) }}>
-          🧾 RECEIPT
-        </Text>
-        <View style={{ borderBottomWidth: 1, borderBottomColor: Colors.light.border, paddingBottom: Sizes.spacing.md, marginBottom: Sizes.spacing.md }}>
-          <Text style={{ textAlign: 'center', color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.sm }}>
-            Order #{activeReceipt.orderNumber || activeReceipt.orderId}
+    <View style={{ flex: 1, backgroundColor: Colors.light.background }}>
+      {/* Header */}
+      <View style={cashierStyles.header}>
+        <TouchableOpacity onPress={() => router.push('/cashier/cash-payment')}>
+          <ChevronLeft size={28} color="#030213" />
+        </TouchableOpacity>
+        <Text style={cashierStyles.title}>Receipt</Text>
+        <View style={{ width: 28 }} />
+      </View>
+
+      <ScrollView
+        contentContainerStyle={{ padding: scaled(Sizes.spacing.lg) }}
+      >
+      <View style={{ backgroundColor: '#fff', borderRadius: Sizes.radius.lg, padding: scaled(Sizes.spacing.xl), marginBottom: scaled(Sizes.spacing.lg) }}>
+        {/* Logo and Header */}
+        <View style={{ alignItems: 'center', marginBottom: scaled(Sizes.spacing.lg) }}>
+          <Image
+            source={require('../../assets/images/logo.jpg')}
+            style={{ width: scaled(60), height: scaled(60), marginBottom: scaled(Sizes.spacing.md) }}
+          />
+          <Text style={{ fontSize: scaled(20), fontWeight: '700', textAlign: 'center', color: '#000', marginBottom: scaled(4) }}>
+            JAPZ GRILL
           </Text>
-          <Text style={{ textAlign: 'center', color: Colors.light.mutedForeground, fontSize: Sizes.typography.sm }}>
+          <Text style={{ fontSize: scaled(14), fontWeight: '600', textAlign: 'center', color: '#000', marginBottom: scaled(Sizes.spacing.sm) }}>
+            Burger & Bistro
+          </Text>
+          <Text style={{ fontSize: scaled(11), textAlign: 'center', color: '#333', marginBottom: scaled(3) }}>
+            Quezon St., Bagumbayan I, Bongabong, Philippines
+          </Text>
+          <Text style={{ fontSize: scaled(11), textAlign: 'center', color: '#333', marginBottom: scaled(3) }}>
+            0966 359 9235
+          </Text>
+          <Text style={{ fontSize: scaled(11), textAlign: 'center', color: '#333' }}>
+            japzgrillburgerandbistro@gmail.com
+          </Text>
+        </View>
+
+        <View style={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#000', paddingVertical: scaled(Sizes.spacing.sm), marginBottom: scaled(Sizes.spacing.md) }} />
+
+        {/* Order Details */}
+        <View style={{ marginBottom: scaled(Sizes.spacing.md) }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: scaled(4) }}>
+            <Text style={{ fontSize: scaled(11), color: '#333' }}>Order #: {activeReceipt.orderNumber || activeReceipt.orderId}</Text>
+            <Text style={{ fontSize: scaled(11), color: '#333' }}>POS: POS 1</Text>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: scaled(4) }}>
+            <Text style={{ fontSize: scaled(11), color: '#333' }}>Employee: {activeReceipt.cashier || '—'}</Text>
+          </View>
+          <Text style={{ fontSize: scaled(11), color: '#333' }}>
             {activeReceipt.date || new Date(activeReceipt.createdAt || Date.now()).toLocaleDateString()} {activeReceipt.time || new Date(activeReceipt.createdAt || Date.now()).toLocaleTimeString()}
           </Text>
         </View>
 
+        <View style={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#000', paddingVertical: scaled(Sizes.spacing.sm), marginBottom: scaled(Sizes.spacing.md) }} />
+
         {/* Items */}
-        <View style={{ marginBottom: Sizes.spacing.lg }}>
+        <View style={{ marginBottom: scaled(Sizes.spacing.lg) }}>
           {activeReceipt.items.map((item: any, index: number) => (
-            <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: Sizes.spacing.sm }}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontWeight: '600', color: Colors.light.foreground }}>
+            <View key={index}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: scaled(4) }}>
+                <Text style={{ fontSize: scaled(11), fontWeight: '600', color: '#000', flex: 1 }}>
                   {item.name}
                 </Text>
-                <Text style={{ fontSize: Sizes.typography.sm, color: Colors.light.mutedForeground }}>
-                  {item.quantity} x ₱{Number(item.price || 0).toFixed(2)}
+                <Text style={{ fontSize: scaled(11), fontWeight: '600', color: '#000', textAlign: 'right', minWidth: scaled(60) }}>
+                  ₱{Number(item.total || (item.price * item.quantity) || 0).toFixed(2)}
                 </Text>
               </View>
-              <Text style={{ fontWeight: '600', minWidth: 80, textAlign: 'right' }}>
-                ₱{Number(item.total || (item.price * item.quantity) || 0).toFixed(2)}
+              <Text style={{ fontSize: scaled(10), color: '#666', marginBottom: scaled(6) }}>
+                {item.quantity} x ₱{Number(item.price || 0).toFixed(2)}
               </Text>
             </View>
           ))}
         </View>
 
-        {/* Summary */}
-        <View style={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: Colors.light.border, paddingVertical: Sizes.spacing.md, marginBottom: Sizes.spacing.lg }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: Sizes.spacing.sm }}>
-            <Text style={{ color: Colors.light.mutedForeground }}>Subtotal:</Text>
-            <Text>₱{Number(activeReceipt.subtotal || activeReceipt.total || 0).toFixed(2)}</Text>
-          </View>
+        <View style={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#000', paddingVertical: scaled(Sizes.spacing.sm), marginBottom: scaled(Sizes.spacing.md) }} />
 
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: Sizes.typography.base, fontWeight: '700' }}>Total:</Text>
-            <Text style={{ fontSize: Sizes.typography.base, fontWeight: '700', color: Colors.light.primary }}>
-              ₱{Number(activeReceipt.total || activeReceipt.subtotal || 0).toFixed(2)}
-            </Text>
+        {/* Totals */}
+        <View style={{ marginBottom: scaled(Sizes.spacing.lg) }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: scaled(8) }}>
+            <Text style={{ fontSize: scaled(11), color: '#333' }}>Subtotal:</Text>
+            <Text style={{ fontSize: scaled(11), color: '#333' }}>₱{Number(activeReceipt.subtotal || activeReceipt.total || 0).toFixed(2)}</Text>
+          </View>
+          
+          {(activeReceipt.payment?.vat || activeReceipt.vat) ? (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: scaled(8) }}>
+              <Text style={{ fontSize: scaled(11), color: '#333' }}>VAT, {activeReceipt.payment?.vatPercent || '20'}%:</Text>
+              <Text style={{ fontSize: scaled(11), color: '#333' }}>₱{Number(activeReceipt.payment?.vat || activeReceipt.vat || 0).toFixed(2)}</Text>
+            </View>
+          ) : null}
+
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: scaled(Sizes.spacing.md) }}>
+            <Text style={{ fontSize: scaled(13), fontWeight: '700', color: '#000' }}>Total</Text>
+            <Text style={{ fontSize: scaled(13), fontWeight: '700', color: '#000' }}>₱{Number(activeReceipt.total || activeReceipt.subtotal || 0).toFixed(2)}</Text>
           </View>
         </View>
 
-        {/* Payment Info */}
-        <View style={{ marginBottom: Sizes.spacing.lg }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: Sizes.spacing.sm }}>
-            <Text style={{ color: Colors.light.mutedForeground }}>Payment Method:</Text>
-            <Text style={{ fontWeight: '600' }}>{activeReceipt.payment?.method || activeReceipt.paymentMethod}</Text>
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: Sizes.spacing.sm }}>
-            <Text style={{ color: Colors.light.mutedForeground }}>Amount Received:</Text>
-            <Text>₱{Number(activeReceipt.payment?.amountReceived || activeReceipt.amountReceived || 0).toFixed(2)}</Text>
+        <View style={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#000', paddingVertical: scaled(Sizes.spacing.sm), marginBottom: scaled(Sizes.spacing.md) }} />
+
+        {/* Payment */}
+        <View style={{ marginBottom: scaled(Sizes.spacing.lg) }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: scaled(6) }}>
+            <Text style={{ fontSize: scaled(11), color: '#333' }}>{activeReceipt.payment?.method || activeReceipt.paymentMethod}</Text>
+            <Text style={{ fontSize: scaled(11), fontWeight: '600', color: '#000' }}>₱{Number(activeReceipt.payment?.amountReceived || activeReceipt.amountReceived || 0).toFixed(2)}</Text>
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={{ color: Colors.light.mutedForeground }}>Change:</Text>
-            <Text style={{ fontWeight: '600', color: '#10B981' }}>₱{Number(activeReceipt.payment?.change || activeReceipt.change || 0).toFixed(2)}</Text>
+            <Text style={{ fontSize: scaled(11), color: '#333' }}>Change</Text>
+            <Text style={{ fontSize: scaled(11), fontWeight: '600', color: '#000' }}>₱{Number(activeReceipt.payment?.change || activeReceipt.change || 0).toFixed(2)}</Text>
           </View>
         </View>
 
-        {/* Footer */}
-        <View style={{ borderTopWidth: 1, borderTopColor: Colors.light.border, paddingTop: Sizes.spacing.md }}>
-          <Text style={{ textAlign: 'center', color: Colors.light.mutedForeground, fontSize: Sizes.typography.sm, marginBottom: Sizes.spacing.sm }}>
-            Cashier: {activeReceipt.cashier || '—'}
+        <View style={{ borderTopWidth: 1, borderColor: '#000', paddingTop: scaled(Sizes.spacing.sm) }}>
+          <Text style={{ fontSize: scaled(11), textAlign: 'center', color: '#333', marginBottom: scaled(4) }}>
+            See you next time!
           </Text>
-          <Text style={{ textAlign: 'center', color: Colors.light.mutedForeground, fontSize: Sizes.typography.xs }}>
-            Thank you for your purchase!
+          <Text style={{ fontSize: scaled(10), textAlign: 'center', color: '#666' }}>
+            {activeReceipt.date || new Date(activeReceipt.createdAt || Date.now()).toLocaleDateString()} {activeReceipt.time || new Date(activeReceipt.createdAt || Date.now()).toLocaleTimeString()} #{activeReceipt.orderNumber || activeReceipt.orderId}
           </Text>
         </View>
       </View>
@@ -182,7 +226,10 @@ export default function ReceiptScreen() {
           alignItems: 'center',
           marginBottom: Sizes.spacing.md,
         }}
-        onPress={() => router.push('/cashier/pos')}
+        onPress={async () => {
+          await AsyncStorage.removeItem('cashierCart');
+          router.push('/cashier/pos');
+        }}
       >
         <Text style={{ color: '#fff', fontWeight: '700', fontSize: Sizes.typography.base }}>
           New Order
@@ -203,6 +250,7 @@ export default function ReceiptScreen() {
           Print Receipt
         </Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

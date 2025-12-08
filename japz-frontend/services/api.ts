@@ -162,6 +162,18 @@ export const ordersAPI = {
 
   updateStatus: (id: string | number, status: string) =>
     api.put(`/api/orders/${id}/status`, { status }),
+
+  // Kitchen Display - Get incoming orders
+  getIncomingByCategories: () =>
+    api.post('/api/kitchen/orders/incoming'),
+
+  // Kitchen Display - Get completed orders
+  getCompletedByCategories: () =>
+    api.post('/api/kitchen/orders/completed'),
+
+  // Kitchen Display - Update order status
+  updateOrderStatus: (id: string | number, status: string) =>
+    api.put(`/api/orders/${id}/status`, { status }),
 };
 
 export const paymentsAPI = {

@@ -12,10 +12,11 @@ export const kitchenStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: Sizes.spacing.lg,
-    paddingTop: Sizes.spacing.lg + 40,
+    paddingHorizontal: Sizes.spacing.lg,
+    paddingVertical: Sizes.spacing.md,
+    paddingTop: Sizes.spacing.lg + 20,
     backgroundColor: Colors.light.background,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderBottomColor: Colors.light.border,
   },
   title: {
@@ -34,7 +35,7 @@ export const kitchenStyles = StyleSheet.create({
   // Orders List
   ordersList: {
     flex: 1,
-    padding: Sizes.spacing.lg,
+    padding: Sizes.spacing.md,
   },
   orderCard: {
     backgroundColor: Colors.light.card,
@@ -51,7 +52,7 @@ export const kitchenStyles = StyleSheet.create({
   },
   orderNumber: {
     ...GlobalStyles.h4,
-    fontWeight: Sizes.fontWeight.bold,
+    fontWeight: '700',
   },
   orderStatus: {
     flexDirection: 'row',
@@ -61,7 +62,7 @@ export const kitchenStyles = StyleSheet.create({
   statusText: {
     ...GlobalStyles.body,
     fontSize: Sizes.typography.sm,
-    fontWeight: Sizes.fontWeight.medium,
+    fontWeight: '600',
   },
   orderItems: {
     marginBottom: Sizes.spacing.md,
@@ -101,7 +102,7 @@ export const kitchenStyles = StyleSheet.create({
   },
   startButtonText: {
     color: '#FFFFFF',
-    fontWeight: Sizes.fontWeight.medium,
+    fontWeight: '600',
     fontSize: Sizes.typography.sm,
   },
   readyButton: {
@@ -109,7 +110,7 @@ export const kitchenStyles = StyleSheet.create({
   },
   readyButtonText: {
     color: Colors.brand.primaryDark,
-    fontWeight: Sizes.fontWeight.medium,
+    fontWeight: '600',
     fontSize: Sizes.typography.sm,
   },
   completeButton: {
@@ -117,7 +118,7 @@ export const kitchenStyles = StyleSheet.create({
   },
   completeButtonText: {
     color: '#FFFFFF',
-    fontWeight: Sizes.fontWeight.medium,
+    fontWeight: '600',
     fontSize: Sizes.typography.sm,
   },
 

@@ -1,7 +1,9 @@
 // app/(cashier)/_layout.tsx
-import { Stack, useRouter } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
+import { History, ShoppingCart, User, Home, ClipboardList } from 'lucide-react-native';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { Colors } from '../../constants/colors';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function CashierLayout() {
@@ -23,14 +25,101 @@ export default function CashierLayout() {
   }
 
   return (
-    <Stack>
-      <Stack.Screen name="pos" options={{ headerShown: false }} />
-      <Stack.Screen name="active-orders" options={{ headerShown: false }} />
-      <Stack.Screen name="order-history" options={{ headerShown: false }} />
-      <Stack.Screen name="payment-selection" options={{ title: 'Payment Method' }} />
-      <Stack.Screen name="cash-payment" options={{ title: 'Payment' }} />
-      <Stack.Screen name="receipt" options={{ title: 'Receipt', headerShown: false }} />
-      <Stack.Screen name="profile" options={{ title: 'Profile', headerShown: false }} />
-    </Stack>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: Colors.light.card,
+          borderTopWidth: 1,
+          borderTopColor: Colors.light.border,
+          paddingTop: 5,
+        },
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#000000',
+        tabBarInactiveTintColor: '#FFCE1B',
+      }}
+    >
+      <Tabs.Screen
+        name="pos"
+        options={{
+          title: 'POS',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <ShoppingCart size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="active-orders"
+        options={{
+          title: 'Orders',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <ClipboardList size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="order-history"
+        options={{
+          title: 'History',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <History size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <User size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="payment-selection"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="cash-payment"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="receipt"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+    </Tabs>
   );
 }

@@ -1,9 +1,11 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { generateOrderNumber } from '../../utils/helpers';
 import { Colors, Sizes } from '../../constants/colors';
+import { cashierStyles } from '../../styles/cashierStyles';
 import { scaled } from '../../utils/responsive';
 import { useAuth } from '../../hooks/useAuth';
 import { ordersAPI } from '../../services/api';
@@ -73,10 +75,12 @@ export default function CashPaymentScreen() {
         items: orderItems.map((it: any) => ({
           id: String(it.id),
           name: it.name,
-          price: Number(it.price || 0),
+          price: Number(it.itemPrice || it.price || 0),
           quantity: it.quantity || 1,
           category: it.category || '',
-          total: Number(it.price || 0) * (it.quantity || 1),
+          total: Number(it.itemPrice || it.price || 0) * (it.quantity || 1),
+          selectedSize: it.selectedSize || undefined,
+          selectedFlavor: it.selectedFlavor || undefined,
         })),
         status: 'pending',
         total: state.totalAmount,
@@ -98,7 +102,17 @@ export default function CashPaymentScreen() {
         discount: 0,
         total: order.total,
         payment: order.payment,
-        items: order.items.map((it: any) => ({ id: it.id, name: it.name, price: it.price, quantity: it.quantity, total: it.total })),
+        items: orderItems.map((it: any) => ({ 
+          id: it.id, 
+          name: it.name, 
+          price: it.itemPrice || it.price, 
+          quantity: it.quantity || 1, 
+          total: (it.itemPrice || it.price) * (it.quantity || 1),
+          modifiers: {
+            size: it.selectedSize || null,
+            flavors: it.selectedFlavor ? [it.selectedFlavor] : null,
+          }
+        })),
         status: 'pending',
         createdAt: order.createdAt,
       };
@@ -111,10 +125,17 @@ export default function CashPaymentScreen() {
         ]);
         const createdOrder = (res as any)?.data?.order || null;
 
+        // Clear cart after successful order
+        await AsyncStorage.removeItem('cashierCart');
+
         // Navigate to receipt screen with server order if available
         router.push({ pathname: '/cashier/receipt', params: { order: JSON.stringify(createdOrder || order) } });
       } catch (err) {
         console.error('Failed to send order to server, using local data', err);
+        
+        // Clear cart even if backend fails
+        await AsyncStorage.removeItem('cashierCart');
+        
         // Still navigate to receipt even if backend fails
         router.push({ pathname: '/cashier/receipt', params: { order: JSON.stringify(order) } });
       }
@@ -126,15 +147,27 @@ export default function CashPaymentScreen() {
   const roundedChange = Math.round(change * 100) / 100;
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: Colors.light.background }}
-      contentContainerStyle={{ padding: scaled(Sizes.spacing.lg) }}
-    >
-      <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
-        {paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} Payment
-      </Text>
+    <View style={{ flex: 1, backgroundColor: Colors.light.background }}>
+      {/* Header */}
+      <View style={cashierStyles.header}>
+        <TouchableOpacity onPress={() => router.push({
+          pathname: '/cashier/payment-selection',
+          params: {
+            total: state.totalAmount.toFixed(2),
+            items: itemsParam || null,
+            itemCount: itemCount || null,
+          },
+        })}>
+          <ChevronLeft size={28} color="#030213" />
+        </TouchableOpacity>
+        <Text style={cashierStyles.title}>{paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} Payment</Text>
+        <View style={{ width: 28 }} />
+      </View>
 
-      {/* Amount Due */}
+      <ScrollView
+        contentContainerStyle={{ padding: scaled(Sizes.spacing.lg) }}
+      >
+        {/* Amount Due */}
       <View style={{ backgroundColor: Colors.light.card, borderRadius: Sizes.radius.md, padding: Sizes.spacing.lg, marginBottom: Sizes.spacing.lg }}>
         <Text style={{ color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.sm }}>
           Amount Due
@@ -172,7 +205,7 @@ export default function CashPaymentScreen() {
         Quick Amounts
       </Text>
       <View style={{ flexDirection: 'row', gap: Sizes.spacing.sm, marginBottom: Sizes.spacing.lg, flexWrap: 'wrap' }}>
-        {[1000, 2000, 3000, 5000].map((amount) => (
+        {[100, 200, 500, 1000].map((amount) => (
           <TouchableOpacity
             key={amount}
             style={{
@@ -201,7 +234,7 @@ export default function CashPaymentScreen() {
 
       {/* Change Display */}
       {amountReceived > 0 && (
-        <View style={{ backgroundColor: Colors.light.card, borderRadius: Sizes.radius.md, padding: Sizes.spacing.lg, marginBottom: Sizes.spacing.lg }}>
+        <View style={{ backgroundColor: Colors.light.card, borderRadius: Sizes.radius.md, padding: Sizes.spacing.sm, marginBottom: Sizes.spacing.sm }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: Sizes.spacing.md }}>
             <Text style={{ color: Colors.light.mutedForeground }}>Amount Received:</Text>
             <Text style={{ fontWeight: '600' }}>₱{amountReceived.toFixed(2)}</Text>
@@ -283,8 +316,9 @@ export default function CashPaymentScreen() {
           >
             Complete Transaction
           </Text>
-        )}
+        )}  
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

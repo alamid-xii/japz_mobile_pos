@@ -112,7 +112,7 @@ export default function FeedbackHubScreen() {
         contentContainerStyle={{ padding: Sizes.spacing.lg }}
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Sizes.spacing.lg, zIndex: 10 }}>
-          <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700' }}>
+          <Text style={{ fontSize: Sizes.typography['2xl'], fontWeight: '700', marginBottom: Sizes.spacing.sm, color:'#ffce1b' }}>
             Feedback Hub
           </Text>
           

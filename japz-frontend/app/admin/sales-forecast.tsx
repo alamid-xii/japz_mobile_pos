@@ -42,8 +42,8 @@ export default function SalesForecastScreen() {
         style={{ flex: 1, backgroundColor: Colors.light.background }}
         contentContainerStyle={{ padding: Sizes.spacing.lg }}
       >
-        <Text style={{ fontSize: Sizes.typography.xl, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
-          Sales Forecast
+        <Text style={{ fontSize: Sizes.typography['2xl'], fontWeight: '700', marginBottom: Sizes.spacing.sm, color:'#ffce1b' }}>
+          Sales
         </Text>
 
         {/* Key Metrics */}
@@ -142,14 +142,14 @@ export default function SalesForecastScreen() {
                   <View
                     style={{
                       height: 30,
-                      backgroundColor: Colors.light.primary,
+                      backgroundColor: '#ffde68',
                       borderRadius: Sizes.radius.sm,
                       width: `${barWidth}%`,
                       justifyContent: 'center',
                       paddingLeft: Sizes.spacing.sm,
                     }}
                   >
-                    <Text style={{ color: '#fff', fontWeight: '600', fontSize: Sizes.typography.xs }}>
+                    <Text style={{ color: 'black', fontWeight: '600', fontSize: Sizes.typography.xs }}>
                       ₱{day.sales / 1000}k
                     </Text>
                   </View>

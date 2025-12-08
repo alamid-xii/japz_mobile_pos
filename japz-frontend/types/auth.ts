@@ -8,6 +8,8 @@ export interface User {
   role: UserRole;
   station?: string;
   pin?: string;
+  token?: string;
+  assignedCategories?: string[];
 }
 
 export interface LoginCredentials {

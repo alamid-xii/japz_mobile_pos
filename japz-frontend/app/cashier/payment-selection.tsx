@@ -1,8 +1,9 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Banknote, Check, CreditCard, Smartphone } from 'lucide-react-native';
+import { Banknote, Check, CreditCard, Smartphone, ChevronLeft } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
+import { cashierStyles } from '../../styles/cashierStyles';
 import { scaled } from '../../utils/responsive';
 
 interface Payment {
@@ -61,15 +62,20 @@ export default function PaymentSelectionScreen() {
   };
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: Colors.light.background }}
-      contentContainerStyle={{ padding: scaled(Sizes.spacing.lg) }}
-    >
-      <Text style={{ fontSize: Sizes.typography.lg, fontWeight: '700', marginBottom: Sizes.spacing.lg }}>
-        Select Payment Method
-      </Text>
+    <View style={{ flex: 1, backgroundColor: Colors.light.background }}>
+      {/* Header */}
+      <View style={cashierStyles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <ChevronLeft size={28} color="#030213" />
+        </TouchableOpacity>
+        <Text style={cashierStyles.title}>Select Payment Method</Text>
+        <View style={{ width: 28 }} />
+      </View>
 
-      {/* Payment Methods */}
+      <ScrollView
+        contentContainerStyle={{ padding: scaled(Sizes.spacing.lg) }}
+      >
+        {/* Payment Methods */}
       <View style={{ gap: Sizes.spacing.md, marginBottom: Sizes.spacing.xl }}>
         {(['cash', 'card', 'digital'] as const).map((method) => (
           <TouchableOpacity
@@ -167,9 +173,10 @@ export default function PaymentSelectionScreen() {
         onPress={handleProceed}
       >
         <Text style={{ color: '#fff', fontWeight: '700', fontSize: Sizes.typography.base }}>
-          Proceed to {payment.method === 'cash' ? 'Cash Payment' : 'Payment'}
+          Proceed to {payment.method === 'cash' ? 'Cash Payment' : payment.method === 'card' ? 'Card Payment' : 'Digital Payment'}
         </Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

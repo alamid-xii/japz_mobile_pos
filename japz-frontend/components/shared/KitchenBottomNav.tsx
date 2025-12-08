@@ -4,16 +4,16 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 
 interface KitchenBottomNavProps {
-  currentScreen?: 'display' | 'pending' | 'completed';
+  currentScreen?: 'incoming' | 'completed' | 'profile';
 }
 
-export function KitchenBottomNav({ currentScreen = 'display' }: KitchenBottomNavProps) {
+export function KitchenBottomNav({ currentScreen = 'incoming' }: KitchenBottomNavProps) {
   const router = useRouter();
 
   const navItems = [
-    { id: 'display', icon: AlertCircle, label: 'Display', route: '/kitchen/display' },
-    { id: 'pending', icon: Clock, label: 'Pending', route: '/kitchen/display' },
-    { id: 'completed', icon: CheckCircle, label: 'Completed', route: '/kitchen/display' },
+    { id: 'incoming', icon: AlertCircle, label: 'Incoming', route: '/kitchen/incoming' },
+    { id: 'completed', icon: CheckCircle, label: 'Completed', route: '/kitchen/completed' },
+    { id: 'profile', icon: Clock, label: 'Profile', route: '/kitchen/profile' },
   ];
 
   return (

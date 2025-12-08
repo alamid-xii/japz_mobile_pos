@@ -45,56 +45,101 @@ export default function AdminLayout() {
           backgroundColor: Colors.light.card,
           borderTopWidth: 1,
           borderTopColor: Colors.light.border,
-          paddingBottom: Sizes.spacing.sm,
-          paddingVertical: Sizes.spacing.xl
+          paddingTop: 5,
         },
-        tabBarLabelStyle: {
-          fontSize: Sizes.typography.xs,
-        },
-        tabBarActiveTintColor: Colors.brand?.primary || Colors.light.primary,
-        tabBarInactiveTintColor: Colors.light.mutedForeground,
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#000000',
+        tabBarInactiveTintColor: '#FFCE1B',
       }}
     >
       <Tabs.Screen
         name="dashboard"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => <LayoutDashboard size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <LayoutDashboard size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="employees"
         options={{
           title: 'Employees',
-          tabBarIcon: ({ color, size }) => <Users size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <Users size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="menu-inventory"
         options={{
           title: 'Menu',
-          tabBarIcon: ({ color, size }) => <Package size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <Package size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="feedback-hub"
         options={{
           title: 'Feedback',
-          tabBarIcon: ({ color, size }) => <MessageCircle size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <MessageCircle size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="sales-forecast"
         options={{
           title: 'Sales',
-          tabBarIcon: ({ color, size }) => <TrendingUp size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <TrendingUp size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="setings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => <Settings size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <Settings size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
@@ -109,6 +154,13 @@ export default function AdminLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="employee-edit"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
+    
   );
 }

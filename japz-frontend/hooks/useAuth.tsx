@@ -2,13 +2,7 @@ import { useRouter } from 'expo-router';
 import { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authAPI } from '../services/api';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role?: 'admin' | 'cashier' | 'kitchen';
-}
+import { User } from '../types/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -55,8 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await authAPI.login(email, password);
       const { token, user: userData } = response.data;
       await AsyncStorage.setItem('authToken', token);
-      setUser(userData);
-      return userData;
+      
+      // Add token to user object so it's available in components
+      const userWithToken = { ...userData, token };
+      setUser(userWithToken);
+      return userWithToken;
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Login failed';
       setError(errorMessage);

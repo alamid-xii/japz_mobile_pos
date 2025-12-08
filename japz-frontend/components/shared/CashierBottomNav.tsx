@@ -26,8 +26,8 @@ export function CashierBottomNav({ currentScreen = 'pos' }: CashierBottomNavProp
         backgroundColor: Colors.light.card,
         borderTopWidth: 1,
         borderTopColor: Colors.light.border,
-        paddingVertical: Sizes.spacing.sm,
-        paddingBottom: Sizes.spacing.xl
+        paddingTop: 5,
+        height: 90,
       }}>
       {navItems.map(item => {
         const Icon = item.icon;
@@ -37,15 +37,18 @@ export function CashierBottomNav({ currentScreen = 'pos' }: CashierBottomNavProp
           <TouchableOpacity
             key={item.id}
             style={{
-              ...cashierStyles.navButton,
-              borderBottomWidth: isActive ? 3 : 0,
-              borderBottomColor: isActive ? Colors.brand.primary : 'transparent',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: Sizes.spacing.sm,
+              backgroundColor: isActive ? '#FFF8DC' : 'transparent',
+              borderRadius: 8,
+              paddingHorizontal: 12,
             }}
             onPress={() => currentScreen !== item.id && router.replace(item.route as any)}
           >
             <Icon
-              size={26}
-              color={isActive ? Colors.brand.primary : Colors.light.mutedForeground}
+              size={32}
+              color={isActive ? '#FFCE1B' : Colors.light.mutedForeground}
             />
           </TouchableOpacity>
         );

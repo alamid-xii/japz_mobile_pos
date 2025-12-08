@@ -1,10 +1,9 @@
 import { useRouter } from 'expo-router';
 import { LogOut, User } from 'lucide-react-native';
 import { useCallback } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-import { CashierBottomNav } from '../../components/shared/CashierBottomNav';
 import { Colors, Sizes } from '../../constants/colors';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -13,8 +12,25 @@ export default function ProfileScreen() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await logout();
-    router.replace('/auth/login');
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => {},
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          onPress: async () => {
+            await logout();
+            router.replace('/auth/login');
+          },
+          style: 'destructive',
+        },
+      ]
+    );
   };
 
   // Prevent back navigation
@@ -32,19 +48,30 @@ export default function ProfileScreen() {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: Sizes.spacing.lg,
-        paddingTop: Sizes.spacing.lg + 40,
+        paddingHorizontal: Sizes.spacing.md,
+        paddingVertical: Sizes.spacing.sm,
+        paddingTop: Sizes.spacing.sm + 30,
         backgroundColor: Colors.light.background,
-        borderBottomWidth: 1,
+        borderBottomWidth: 0.5,
         borderBottomColor: Colors.light.border,
       }}>
         <Text style={{
-          fontSize: Sizes.typography.xl,
+          fontSize: Sizes.typography['2xl'],
           fontWeight: '700',
           color: Colors.light.foreground,
         }}>
           Profile
         </Text>
+        <TouchableOpacity
+          onPress={handleLogout}
+          style={{
+            padding: Sizes.spacing.sm,
+            borderRadius: Sizes.radius.sm,
+            backgroundColor: Colors.light.muted,
+          }}
+        >
+          <LogOut size={20} color="#EF4444" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -94,38 +121,6 @@ export default function ProfileScreen() {
           </Text>
         </View>
       </ScrollView>
-
-      {/* Logout Button */}
-      <View style={{
-        backgroundColor: Colors.light.background,
-        padding: Sizes.spacing.lg,
-        borderTopWidth: 1,
-        borderTopColor: Colors.light.border,
-      }}>
-        <TouchableOpacity
-          style={{
-            backgroundColor: Colors.light.destructive,
-            borderRadius: Sizes.radius.md,
-            padding: Sizes.spacing.md,
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: Sizes.spacing.sm,
-          }}
-          onPress={handleLogout}
-        >
-          <LogOut size={20} color="#fff" />
-          <Text style={{
-            color: '#fff',
-            fontSize: Sizes.typography.base,
-            fontWeight: '600',
-          }}>
-            Logout
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <CashierBottomNav currentScreen="profile" />
     </View>
   );
 }
