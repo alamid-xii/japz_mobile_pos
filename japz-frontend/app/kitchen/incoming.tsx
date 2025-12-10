@@ -40,6 +40,10 @@ interface KitchenOrder {
   status: 'pending' | 'preparing' | 'ready' | 'completed' | 'cancelled';
   createdAt: string;
   totalAmount: number;
+  orderType?: 'dine-in' | 'take-out' | 'delivery';
+  tableNumber?: string;
+  notes?: string;
+  customerName?: string;
 }
 
 const statusColors = {
@@ -57,10 +61,13 @@ export default function IncomingOrdersScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<'pending' | 'preparing' | 'ready'>('pending');
+  const [, setTimeUpdate] = useState(0); // Trigger re-render every second for real-time wait times
 
   const fetchOrders = async () => {
     try {
-      const response = await ordersAPI.getIncomingByCategories();
+      const response = await ordersAPI.getIncomingByCategories({
+        assignedCategories: user?.assignedCategories || []
+      });
       const data = response.data;
       
       // Map and sort by FIFO (oldest first)
@@ -74,6 +81,10 @@ export default function IncomingOrdersScreen() {
           status: o.status,
           createdAt: o.createdAt,
           totalAmount: parseFloat(o.total || 0),
+          orderType: o.orderType,
+          tableNumber: o.tableNumber,
+          notes: o.notes,
+          customerName: o.customerName,
         }))
         .sort((a: KitchenOrder, b: KitchenOrder) => {
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
@@ -91,11 +102,13 @@ export default function IncomingOrdersScreen() {
 
   useEffect(() => {
     fetchOrders();
-    
-    // Auto-refresh every 3 seconds
+  }, []);
+
+  // Real-time wait time update - refreshes UI every second
+  useEffect(() => {
     const interval = setInterval(() => {
-      fetchOrders();
-    }, 3000);
+      setTimeUpdate(prev => prev + 1);
+    }, 1000);
     
     return () => clearInterval(interval);
   }, []);
@@ -168,6 +181,37 @@ export default function IncomingOrdersScreen() {
       <Text style={{ fontSize: Sizes.typography.sm, color: Colors.light.mutedForeground, marginBottom: Sizes.spacing.sm }}>
         {order.items.length} item(s)
       </Text>
+
+      {/* Customer Name */}
+      {order.customerName && order.customerName !== 'Walk-in Customer' && (
+        <Text style={{ fontSize: Sizes.typography.xs, fontWeight: '600', color: Colors.light.foreground, marginBottom: Sizes.spacing.md }}>
+          👤 {order.customerName}
+        </Text>
+      )}
+
+      {/* Order Type and Table Info */}
+      {(order.orderType || order.tableNumber) && (
+        <View style={{ marginBottom: Sizes.spacing.md, paddingVertical: Sizes.spacing.sm, backgroundColor: 'rgba(0, 0, 0, 0.05)', paddingHorizontal: Sizes.spacing.md, borderRadius: Sizes.radius.sm }}>
+          {order.orderType && (
+            <Text style={{ fontSize: Sizes.typography.xs, fontWeight: '600', color: Colors.light.foreground, marginBottom: Sizes.spacing.xs }}>
+              📦 {order.orderType === 'dine-in' ? 'Dine-in' : order.orderType === 'take-out' ? 'Take-out' : 'Delivery'}
+              {order.tableNumber && order.orderType === 'dine-in' && ` • Table ${order.tableNumber}`}
+            </Text>
+          )}
+        </View>
+      )}
+
+      {/* Order Notes */}
+      {order.notes && (
+        <View style={{ marginBottom: Sizes.spacing.md, paddingVertical: Sizes.spacing.sm, paddingHorizontal: Sizes.spacing.md, backgroundColor: '#FFF3CD', borderRadius: Sizes.radius.sm, borderLeftWidth: 3, borderLeftColor: '#FF9800' }}>
+          <Text style={{ fontSize: Sizes.typography.xs, fontWeight: '600', color: '#333', marginBottom: Sizes.spacing.xs }}>
+            📝 Special Notes
+          </Text>
+          <Text style={{ fontSize: Sizes.typography.xs, color: '#555', fontStyle: 'italic' }}>
+            {order.notes}
+          </Text>
+        </View>
+      )}
 
       {/* Items List - Always Visible */}
       <View style={{ marginBottom: Sizes.spacing.md }}>

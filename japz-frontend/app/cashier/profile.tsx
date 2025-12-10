@@ -24,8 +24,13 @@ export default function ProfileScreen() {
         {
           text: 'Logout',
           onPress: async () => {
-            await logout();
-            router.replace('/auth/login');
+            try {
+              await logout();
+            } catch (error) {
+              console.error('Logout error:', error);
+            } finally {
+              router.replace('/auth/login');
+            }
           },
           style: 'destructive',
         },

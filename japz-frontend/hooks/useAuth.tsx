@@ -81,11 +81,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     setLoading(true);
     try {
-      await authAPI.logout();
-      await AsyncStorage.removeItem('authToken');
+      // Get current user data before clearing
+      const currentUser = user;
+      
+      // Call logout API first while we still have the token
+      try {
+        // Send user info to backend for logging
+        await authAPI.logout();
+      } catch (err) {
+        // Log but continue even if logout API fails
+        console.warn('Logout API failed:', err);
+      }
+      
+      // Then clear user state
       setUser(null);
+      // Finally remove token from storage
+      await AsyncStorage.removeItem('authToken');
     } catch (err: any) {
       console.error('Logout error:', err);
+      // Still clear user state even if there's an error
+      setUser(null);
+      await AsyncStorage.removeItem('authToken');
     } finally {
       setLoading(false);
     }

@@ -58,7 +58,9 @@ export default function CompletedOrdersScreen() {
       try {
         setLoading(true);
         
-        const response = await ordersAPI.getCompletedByCategories();
+        const response = await ordersAPI.getCompletedByCategories({
+          assignedCategories: user?.assignedCategories || []
+        });
         const data = response.data;
         
         setOrders(data.orders || []);
@@ -78,7 +80,9 @@ export default function CompletedOrdersScreen() {
     setRefreshing(true);
     const fetchCompletedOrders = async () => {
       try {
-        const response = await ordersAPI.getCompletedByCategories();
+        const response = await ordersAPI.getCompletedByCategories({
+          assignedCategories: user?.assignedCategories || []
+        });
         const data = response.data;
         
         setOrders(data.orders || []);

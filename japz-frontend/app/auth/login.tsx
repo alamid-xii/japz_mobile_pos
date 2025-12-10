@@ -1,9 +1,13 @@
 import { useRouter } from 'expo-router';
-import { Eye, EyeOff } from 'lucide-react-native';
+import { Eye, EyeOff, Settings } from 'lucide-react-native';
 import { useState } from 'react';
-import { Alert, Image, KeyboardAvoidingView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, KeyboardAvoidingView, ScrollView, Text, TextInput, TouchableOpacity, View, Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 import { authStyles } from '../../styles/authStyles';
+import { Colors, Sizes } from '../../constants/colors';
+import { setApiBaseUrl } from '../../services/api';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -12,6 +16,10 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [showServerModal, setShowServerModal] = useState(false);
+  const [serverIp, setServerIp] = useState('');
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -34,6 +42,59 @@ export default function LoginScreen() {
       }
     } catch (err: any) {
       setError(err.message || 'Login failed');
+    }
+  };
+
+  const loadSavedIp = async () => {
+    const savedUrl = await AsyncStorage.getItem('apiBaseUrl');
+    if (savedUrl) {
+      // Extract IP from URL like "http://192.168.1.100:3000"
+      const match = savedUrl.match(/http:\/\/([\d.]+):/);
+      if (match) {
+        setServerIp(match[1]);
+      }
+    }
+  };
+
+  const testConnection = async () => {
+    if (!serverIp) {
+      Alert.alert('Error', 'Please enter a server IP address');
+      return;
+    }
+
+    setTestingConnection(true);
+    setConnectionStatus('idle');
+
+    try {
+      const url = `http://${serverIp}:3000/api/auth/user`;
+      await axios.get(url, { timeout: 5000 });
+      setConnectionStatus('success');
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        // 401 means server is reachable but user not authenticated (expected)
+        setConnectionStatus('success');
+      } else {
+        setConnectionStatus('error');
+      }
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
+  const handleSaveServer = async () => {
+    if (connectionStatus !== 'success') {
+      Alert.alert('Error', 'Please test connection first');
+      return;
+    }
+
+    try {
+      await setApiBaseUrl(serverIp);
+      Alert.alert('Success', 'Server configuration updated');
+      setShowServerModal(false);
+      setServerIp('');
+      setConnectionStatus('idle');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to save server configuration');
     }
   };
 
@@ -116,6 +177,171 @@ export default function LoginScreen() {
           Don't have an account? <Text style={[authStyles.linkHighlight, authStyles.linkText]}>Register here</Text>
         </Text>
       </TouchableOpacity>
+
+      {/* Change Server Link */}
+      <TouchableOpacity 
+        style={[authStyles.linkButton, { marginTop: Sizes.spacing.md }]}
+        onPress={() => {
+          loadSavedIp();
+          setShowServerModal(true);
+        }}
+      >
+        <Settings size={16} color={Colors.light.primary} />
+        <Text style={{ color: Colors.light.primary, marginLeft: Sizes.spacing.xs }}>
+          Change Server Configuration
+        </Text>
+      </TouchableOpacity>
+
+      {/* Server Configuration Modal */}
+      <Modal
+        visible={showServerModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowServerModal(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'flex-end',
+        }}>
+          <View style={{
+            backgroundColor: Colors.light.background,
+            borderTopLeftRadius: Sizes.radius.lg,
+            borderTopRightRadius: Sizes.radius.lg,
+            padding: Sizes.spacing.lg,
+            paddingBottom: Sizes.spacing.xl,
+            gap: Sizes.spacing.md,
+          }}>
+            <Text style={{
+              fontSize: Sizes.typography.lg,
+              fontWeight: '600',
+              color: Colors.light.foreground,
+              marginBottom: Sizes.spacing.sm,
+            }}>
+              Change Server
+            </Text>
+
+            <View>
+              <Text style={{
+                fontSize: Sizes.typography.sm,
+                color: Colors.light.mutedForeground,
+                marginBottom: Sizes.spacing.xs,
+                fontWeight: '500',
+              }}>
+                Server IP Address
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: Sizes.radius.sm,
+                  padding: Sizes.spacing.md,
+                  color: Colors.light.foreground,
+                  fontWeight: '500',
+                  borderWidth: 1,
+                  borderColor: Colors.light.border,
+                }}
+                placeholder="e.g., 192.168.1.100"
+                placeholderTextColor={Colors.light.mutedForeground}
+                value={serverIp}
+                onChangeText={setServerIp}
+                keyboardType="decimal-pad"
+              />
+            </View>
+
+            {/* Test Connection Button */}
+            <TouchableOpacity
+              onPress={testConnection}
+              disabled={testingConnection || !serverIp}
+              style={{
+                backgroundColor: testingConnection ? Colors.light.muted : Colors.light.primary,
+                borderRadius: Sizes.radius.sm,
+                padding: Sizes.spacing.md,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{
+                color: testingConnection ? Colors.light.mutedForeground : '#fff',
+                fontWeight: '600',
+                fontSize: Sizes.typography.base,
+              }}>
+                {testingConnection ? 'Testing...' : 'Test Connection'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Connection Status */}
+            {connectionStatus === 'success' && (
+              <View style={{
+                backgroundColor: '#d1f7d1',
+                borderRadius: Sizes.radius.sm,
+                padding: Sizes.spacing.md,
+                borderLeftWidth: 4,
+                borderLeftColor: '#4caf50',
+              }}>
+                <Text style={{ color: '#2e7d32', fontWeight: '500' }}>
+                  ✓ Server connection successful
+                </Text>
+              </View>
+            )}
+
+            {connectionStatus === 'error' && (
+              <View style={{
+                backgroundColor: '#ffebee',
+                borderRadius: Sizes.radius.sm,
+                padding: Sizes.spacing.md,
+                borderLeftWidth: 4,
+                borderLeftColor: '#f44336',
+              }}>
+                <Text style={{ color: '#c62828', fontWeight: '500' }}>
+                  ✗ Cannot reach server. Check IP and network connection.
+                </Text>
+              </View>
+            )}
+
+            {/* Save Button */}
+            <TouchableOpacity
+              onPress={handleSaveServer}
+              disabled={connectionStatus !== 'success'}
+              style={{
+                backgroundColor: connectionStatus === 'success' ? '#FFCE1B' : Colors.light.muted,
+                borderRadius: Sizes.radius.sm,
+                padding: Sizes.spacing.md,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{
+                color: connectionStatus === 'success' ? '#030213' : Colors.light.mutedForeground,
+                fontWeight: '600',
+                fontSize: Sizes.typography.base,
+              }}>
+                Save Configuration
+              </Text>
+            </TouchableOpacity>
+
+            {/* Cancel Button */}
+            <TouchableOpacity
+              onPress={() => {
+                setShowServerModal(false);
+                setServerIp('');
+                setConnectionStatus('idle');
+              }}
+              style={{
+                backgroundColor: Colors.light.border,
+                borderRadius: Sizes.radius.sm,
+                padding: Sizes.spacing.md,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{
+                color: Colors.light.foreground,
+                fontWeight: '600',
+                fontSize: Sizes.typography.base,
+              }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -1,6 +1,6 @@
 // app/(cashier)/_layout.tsx
 import { Tabs, useRouter } from 'expo-router';
-import { History, ShoppingCart, User, Home, ClipboardList } from 'lucide-react-native';
+import { History, ShoppingCart, User, Home, ClipboardList, Tv } from 'lucide-react-native';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Colors } from '../../constants/colors';
@@ -65,6 +65,21 @@ export default function CashierLayout() {
               borderRadius: 8,
             }}>
               <ClipboardList size={28} color={focused ? '#000000' : color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="menuboard"
+        options={{
+          title: 'Menu',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#FFCE1B' : 'transparent',
+              padding: 8,
+              borderRadius: 8,
+            }}>
+              <Tv size={28} color={focused ? '#000000' : color} />
             </View>
           ),
         }}

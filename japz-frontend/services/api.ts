@@ -1,7 +1,38 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'http://10.82.31.96:3000'; // Your PC's IP address
+// Default fallback IP (can be changed by user)
+const DEFAULT_API_BASE_URL = 'http://10.82.31.96:3000';
+
+let API_BASE_URL = DEFAULT_API_BASE_URL;
+
+// Function to get the current API URL
+export const getApiBaseUrl = async () => {
+  const savedUrl = await AsyncStorage.getItem('apiBaseUrl');
+  if (savedUrl) {
+    API_BASE_URL = savedUrl;
+    return savedUrl;
+  }
+  return DEFAULT_API_BASE_URL;
+};
+
+// Function to set the API URL
+export const setApiBaseUrl = async (url: string) => {
+  const formattedUrl = url.startsWith('http') ? url : `http://${url}:3000`;
+  await AsyncStorage.setItem('apiBaseUrl', formattedUrl);
+  API_BASE_URL = formattedUrl;
+
+  // Update axios base URL
+  api.defaults.baseURL = formattedUrl;
+
+  return formattedUrl;
+};
+
+// Initialize API with saved URL or default
+export const initializeApi = async () => {
+  const url = await getApiBaseUrl();
+  API_BASE_URL = url;
+};
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -25,12 +56,29 @@ export const authAPI = {
     api.post('/api/auth/login', { email, password }),
 
   logout: async () => {
-    await AsyncStorage.removeItem('authToken');
-    return api.post('/api/auth/logout');
+    try {
+      // Call logout API FIRST with the token
+      const response = await api.post('/api/auth/logout');
+      // THEN remove token after successful logout
+      await AsyncStorage.removeItem('authToken');
+      return response;
+    } catch (error) {
+      // Even if API call fails, still remove the token locally
+      await AsyncStorage.removeItem('authToken');
+      throw error;
+    }
   },
 
   getCurrentUser: () =>
     api.get('/api/auth/user'),
+
+  updateProfile: (data: {
+    name: string;
+    email: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }) =>
+    api.put('/api/auth/profile', data),
 };
 
 export const kitchenStationAPI = {
@@ -66,6 +114,8 @@ export const employeeAPI = {
   delete: (id: string | number) =>
     api.delete(`/api/employees/${id}`),
 };
+
+export const employeesAPI = employeeAPI;
 
 export const menuCategoryAPI = {
   getAll: () =>
@@ -164,12 +214,12 @@ export const ordersAPI = {
     api.put(`/api/orders/${id}/status`, { status }),
 
   // Kitchen Display - Get incoming orders
-  getIncomingByCategories: () =>
-    api.post('/api/kitchen/orders/incoming'),
+  getIncomingByCategories: (data?: any) =>
+    api.post('/api/kitchen/orders/incoming', data || {}),
 
   // Kitchen Display - Get completed orders
-  getCompletedByCategories: () =>
-    api.post('/api/kitchen/orders/completed'),
+  getCompletedByCategories: (data?: any) =>
+    api.post('/api/kitchen/orders/completed', data || {}),
 
   // Kitchen Display - Update order status
   updateOrderStatus: (id: string | number, status: string) =>
@@ -185,6 +235,65 @@ export const paymentsAPI = {
     change?: number;
   }) =>
     api.post('/api/payments', data),
+};
+
+export const logsAPI = {
+  getAll: (filters?: {
+    userId?: number;
+    action?: string;
+    module?: string;
+    limit?: number;
+    offset?: number;
+  }) =>
+    api.get('/api/logs', { params: filters }),
+
+  getEntityLogs: (entityType: string, entityId: number) =>
+    api.get(`/api/logs/entity/${entityType}/${entityId}`),
+
+  getUserLogs: (userId: number) =>
+    api.get(`/api/logs/user/${userId}`),
+};
+
+export const feedbackAPI = {
+  // Submit feedback (no auth required)
+  submit: (data: {
+    orderNumber?: string;
+    rating: number;
+    comment?: string;
+    tags?: string[];
+    googleFormResponseId?: string;
+  }) =>
+    api.post('/api/feedback/submit', data),
+
+  // Get all feedback with filtering
+  getAll: (status?: string, limit?: number, offset?: number) =>
+    api.get('/api/feedback', {
+      params: { status, limit, offset }
+    }),
+
+  // Get feedback by ID
+  getById: (id: string | number) =>
+    api.get(`/api/feedback/${id}`),
+
+  // Update feedback status
+  update: (id: string | number, data: {
+    status?: 'pending' | 'processed' | 'archived';
+    processed?: boolean;
+    aiAnalysis?: any;
+    themes?: string[];
+    sentiment?: string;
+  }) =>
+    api.put(`/api/feedback/${id}`, data),
+
+  // Delete feedback
+  delete: (id: string | number) =>
+    api.delete(`/api/feedback/${id}`),
+
+  // Get feedback analytics
+  getAnalytics: (startDate?: string, endDate?: string, limit?: number) =>
+    api.get('/api/feedback/analytics', {
+      params: { startDate, endDate, limit }
+    }),
 };
 
 export default api;

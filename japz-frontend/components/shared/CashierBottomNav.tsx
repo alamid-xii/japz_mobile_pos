@@ -1,11 +1,11 @@
 import { useRouter } from 'expo-router';
-import { History, Home, ShoppingCart, User } from 'lucide-react-native';
+import { History, Home, ShoppingCart, User, Tv } from 'lucide-react-native';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { Colors, Sizes } from '../../constants/colors';
 import { cashierStyles } from '../../styles/cashierStyles';
 
 interface CashierBottomNavProps {
-  currentScreen?: 'pos' | 'orders' | 'history' | 'profile';
+  currentScreen?: 'pos' | 'orders' | 'history' | 'profile' | 'menuboard';
 }
 
 export function CashierBottomNav({ currentScreen = 'pos' }: CashierBottomNavProps) {
@@ -14,6 +14,7 @@ export function CashierBottomNav({ currentScreen = 'pos' }: CashierBottomNavProp
   const navItems = [
     { id: 'pos', icon: ShoppingCart, route: '/cashier/pos' },
     { id: 'orders', icon: Home, route: '/cashier/active-orders' },
+    { id: 'menuboard', icon: Tv, route: '/cashier/menuboard' },
     { id: 'history', icon: History, route: '/cashier/order-history' },
     { id: 'profile', icon: User, route: '/cashier/profile' },
   ];

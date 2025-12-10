@@ -1,7 +1,7 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { generateOrderNumber } from '../../utils/helpers';
 import { Colors, Sizes } from '../../constants/colors';
@@ -14,6 +14,9 @@ interface CashPaymentState {
   totalAmount: number;
   amountReceived: string;
   notes: string;
+  orderType: 'dine-in' | 'take-out' | 'delivery' | '';
+  tableNumber: string;
+  customerName: string;
 }
 
 export default function CashPaymentScreen() {
@@ -25,6 +28,9 @@ export default function CashPaymentScreen() {
     totalAmount: Number(totalParam ? parseFloat(totalParam as string) : 0) || 0,
     amountReceived: '',
     notes: '',
+    orderType: '',
+    tableNumber: '',
+    customerName: '',
   });
 
   const [orderItems, setOrderItems] = useState<any[]>([]);
@@ -63,6 +69,22 @@ export default function CashPaymentScreen() {
   };
 
   const handleComplete = async () => {
+    // Validation checks
+    if (!state.customerName.trim()) {
+      Alert.alert('Required Field', 'Please enter customer name');
+      return;
+    }
+
+    if (!state.orderType) {
+      Alert.alert('Required Field', 'Please select an order type (Dine-in, Take-out, or Delivery)');
+      return;
+    }
+
+    if (state.orderType === 'dine-in' && !state.tableNumber.trim()) {
+      Alert.alert('Required Field', 'Please enter a table number for dine-in orders');
+      return;
+    }
+
     if (!isValidPayment) return;
 
     setIsProcessing(true);
@@ -94,10 +116,11 @@ export default function CashPaymentScreen() {
         createdAt: new Date().toISOString(),
       };
 
-      const payload = {
+      const payload: any = {
         orderNumber: order.orderNumber,
         cashierId: user?.id ? parseInt(user.id as string) : undefined,
         cashier: order.cashier,
+        customerName: state.customerName || null,
         subtotal: order.items.reduce((s: number, it: any) => s + (Number(it.total) || 0), 0),
         discount: 0,
         total: order.total,
@@ -115,6 +138,9 @@ export default function CashPaymentScreen() {
         })),
         status: 'pending',
         createdAt: order.createdAt,
+        orderType: state.orderType || null,
+        tableNumber: state.tableNumber || null,
+        notes: state.notes || null,
       };
 
       // Try to send order to backend
@@ -175,6 +201,27 @@ export default function CashPaymentScreen() {
           <Text style={{ fontSize: scaled(Sizes.typography.xl), fontWeight: '700', color: Colors.light.primary }}>
           ₱{state.totalAmount.toFixed(2)}
         </Text>
+      </View>
+
+      {/* Customer Name Input */}
+      <View style={{ marginBottom: Sizes.spacing.lg }}>
+        <Text style={{ fontSize: Sizes.typography.base, fontWeight: '600', marginBottom: Sizes.spacing.sm }}>
+          Customer Name *
+        </Text>
+        <TextInput
+          style={{
+            borderWidth: 2,
+            borderColor: state.customerName.trim() ? '#10B981' : Colors.light.border,
+            borderRadius: scaled(Sizes.radius.md),
+            padding: scaled(Sizes.spacing.md),
+            color: Colors.light.foreground,
+            fontSize: scaled(Sizes.typography.base),
+          }}
+          placeholder="e.g., Juan Dela Cruz"
+          placeholderTextColor={Colors.light.mutedForeground}
+          value={state.customerName}
+          onChangeText={(text) => setState({ ...state, customerName: text })}
+        />
       </View>
 
       {/* Amount Received Input */}
@@ -258,7 +305,64 @@ export default function CashPaymentScreen() {
         </View>
       )}
 
-      {/* Notes */}
+      {/* Order Type Selection */}
+      <View style={{ marginBottom: Sizes.spacing.lg }}>
+        <Text style={{ fontSize: Sizes.typography.sm, fontWeight: '600', marginBottom: Sizes.spacing.sm, color: Colors.light.mutedForeground }}>
+          Order Type
+        </Text>
+        <View style={{ flexDirection: 'row', gap: Sizes.spacing.sm }}>
+          {(['dine-in', 'take-out', 'delivery'] as const).map((type) => (
+            <TouchableOpacity
+              key={type}
+              style={{
+                flex: 1,
+                paddingVertical: Sizes.spacing.sm,
+                paddingHorizontal: Sizes.spacing.md,
+                borderRadius: Sizes.radius.md,
+                backgroundColor: state.orderType === type ? Colors.light.primary : Colors.light.card,
+                borderWidth: 1,
+                borderColor: state.orderType === type ? Colors.light.primary : Colors.light.border,
+              }}
+              onPress={() => setState({ ...state, orderType: type })}
+            >
+              <Text
+                style={{
+                  textAlign: 'center',
+                  fontWeight: '600',
+                  fontSize: Sizes.typography.sm,
+                  color: state.orderType === type ? '#fff' : Colors.light.foreground,
+                }}
+              >
+                {type === 'dine-in' ? '🍽️ Dine-in' : type === 'take-out' ? '📦 Take-out' : '🚚 Delivery'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Table Number Input (only for dine-in) */}
+      {state.orderType === 'dine-in' && (
+        <View style={{ marginBottom: Sizes.spacing.lg }}>
+          <Text style={{ fontSize: Sizes.typography.sm, fontWeight: '600', marginBottom: Sizes.spacing.sm, color: Colors.light.mutedForeground }}>
+            Table Number
+          </Text>
+          <TextInput
+            style={{
+              borderWidth: 1,
+              borderColor: Colors.light.border,
+              borderRadius: Sizes.radius.md,
+              padding: Sizes.spacing.md,
+              color: Colors.light.foreground,
+              fontSize: Sizes.typography.base,
+            }}
+            placeholder="e.g., 5, A1, etc."
+            placeholderTextColor={Colors.light.mutedForeground}
+            value={state.tableNumber}
+            onChangeText={(text) => setState({ ...state, tableNumber: text })}
+          />
+        </View>
+      )}
+
       <View style={{ marginBottom: Sizes.spacing.lg }}>
         <Text style={{ fontSize: Sizes.typography.sm, fontWeight: '600', marginBottom: Sizes.spacing.sm, color: Colors.light.mutedForeground }}>
           Notes (Optional)

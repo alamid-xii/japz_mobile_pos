@@ -70,9 +70,14 @@ export default function ProfileScreen() {
         },
         {
           text: 'Logout',
-          onPress: () => {
-            logout();
-            router.replace('/auth/login');
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              console.error('Logout error:', error);
+            } finally {
+              router.replace('/auth/login');
+            }
           },
           style: 'destructive',
         },

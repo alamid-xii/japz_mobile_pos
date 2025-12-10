@@ -31,6 +31,9 @@ interface Order {
   createdAt: string;
   timestamp: string;
   expandedId: string | null;
+  orderType?: 'dine-in' | 'take-out' | 'delivery';
+  tableNumber?: string;
+  notes?: string;
 }
 
 const statusColors = {
@@ -79,6 +82,7 @@ export default function ActiveOrdersScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<'pending' | 'preparing' | 'ready' | null>(null);
+  const [, setTimeUpdate] = useState(0); // Trigger re-render every second for real-time wait times
 
   const fetchOrders = async () => {
     try {
@@ -103,6 +107,9 @@ export default function ActiveOrdersScreen() {
         createdAt: o.createdAt,
         timestamp: o.createdAt,
         expandedId: null,
+        orderType: o.orderType,
+        tableNumber: o.tableNumber,
+        notes: o.notes,
       }));
       setOrders(activeOrders);
     } catch (e: any) {
@@ -116,11 +123,13 @@ export default function ActiveOrdersScreen() {
 
   useEffect(() => {
     fetchOrders();
-    
-    // Set up auto-refresh every 3 seconds
+  }, []);
+
+  // Real-time wait time update - refreshes UI every second
+  useEffect(() => {
     const interval = setInterval(() => {
-      fetchOrders();
-    }, 3000);
+      setTimeUpdate(prev => prev + 1);
+    }, 1000);
     
     return () => clearInterval(interval);
   }, []);
@@ -136,6 +145,8 @@ export default function ActiveOrdersScreen() {
   const onRefresh = () => {
     setRefreshing(true);
     fetchOrders();
+    // Force time update after refresh
+    setTimeUpdate(prev => prev + 1);
   };
 
   const toggleExpand = (id: string) => {
@@ -208,6 +219,30 @@ export default function ActiveOrdersScreen() {
           </Text>
         )}
       </View>
+
+      {/* Order Type and Table Info */}
+      {(order.orderType || order.tableNumber) && (
+        <View style={{ marginBottom: Sizes.spacing.md, paddingVertical: Sizes.spacing.sm, backgroundColor: 'rgba(0, 0, 0, 0.05)', paddingHorizontal: Sizes.spacing.md, borderRadius: Sizes.radius.sm }}>
+          {order.orderType && (
+            <Text style={{ fontSize: Sizes.typography.xs, fontWeight: '600', color: '#030213', marginBottom: Sizes.spacing.xs }}>
+              📦 {order.orderType === 'dine-in' ? 'Dine-in' : order.orderType === 'take-out' ? 'Take-out' : 'Delivery'}
+              {order.tableNumber && order.orderType === 'dine-in' && ` • Table ${order.tableNumber}`}
+            </Text>
+          )}
+        </View>
+      )}
+
+      {/* Order Notes */}
+      {order.notes && (
+        <View style={{ marginBottom: Sizes.spacing.md, paddingVertical: Sizes.spacing.sm, paddingHorizontal: Sizes.spacing.md, backgroundColor: '#FFF3CD', borderRadius: Sizes.radius.sm, borderLeftWidth: 3, borderLeftColor: '#FF9800' }}>
+          <Text style={{ fontSize: Sizes.typography.xs, fontWeight: '600', color: '#333', marginBottom: Sizes.spacing.xs }}>
+            📝 Special Notes
+          </Text>
+          <Text style={{ fontSize: Sizes.typography.xs, color: '#555', fontStyle: 'italic' }}>
+            {order.notes}
+          </Text>
+        </View>
+      )}
 
       {/* Expanded Items View */}
       {expanded === order.id && (

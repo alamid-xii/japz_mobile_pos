@@ -14,6 +14,7 @@ interface FormData {
   assignedStationId?: number;
   assignedCategories?: number[];
   status?: 'active' | 'inactive';
+  password?: string;
 }
 
 interface MenuCategory {
@@ -51,6 +52,7 @@ export default function EmployeeEditScreen() {
     assignedStationId: undefined,
     assignedCategories: [],
     status: 'active',
+    password: '',
   });
   
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -136,9 +138,14 @@ export default function EmployeeEditScreen() {
       return;
     }
 
+    if (formData.password && formData.password.length < 6) {
+      Alert.alert('Validation Error', 'Password must be at least 6 characters long');
+      return;
+    }
+
     try {
       setLoading(true);
-      await employeeAPI.update(id, {
+      const updateData: any = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -146,7 +153,14 @@ export default function EmployeeEditScreen() {
         assignedStationId: formData.assignedStationId,
         assignedCategories: formData.assignedCategories,
         status: formData.status,
-      });
+      };
+
+      // Only include password if it was entered
+      if (formData.password && formData.password.trim()) {
+        updateData.password = formData.password;
+      }
+
+      await employeeAPI.update(id, updateData);
 
       Alert.alert('Success', `Employee ${formData.name} has been updated`, [
         {
@@ -270,6 +284,31 @@ export default function EmployeeEditScreen() {
             keyboardType="phone-pad"
             value={formData.phone}
             onChangeText={(value) => handleInputChange('phone', value)}
+            editable={true}
+            selectTextOnFocus={true}
+          />
+        </View>
+
+        {/* Password Field */}
+        <View style={{ marginBottom: Sizes.spacing.lg }}>
+          <Text style={{ fontSize: Sizes.typography.sm, fontWeight: '600', marginBottom: Sizes.spacing.sm, color: Colors.light.foreground }}>
+            Password (Leave empty to keep current password)
+          </Text>
+          <TextInput
+            style={{
+              borderWidth: 1,
+              borderColor: Colors.light.border,
+              borderRadius: 8,
+              paddingHorizontal: Sizes.spacing.md,
+              paddingVertical: Sizes.spacing.sm,
+              fontSize: Sizes.typography.base,
+              color: Colors.light.foreground,
+            }}
+            placeholder="Enter new password (min 6 characters)"
+            placeholderTextColor={Colors.light.mutedForeground}
+            secureTextEntry={true}
+            value={formData.password}
+            onChangeText={(value) => handleInputChange('password', value)}
             editable={true}
             selectTextOnFocus={true}
           />

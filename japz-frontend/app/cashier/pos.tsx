@@ -34,6 +34,7 @@ interface Product {
   sizes?: Array<{ name: string; price: number }>;
   hasFlavor?: boolean;
   flavors?: string[];
+  status?: 'available' | 'unavailable';
 }
 
 interface CartItem extends Product {
@@ -46,7 +47,7 @@ interface CartItem extends Product {
 // Helper function to get category icon using emojibase library
 const getCategoryIcon = (categoryName: string): string => {
   const name = categoryName.toLowerCase();
-  
+
   // Map category names to emoji characters
   const categoryMap: { [key: string]: string } = {
     'main': '🍽️',
@@ -76,14 +77,14 @@ const getCategoryIcon = (categoryName: string): string => {
     'vegetable': '🥦',
     'fruit': '🍎',
   };
-  
+
   // Find matching category and return emoji
   for (const [key, emojiChar] of Object.entries(categoryMap)) {
     if (name.includes(key)) {
       return emojiChar;
     }
   }
-  
+
   return '🍽️'; // Default fallback
 };
 
@@ -96,7 +97,7 @@ export default function POSScreen() {
   const [showCart, setShowCart] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // State for size/flavor selection modal
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedProductForOptions, setSelectedProductForOptions] = useState<Product | null>(null);
@@ -105,7 +106,14 @@ export default function POSScreen() {
 
   // Fetch categories and menu items on mount
   useEffect(() => {
-    fetchData();
+    fetchData(true); // Initial load shows loading indicator
+
+    // Auto-refresh every 3 seconds to detect real-time availability changes
+    const interval = setInterval(() => {
+      fetchData(false); // Refresh without loading indicator
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Reload cart from AsyncStorage whenever screen comes into focus
@@ -126,7 +134,7 @@ export default function POSScreen() {
           console.warn('Failed to load cart from storage', e);
         }
       };
-      
+
       loadCart();
     }, [])
   );
@@ -139,9 +147,12 @@ export default function POSScreen() {
     }, [])
   );
 
-  const fetchData = async () => {
+  const fetchData = async (isInitialLoad = false) => {
     try {
-      setLoading(true);
+      // Only show loading on initial load, not on auto-refresh
+      if (isInitialLoad) {
+        setLoading(true);
+      }
       setError(null);
 
       // Fetch categories
@@ -157,12 +168,12 @@ export default function POSScreen() {
       // Fetch menu items
       const itemsRes = await menuItemAPI.getAll();
       const itemsData = itemsRes.data?.data || itemsRes.data || [];
-      
+
       // Ensure prices are numbers and parse sizes
       const formattedItems = itemsData.map((item: any) => {
         // Parse sizes from "SizeName - ₱Price" format to objects
         const parsedSizes: Array<{ name: string; price: number }> = [];
-        
+
         if (item.sizes && Array.isArray(item.sizes)) {
           item.sizes.forEach((sizeString: any) => {
             if (typeof sizeString === 'string') {
@@ -189,9 +200,10 @@ export default function POSScreen() {
           sizes: parsedSizes,
           hasFlavor: item.hasFlavor || false,
           flavors: item.flavors || [],
+          status: item.status || 'available',
         };
       });
-      
+
       setProducts(formattedItems);
 
       // Load saved cart from AsyncStorage
@@ -229,6 +241,14 @@ export default function POSScreen() {
     : products;
 
   const addToCart = (product: Product) => {
+    // Check if product is available
+    if (product.status === 'unavailable') {
+      setError('This item is currently unavailable');
+      // Clear error after 2 seconds
+      setTimeout(() => setError(null), 2000);
+      return;
+    }
+
     // If product has sizes or flavors, show options modal
     if (product.hasSize || product.hasFlavor) {
       setSelectedProductForOptions(product);
@@ -242,20 +262,20 @@ export default function POSScreen() {
     setCart(prev => {
       const itemPrice = product.price;
       const existingIndex = prev.findIndex(item => item.id === product.id && !item.selectedSize && !item.selectedFlavor);
-      
+
       if (existingIndex !== -1) {
         const updated = [...prev];
         updated[existingIndex].quantity += 1;
         return updated;
       }
-      
+
       return [...prev, { ...product, quantity: 1, itemPrice }];
     });
   };
 
   const addSelectedOptionsToCart = () => {
     if (!selectedProductForOptions) return;
-    
+
     const product = selectedProductForOptions;
     const sizePrice = selectedSize && product.sizes
       ? (product.sizes.find((s: any) => s.name === selectedSize)?.price || product.price)
@@ -414,7 +434,7 @@ export default function POSScreen() {
             </Text>
             <TouchableOpacity
               style={cashierStyles.checkoutButton}
-              onPress={fetchData}
+              onPress={() => fetchData(true)}
             >
               <Text style={cashierStyles.checkoutButtonText}>Retry</Text>
             </TouchableOpacity>
@@ -478,18 +498,25 @@ export default function POSScreen() {
                       justifyContent: 'flex-start',
                     }}
                     renderItem={({ item }) => (
-                      <View style={cashierStyles.productCard}>
+                      <View style={[cashierStyles.productCard, item.status === 'unavailable' && { opacity: 0.5 }]}>
                         <View style={cashierStyles.productImage}>
                           <Text style={{ fontSize: scaled(48), textAlign: 'center' }}>{categoryIcon}</Text>
                         </View>
                         <View style={cashierStyles.productBody}>
                           <Text style={cashierStyles.productName} numberOfLines={2}>{item.name}</Text>
                           <Text style={cashierStyles.productPrice}>₱{Number(item.price || 0).toFixed(2)}</Text>
+                          {item.status === 'unavailable' && (
+                            <Text style={{ fontSize: 11, color: '#ef4444', fontWeight: '600', marginTop: 4 }}>UNAVAILABLE</Text>
+                          )}
                         </View>
                         <View style={cashierStyles.productFooter}>
                           <TouchableOpacity
-                            style={cashierStyles.addToCartButton}
+                            style={[
+                              cashierStyles.addToCartButton,
+                              item.status === 'unavailable' && { opacity: 0.5 },
+                            ]}
                             onPress={() => addToCart(item)}
+                            disabled={item.status === 'unavailable'}
                           >
                             <Plus size={scaled(20)} color="#030213" />
                             <Text style={cashierStyles.addToCartButtonText}>Add</Text>

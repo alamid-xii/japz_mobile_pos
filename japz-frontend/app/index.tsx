@@ -1,10 +1,30 @@
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../constants/colors';
 import { authStyles } from '../styles/authStyles';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkApiConfig = async () => {
+      const savedUrl = await AsyncStorage.getItem('apiBaseUrl');
+      if (!savedUrl) {
+        // First time - redirect to server config
+        router.replace('/auth/server-config');
+      } else {
+        setIsLoading(false);
+      }
+    };
+    checkApiConfig();
+  }, [router]);
+
+  if (isLoading) {
+    return <View style={{ flex: 1, backgroundColor: Colors.light.background }} />;
+  }
 
   return (
     <ScrollView style={{ backgroundColor: Colors.light.background }}>
