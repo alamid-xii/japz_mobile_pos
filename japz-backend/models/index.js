@@ -30,6 +30,8 @@ import { MenuItem } from './menuItemModel.js';
 import { Order } from './orderModel.js';
 import { OrderItem } from './orderItemModel.js';
 import { Payment } from './paymentModel.js';
+import { Log } from './logModel.js';
+import { Feedback } from './feedbackModel.js';
 
 // Define associations
 Employee.belongsTo(KitchenStation, { foreignKey: 'assignedStationId', as: 'station' });
@@ -50,4 +52,8 @@ Payment.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 OrderItem.belongsTo(MenuItem, { foreignKey: 'menuItemId', as: 'menuItem' });
 MenuItem.hasMany(OrderItem, { foreignKey: 'menuItemId', as: 'orderItems' });
 
-export { User, Employee, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment };
+// Feedback associations
+Feedback.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+Order.hasMany(Feedback, { foreignKey: 'orderId', as: 'feedbacks' });
+
+export { User, Employee, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment, Log, Feedback };

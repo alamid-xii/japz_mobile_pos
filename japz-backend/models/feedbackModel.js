@@ -25,62 +25,67 @@ SOFTWARE.
 import { DataTypes } from "sequelize";
 import { sequelize } from "./db.js";
 
-export const Order = sequelize.define("Order", {
-  orderNumber: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  cashierId: {
+export const Feedback = sequelize.define("Feedback", {
+  orderId: {
     type: DataTypes.INTEGER,
     allowNull: true,
     references: {
-      model: 'users',
+      model: 'orders',
       key: 'id',
     },
   },
-  customerName: {
+  orderNumber: {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  subtotal: {
-    type: DataTypes.DECIMAL(10, 2),
+  rating: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 0.00,
+    validate: { min: 1, max: 5 },
   },
-  discount: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 0.00,
+  tags: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
   },
-  total: {
-    type: DataTypes.DECIMAL(10, 2),
+  comment: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  source: {
+    type: DataTypes.ENUM('google_form', 'direct', 'qr_code'),
     allowNull: false,
-    defaultValue: 0.00,
+    defaultValue: 'qr_code',
+  },
+  googleFormResponseId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
+  aiAnalysis: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: null,
+  },
+  themes: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
+  },
+  sentiment: {
+    type: DataTypes.ENUM('positive', 'neutral', 'negative'),
+    allowNull: true,
+  },
+  processed: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   },
   status: {
-    type: DataTypes.ENUM('pending', 'preparing', 'ready', 'completed', 'cancelled'),
+    type: DataTypes.ENUM('pending', 'processed', 'archived'),
     allowNull: false,
     defaultValue: 'pending',
   },
-  completedAt: {
-    type: DataTypes.DATE,
-    allowNull: true,
-    defaultValue: null,
-  },
-  orderType: {
-    type: DataTypes.ENUM('dine-in', 'take-out', 'delivery'),
-    allowNull: true,
-    defaultValue: null,
-  },
-  tableNumber: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    defaultValue: null,
-  },
-  notes: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-    defaultValue: null,
-  },
 });
+
+export { sequelize };

@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
+    "start": "node index.js",
     "xian-start": "node index.js",
     "xian": "nodemon index.js",
     "migrate": "node migrate.js",
@@ -13,9 +17,11 @@
     "create:controller": "node create.js controller"
   },
   "dependencies": {
+    "axios": "^1.13.2",
     "bcrypt": "^5.1.0",
     "connect-flash": "^0.1.1",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^4.19.2",
     "express-session": "^1.17.3",
     "hbs": "^4.2.0",

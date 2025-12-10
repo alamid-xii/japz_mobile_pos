@@ -22,7 +22,8 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     */
-    
+
+import 'dotenv/config';
 import express from "express";
 import path from "path";
 import session from "express-session";
@@ -34,7 +35,7 @@ import cors from "cors";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { sequelize } from "./models/userModel.js";
-import { User, Employee, Order, OrderItem, Payment, MenuItem } from "./models/index.js";
+import { User, Employee, Order, OrderItem, Payment, MenuItem, Log } from "./models/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -48,7 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use(session({
-  secret: "xianfire-secret-key",
+  secret: process.env.JWT_SECRET || "xianfire-secret-key",
   resave: false,
   saveUninitialized: false
 }));
@@ -59,7 +60,7 @@ await sequelize.sync();
 
 app.engine("xian", async (filePath, options, callback) => {
   try {
-     const originalPartialsDir = hbs.partialsDir;
+    const originalPartialsDir = hbs.partialsDir;
     hbs.partialsDir = path.join(__dirname, 'views');
 
     const result = await new Promise((resolve, reject) => {
@@ -91,10 +92,10 @@ fs.readdir(partialsDir, (err, files) => {
     return;
   }
 
-   files
+  files
     .filter(file => file.endsWith('.xian'))
     .forEach(file => {
-      const partialName = file.replace('.xian', ''); 
+      const partialName = file.replace('.xian', '');
       const fullPath = path.join(partialsDir, file);
 
       fs.readFile(fullPath, 'utf8', (err, content) => {
@@ -103,7 +104,7 @@ fs.readdir(partialsDir, (err, files) => {
           return;
         }
         hbs.registerPartial(partialName, content);
-        
+
       });
     });
 });
@@ -113,5 +114,5 @@ app.use("/", router);
 export default app;
 
 if (!process.env.ELECTRON) {
-  app.listen(PORT, () => console.log(`🔥 XianFire running at http://localhost:${PORT}`));
+  app.listen(PORT, '0.0.0.0', () => console.log(`🔥 XianFire running on port ${PORT}`));
 }
