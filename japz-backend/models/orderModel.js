@@ -34,10 +34,11 @@ export const Order = sequelize.define("Order", {
   cashierId: {
     type: DataTypes.INTEGER,
     allowNull: true,
-    references: {
-      model: 'users',
-      key: 'id',
-    },
+  },
+  preparedById: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'Kitchen staff who prepared this order',
   },
   customerName: {
     type: DataTypes.STRING,
@@ -75,6 +76,11 @@ export const Order = sequelize.define("Order", {
   },
   tableNumber: {
     type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: null,
+  },
+  deliveryAddress: {
+    type: DataTypes.TEXT,
     allowNull: true,
     defaultValue: null,
   },

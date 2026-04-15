@@ -17,12 +17,6 @@ export const MenuItem = sequelize.define(
     categoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'menu_categories',
-        key: 'id',
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE',
     },
     price: {
       type: DataTypes.DECIMAL(10, 2),
@@ -50,9 +44,44 @@ export const MenuItem = sequelize.define(
       type: DataTypes.JSON,
       allowNull: true,
     },
+    hasTemperature: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
+    temperatures: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: ['Hot', 'Cold'],
+    },
     status: {
       type: DataTypes.ENUM('available', 'unavailable'),
       defaultValue: 'available',
+      allowNull: false,
+    },
+    trackStock: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      allowNull: false,
+    },
+    stock: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    defaultStock: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    lastStockReset: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      defaultValue: null,
+    },
+    archived: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
       allowNull: false,
     },
   },

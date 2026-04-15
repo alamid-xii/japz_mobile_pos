@@ -24,6 +24,7 @@ SOFTWARE.
 */
 import { Feedback } from "../models/feedbackModel.js";
 import { Order } from "../models/orderModel.js";
+import { OrderItem } from "../models/orderItemModel.js";
 import { sequelize } from "../models/db.js";
 import { analyzeWithKeywords } from "../services/gemmaService.js";
 
@@ -271,7 +272,14 @@ export const getAllFeedback = async (req, res) => {
                 {
                     model: Order,
                     as: 'order',
-                    attributes: ['id', 'orderNumber', 'customerName', 'total', 'createdAt']
+                    attributes: ['id', 'orderNumber', 'customerName', 'total', 'createdAt'],
+                    include: [
+                        {
+                            model: OrderItem,
+                            as: 'items',
+                            attributes: ['name', 'quantity']
+                        }
+                    ]
                 }
             ],
             order: [['createdAt', 'DESC']],

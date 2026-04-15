@@ -29,10 +29,7 @@ export const Feedback = sequelize.define("Feedback", {
   orderId: {
     type: DataTypes.INTEGER,
     allowNull: true,
-    references: {
-      model: 'orders',
-      key: 'id',
-    },
+    // Foreign key relationship defined in models/index.js associations
   },
   orderNumber: {
     type: DataTypes.STRING,

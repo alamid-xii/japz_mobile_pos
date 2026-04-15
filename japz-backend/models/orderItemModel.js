@@ -29,18 +29,10 @@ export const OrderItem = sequelize.define("OrderItem", {
   orderId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: {
-      model: 'orders',
-      key: 'id',
-    },
   },
   menuItemId: {
     type: DataTypes.INTEGER,
     allowNull: true,
-    references: {
-      model: 'menu_items',
-      key: 'id',
-    },
   },
   name: {
     type: DataTypes.STRING,

@@ -143,21 +143,41 @@ export const analyzeWithKeywords = (comment) => {
 
     const lowerComment = comment.toLowerCase();
 
-    // Sentiment keywords with word boundaries
+    // Sentiment keywords with word boundaries - English, Tagalog, Taglish
     const positiveKeywords = [
+        // English
         'good', 'great', 'excellent', 'amazing', 'love', 'perfect', 'best', 'awesome',
         'fantastic', 'delicious', 'tasty', 'wonderful', 'outstanding', 'superb', 'brilliant',
         'impressed', 'satisfied', 'happy', 'pleased', 'recommend', 'fresh', 'clean',
         'quick', 'fast', 'efficient', 'friendly', 'polite', 'helpful', 'attentive',
         'nice', 'lovely', 'enjoyed', 'like', 'quality', 'prompt', 'excellent', 'superior',
-        'outstanding', 'terrific', 'wonderful', 'marvelous', 'superb'
+        'outstanding', 'terrific', 'wonderful', 'marvelous', 'superb',
+        // Tagalog & Taglish
+        'masarap', 'sarap', 'sulit', 'okay', 'ok', 'maganda', 'ganda', 'solid', 'astig',
+        'ansarap', 'ansaya', 'masaya', 'sobrang', 'grabe', 'panalo', 'winner', 'busog',
+        'mabilis', 'maalat', 'matamis', 'malasa', 'malambot', 'luto', 'lutong', 'bongga',
+        'ang galing', 'ang sarap', 'ang bilis', 'masarap', 'worth it', 'bet', 'saya',
+        'goods', 'swabe', 'ayos', 'ayus', 'galing', 'napakasarap', 'sosyal', 'masustansya',
+        'malinis', 'presko', 'pogi', 'gwapo', 'friendly', 'mabait', 'maasikaso',
+        'nakakatuwa', 'lodi', 'petmalu', 'werpa', 'husay', 'solid', 'legit', 'idol'
     ];
 
     const negativeKeywords = [
+        // English
         'bad', 'terrible', 'awful', 'hate', 'worst', 'poor', 'slow', 'burnt',
         'disgusting', 'rude', 'wait', 'long', 'overpriced', 'expensive', 'disappointing',
         'stale', 'dirty', 'unclean', 'unprofessional', 'problem', 'issue', 'never',
-        'complaint', 'horrible', 'nasty', 'disgusted', 'upset', 'sad'
+        'complaint', 'horrible', 'nasty', 'disgusted', 'upset', 'sad',
+        // Tagalog & Taglish
+        'pangit', 'pangit', 'walang kwenta', 'basura', 'mahal', 'sobrang mahal',
+        'mabagal', 'sobrang bagal', 'matagal', 'tagal', 'malamig', 'lamig', 'matigas',
+        'hilaw', 'sunog', 'pait', 'mapait', 'matabang', 'tabang', 'maalat', 'alat',
+        'maduming', 'marumi', 'madumi', 'amoy', 'mabaho', 'baho', 'bulok', 'panis',
+        'bastos', 'rude', 'masungit', 'sungit', 'kuripot', 'di worth it', 'hindi sulit',
+        'di sulit', 'hnd sulit', 'scam', 'nakakalungkot', 'lungkot', 'kalungkutan',
+        'nakakadismaya', 'dismayado', 'dismaya', 'badtrip', 'bad trip', 'nakakainis',
+        'inis', 'galit', 'nakakagalit', 'pangit lasa', 'walang lasa', 'maliit portion',
+        'konti', 'kulang', 'langgam', 'ipis', 'buhok', 'dumi', 'nakakasuka', 'suka'
     ];
 
     // Helper function to match words with boundaries
@@ -192,15 +212,15 @@ export const analyzeWithKeywords = (comment) => {
     if (sentimentScore >= 1) sentiment = 'positive';
     else if (sentimentScore <= -1) sentiment = 'negative';
 
-    // Theme detection
+    // Theme detection - English, Tagalog, Taglish
     const themeKeywords = {
-        'Food Quality': ['food', 'taste', 'flavor', 'delicious', 'fresh', 'quality'],
-        'Wait Time': ['wait', 'slow', 'long', 'quick', 'fast', 'speed'],
-        'Temperature': ['cold', 'hot', 'warm', 'burnt', 'temperature'],
-        'Service': ['staff', 'service', 'friendly', 'polite', 'helpful', 'rude'],
-        'Pricing': ['price', 'expensive', 'cheap', 'value', 'cost'],
-        'Cleanliness': ['clean', 'dirty', 'hygiene', 'sanitary', 'messy'],
-        'Ambiance': ['ambiance', 'atmosphere', 'music', 'noise', 'crowded']
+        'Food Quality': ['food', 'taste', 'flavor', 'delicious', 'fresh', 'quality', 'lasa', 'masarap', 'sarap', 'pagkain', 'ulam', 'lutong', 'luto', 'timpla', 'tamis', 'alat', 'anghang'],
+        'Wait Time': ['wait', 'slow', 'long', 'quick', 'fast', 'speed', 'matagal', 'tagal', 'bagal', 'mabagal', 'mabilis', 'bilis', 'antay', 'hintay'],
+        'Temperature': ['cold', 'hot', 'warm', 'burnt', 'temperature', 'malamig', 'lamig', 'mainit', 'init', 'sunog', 'hilaw'],
+        'Service': ['staff', 'service', 'friendly', 'polite', 'helpful', 'rude', 'crew', 'waiter', 'server', 'mabait', 'masungit', 'sungit', 'asikaso', 'maalaga', 'kuya', 'ate', 'bastos'],
+        'Pricing': ['price', 'expensive', 'cheap', 'value', 'cost', 'mahal', 'mura', 'presyo', 'sulit', 'worth', 'halaga'],
+        'Cleanliness': ['clean', 'dirty', 'hygiene', 'sanitary', 'messy', 'malinis', 'linis', 'marumi', 'dumi', 'kadiri', 'amoy', 'baho', 'maduming'],
+        'Ambiance': ['ambiance', 'atmosphere', 'music', 'noise', 'crowded', 'lugar', 'paligid', 'maingay', 'tahimik', 'aircon', 'lamig', 'init', 'siksikan']
     };
 
     const detectedThemes = [];

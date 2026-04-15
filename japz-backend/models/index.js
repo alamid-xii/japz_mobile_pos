@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import { User } from './userModel.js';
-import { Employee } from './employeeModel.js';
 import { KitchenStation } from './kitchenStationModel.js';
 import { MenuCategory } from './menuCategoryModel.js';
 import { MenuItem } from './menuItemModel.js';
@@ -32,16 +31,19 @@ import { OrderItem } from './orderItemModel.js';
 import { Payment } from './paymentModel.js';
 import { Log } from './logModel.js';
 import { Feedback } from './feedbackModel.js';
+import { Discount } from './discountModel.js';
+import { Voucher } from './voucherModel.js';
 
 // Define associations
-Employee.belongsTo(KitchenStation, { foreignKey: 'assignedStationId', as: 'station' });
-KitchenStation.hasMany(Employee, { foreignKey: 'assignedStationId', as: 'employees' });
+
 
 MenuCategory.hasMany(MenuItem, { foreignKey: 'categoryId', as: 'menuItems' });
 MenuItem.belongsTo(MenuCategory, { foreignKey: 'categoryId', as: 'category' });
 
 Order.belongsTo(User, { foreignKey: 'cashierId', as: 'cashier' });
+Order.belongsTo(User, { foreignKey: 'preparedById', as: 'preparedBy' });
 User.hasMany(Order, { foreignKey: 'cashierId', as: 'orders' });
+User.hasMany(Order, { foreignKey: 'preparedById', as: 'preparedOrders' });
 
 Order.hasMany(OrderItem, { foreignKey: 'orderId', as: 'items' });
 OrderItem.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
@@ -56,4 +58,4 @@ MenuItem.hasMany(OrderItem, { foreignKey: 'menuItemId', as: 'orderItems' });
 Feedback.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 Order.hasMany(Feedback, { foreignKey: 'orderId', as: 'feedbacks' });
 
-export { User, Employee, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment, Log, Feedback };
+export { User, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment, Log, Feedback, Discount, Voucher };

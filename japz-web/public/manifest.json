@@ -1,0 +1,22 @@
+{
+    "name": "JAPZ POS",
+    "short_name": "JAPZ POS",
+    "description": "Complete POS and Communication System",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#FFCE1B",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/logo.jpg",
+            "sizes": "192x192",
+            "type": "image/jpeg"
+        },
+        {
+            "src": "/logo.jpg",
+            "sizes": "512x512",
+            "type": "image/jpeg"
+        }
+    ]
+}

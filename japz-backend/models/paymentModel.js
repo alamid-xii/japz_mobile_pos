@@ -29,10 +29,6 @@ export const Payment = sequelize.define("Payment", {
   orderId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: {
-      model: 'orders',
-      key: 'id',
-    },
   },
   method: {
     type: DataTypes.ENUM('cash', 'card', 'digital'),
