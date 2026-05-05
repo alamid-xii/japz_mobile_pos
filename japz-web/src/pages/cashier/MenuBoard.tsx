@@ -70,8 +70,8 @@ export default function MenuBoard() {
             // Capture using the element's rendered size and scale so preview/fullscreen match the PNG
             const canvas = await html2canvas(el, {
                 scale,
-                width: Math.round(rect.width),
-                height: Math.round(rect.height),
+                width: width,
+                height: height,
                 useCORS: true,
                 allowTaint: false,
                 logging: false,

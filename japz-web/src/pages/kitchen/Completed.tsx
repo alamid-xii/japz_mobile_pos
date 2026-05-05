@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, ChevronDown, ChevronUp, CheckCircle2, User, UtensilsCrossed, StickyNote, Calendar, MapPin } from 'lucide-react';
+import { Clock, ChevronDown, ChevronUp, CheckCircle2, UtensilsCrossed, StickyNote, Calendar, MapPin } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 
