@@ -26,6 +26,7 @@
 import { sequelize } from "./models/db.js";
 import { User } from "./models/userModel.js";
 import { Employee } from "./models/employeeModel.js";
+import { BusinessHours } from "./models/businessHoursModel.js";
 import bcrypt from "bcrypt";
 
 async function seed() {
@@ -35,11 +36,11 @@ async function seed() {
 
     // Check if admin already exists
     const existingAdmin = await User.findOne({ where: { email: 'admin@gmail.com' } });
-    const existingCashierUser = await User.findOne({ where: { email: 'cashier@gmail.com' } });
-    const existingCashierEmployee = await Employee.findOne({ where: { email: 'cashier@gmail.com' } });
+    const existingCashier = await User.findOne({ where: { email: 'allaimanimtim06@gmail.com' } });
+    const existingKitchen = await User.findOne({ where: { email: 'felipcoz04@gmail.com' } });
     
-    if (existingAdmin && existingCashierUser && existingCashierEmployee) {
-      console.log("ℹ️  Admin and Cashier accounts already exist. Skipping seed.");
+    if (existingAdmin && existingCashier && existingKitchen) {
+      console.log("ℹ️  All accounts already exist. Skipping seed.");
       return;
     }
 
@@ -52,7 +53,8 @@ async function seed() {
         name: 'Admin',
         email: 'admin@gmail.com',
         password: hashedPassword,
-        role: 'admin'
+        role: 'admin',
+        status: 'approved'
       });
       console.log("✅ Admin account created successfully!");
       console.log("📧 Email: admin@gmail.com");
@@ -60,30 +62,43 @@ async function seed() {
     }
 
     // Create cashier user if not exists
-    if (!existingCashierUser) {
+    if (!existingCashier) {
       await User.create({
         name: 'Cashier',
-        email: 'cashier@gmail.com',
+        email: 'allaimanimtim06@gmail.com',
         password: hashedPassword,
-        role: 'cashier'
+        role: 'cashier',
+        status: 'approved'
       });
       console.log("✅ Cashier account created successfully!");
-      console.log("📧 Email: cashier@gmail.com");
+      console.log("📧 Email: allaimanimtim06@gmail.com");
       console.log("🔑 Password: password");
     }
 
-    // Create cashier employee record if not exists
-    if (!existingCashierEmployee) {
-      await Employee.create({
-        name: 'Cashier',
-        email: 'cashier@gmail.com',
-        phone: '09123456789',
+    // Create kitchen user if not exists
+    if (!existingKitchen) {
+      await User.create({
+        name: 'Kitchen',
+        email: 'felipcoz04@gmail.com',
         password: hashedPassword,
-        role: 'cashier',
-        status: 'active',
-        joinDate: new Date().toISOString().split('T')[0]
+        role: 'kitchen',
+        status: 'approved'
       });
-      console.log("✅ Cashier employee record created successfully!");
+      console.log("✅ Kitchen account created successfully!");
+      console.log("📧 Email: felipcoz04@gmail.com");
+      console.log("🔑 Password: password");
+    }
+
+    // Create default business hours if not exists
+    const existingBusinessHours = await BusinessHours.findOne();
+    if (!existingBusinessHours) {
+      await BusinessHours.create({
+        openTime: '09:00:00',
+        closeTime: '22:00:00',
+        applyCashier: true,
+        applyKitchen: true
+      });
+      console.log("✅ Default business hours created (09:00 - 22:00)!");
     }
   } catch (err) {
     console.error("❌ Seeding failed:", err);

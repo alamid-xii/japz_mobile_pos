@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Clock, ChefHat, CheckCircle, UtensilsCrossed, User, StickyNote, Play, Check, MapPin } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Clock, ChefHat, CheckCircle, UtensilsCrossed, User, StickyNote, Play, Check, MapPin, Speaker, Mic } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -28,6 +28,10 @@ interface KitchenOrder {
 
 export default function KitchenIncoming() {
     const { user } = useAuth();
+    const [speakerEnabled, setSpeakerEnabled] = useState(true);
+    const [listening, setListening] = useState(false);
+    const recognitionRef = useRef<any>(null);
+    const prevOrderIdsRef = useRef<number[]>([]);
     const [orders, setOrders] = useState<KitchenOrder[]>([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('pending');
@@ -38,10 +42,72 @@ export default function KitchenIncoming() {
             const res = await ordersAPI.getIncomingByCategories({ 
                 assignedCategories: user?.assignedCategories || [] 
             }); 
-            setOrders(res.data?.orders || []); 
+            const newOrders: KitchenOrder[] = res.data?.orders || [];
+            // Announce newly arrived orders when speaker is enabled
+            if (speakerEnabled && prevOrderIdsRef.current && prevOrderIdsRef.current.length) {
+                const prevSet = new Set(prevOrderIdsRef.current);
+                const added = newOrders.filter(o => !prevSet.has(o.id));
+                if (added.length > 0) {
+                    added.forEach(o => announceOrder(o));
+                }
+            }
+            prevOrderIdsRef.current.length = 0;
+            newOrders.forEach(o => prevOrderIdsRef.current.push(o.id));
+            setOrders(newOrders);
         }
         catch (e) { console.error(e); }
         finally { setLoading(false); }
+    };
+
+    const speakText = (text: string) => {
+        try {
+            const utter = new SpeechSynthesisUtterance(text);
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utter);
+        } catch (e) { console.error('TTS error', e); }
+    };
+
+    const announceOrder = (order: KitchenOrder) => {
+        const message = `New order ${order.orderNumber}. Please check the incoming orders.`;
+        // play short beep then speak
+        try {
+            // simple beep using WebAudio
+            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = 'sine'; o.frequency.value = 880;
+            g.gain.value = 0.05;
+            o.connect(g); g.connect(ctx.destination);
+            o.start();
+            setTimeout(() => { o.stop(); ctx.close(); }, 150);
+        } catch (e) { /* ignore audio errors */ }
+        speakText(message);
+    };
+
+    const startListening = () => {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) return alert('Speech recognition not supported in this browser');
+        try {
+            const rec = new SpeechRecognition();
+            rec.lang = 'en-US';
+            rec.interimResults = false;
+            rec.maxAlternatives = 1;
+            rec.onstart = () => setListening(true);
+            rec.onend = () => setListening(false);
+            rec.onerror = (e: any) => { console.error('Recognition error', e); setListening(false); };
+            rec.onresult = (ev: any) => {
+                const text = ev.results[0][0].transcript;
+                // speak out the recognized text as a broadcast
+                speakText(text);
+            };
+            rec.start();
+            recognitionRef.current = rec;
+        } catch (e) { console.error(e); }
+    };
+
+    const stopListening = () => {
+        try { recognitionRef.current?.stop(); } catch (e) { }
+        setListening(false);
     };
 
     useEffect(() => { 
@@ -181,9 +247,21 @@ export default function KitchenIncoming() {
     return (
         <div className="p-4 md:p-6">
             {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Kitchen Orders</h1>
-                <p className="text-gray-500 text-sm mt-1">Manage incoming orders for your assigned stations</p>
+            <div className="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">Kitchen Orders</h1>
+                    <p className="text-gray-500 text-sm mt-1">Manage incoming orders for your assigned stations</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button onClick={() => setSpeakerEnabled(prev => !prev)} title={speakerEnabled ? 'Speaker on' : 'Speaker off'}
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition cursor-pointer border border-gray-200 ${speakerEnabled ? 'bg-yellow-100 text-yellow-700' : 'hover:bg-gray-100 text-gray-600'}`}>
+                        <Speaker size={18} />
+                    </button>
+                    <button onClick={() => listening ? stopListening() : startListening()} title={listening ? 'Stop listening' : 'Broadcast via mic'}
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition cursor-pointer border border-gray-200 ${listening ? 'bg-red-100 text-red-600' : 'hover:bg-gray-100 text-gray-600'}`}>
+                        <Mic size={18} />
+                    </button>
+                </div>
             </div>
 
             {/* Status Filter Tabs */}

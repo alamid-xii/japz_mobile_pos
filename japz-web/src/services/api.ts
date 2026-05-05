@@ -201,4 +201,10 @@ export const discountsVouchersAPI = {
     redeemVoucher: (code: string) => api.post('/api/vouchers/redeem', { code }),
 };
 
+export const businessHoursAPI = {
+    get: () => api.get('/api/business-hours'),
+    update: (data: { openTime: string; closeTime: string; applyCashier: boolean; applyKitchen: boolean }) =>
+        api.put('/api/business-hours', data),
+};
+
 export default api;

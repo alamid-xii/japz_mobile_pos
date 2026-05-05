@@ -33,6 +33,7 @@ import { Log } from './logModel.js';
 import { Feedback } from './feedbackModel.js';
 import { Discount } from './discountModel.js';
 import { Voucher } from './voucherModel.js';
+import { BusinessHours } from './businessHoursModel.js';
 
 // Define associations
 
@@ -58,4 +59,4 @@ MenuItem.hasMany(OrderItem, { foreignKey: 'menuItemId', as: 'orderItems' });
 Feedback.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 Order.hasMany(Feedback, { foreignKey: 'orderId', as: 'feedbacks' });
 
-export { User, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment, Log, Feedback, Discount, Voucher };
+export { User, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment, Log, Feedback, Discount, Voucher, BusinessHours };

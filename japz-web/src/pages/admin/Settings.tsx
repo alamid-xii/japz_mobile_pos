@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, ChevronDown, Eye, EyeOff, Download, QrCode, RefreshCw } from 'lucide-react';
-import { authAPI, logsAPI, qrKeyAPI } from '../../services/api';
+import { LogOut, ChevronDown, Eye, EyeOff, Download, QrCode, RefreshCw, Clock } from 'lucide-react';
+import { authAPI, logsAPI, qrKeyAPI, businessHoursAPI } from '../../services/api';
 
 export default function Settings() {
     const { user, logout } = useAuth();
@@ -13,6 +13,7 @@ export default function Settings() {
     const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
         profile: false,
         logs: false,
+        businessHours: false,
         qrcode: false,
     });
     const [isEditing, setIsEditing] = useState(false);
@@ -26,6 +27,13 @@ export default function Settings() {
     });
     const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [downloadingLogs, setDownloadingLogs] = useState(false);
+    const [businessHoursData, setBusinessHoursData] = useState({
+        openTime: '09:00',
+        closeTime: '22:00',
+        applyCashier: true,
+        applyKitchen: true
+    });
+    const [savingBusinessHours, setSavingBusinessHours] = useState(false);
     const [formData, setFormData] = useState({
         name: user?.name || '',
         email: user?.email || '',
@@ -49,6 +57,25 @@ export default function Settings() {
             }).catch(() => { });
         }
     }, [expandedSections.qrcode]);
+
+    // Fetch business hours when business hours section is expanded
+    useEffect(() => {
+        if (expandedSections.businessHours) {
+            businessHoursAPI.get().then(res => {
+                if (res.data) {
+                    // Convert time format from HH:MM:SS to HH:MM
+                    const openTime = res.data.openTime?.substring(0, 5) || '09:00';
+                    const closeTime = res.data.closeTime?.substring(0, 5) || '22:00';
+                    setBusinessHoursData({
+                        openTime,
+                        closeTime,
+                        applyCashier: res.data.applyCashier ?? true,
+                        applyKitchen: res.data.applyKitchen ?? true
+                    });
+                }
+            }).catch(() => { });
+        }
+    }, [expandedSections.businessHours]);
 
     const handleLogout = async () => {
         if (window.confirm('Are you sure you want to logout?')) {
@@ -122,6 +149,32 @@ export default function Settings() {
             newPassword: '',
             confirmPassword: ''
         });
+    };
+
+    const handleSaveBusinessHours = async () => {
+        try {
+            setSavingBusinessHours(true);
+            await businessHoursAPI.update(businessHoursData);
+            
+            // Refetch business hours to confirm they were saved
+            const hoursResponse = await businessHoursAPI.get();
+            if (hoursResponse.data) {
+                const openTime = hoursResponse.data.openTime?.substring(0, 5) || '09:00';
+                const closeTime = hoursResponse.data.closeTime?.substring(0, 5) || '22:00';
+                setBusinessHoursData({
+                    openTime,
+                    closeTime,
+                    applyCashier: hoursResponse.data.applyCashier ?? true,
+                    applyKitchen: hoursResponse.data.applyKitchen ?? true
+                });
+            }
+            
+            alert(`✅ Business hours updated successfully!\n\nNew hours: ${businessHoursData.openTime} - ${businessHoursData.closeTime}`);
+        } catch (error: any) {
+            alert(error.response?.data?.error || 'Failed to update business hours');
+        } finally {
+            setSavingBusinessHours(false);
+        }
     };
 
     const handleDownloadLogs = async () => {
@@ -390,6 +443,97 @@ export default function Settings() {
                     >
                         <Download size={18} />
                         {downloadingLogs ? 'Generating...' : 'Download Logs as CSV'}
+                    </button>
+                </div>
+            )}
+
+            {/* Business Hours Section */}
+            <button
+                onClick={() => toggleSection('businessHours')}
+                className="w-full bg-white border border-gray-200 rounded-lg p-4 mb-4 flex justify-between items-center hover:bg-gray-50 transition"
+            >
+                <div className="text-left">
+                    <h2 className="text-base font-semibold">Business Hours</h2>
+                    <p className="text-sm text-gray-500">Set operating hours for cashier and kitchen staff</p>
+                </div>
+                <ChevronDown size={20} className={`text-brand-dark transition-transform ${expandedSections.businessHours ? 'rotate-180' : ''}`} />
+            </button>
+
+            {expandedSections.businessHours && (
+                <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 space-y-4">
+                    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg mb-2">
+                        <Clock size={18} className="text-blue-600" />
+                        <p className="text-sm text-blue-700">Set the opening and closing times for your staff members</p>
+                    </div>
+
+                    {/* Opening Time */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Opening Time</label>
+                        <input
+                            type="time"
+                            value={businessHoursData.openTime}
+                            onChange={(e) => setBusinessHoursData({ ...businessHoursData, openTime: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                        />
+                    </div>
+
+                    {/* Closing Time */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Closing Time</label>
+                        <input
+                            type="time"
+                            value={businessHoursData.closeTime}
+                            onChange={(e) => setBusinessHoursData({ ...businessHoursData, closeTime: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                        />
+                    </div>
+
+                    {/* Apply to Roles */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Apply to Roles</label>
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                                <input
+                                    type="checkbox"
+                                    checked={businessHoursData.applyCashier}
+                                    onChange={(e) => setBusinessHoursData({ ...businessHoursData, applyCashier: e.target.checked })}
+                                    className="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-2 focus:ring-yellow-400"
+                                />
+                                <span className="font-medium text-gray-700">Apply to Cashier Staff</span>
+                            </label>
+                            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                                <input
+                                    type="checkbox"
+                                    checked={businessHoursData.applyKitchen}
+                                    onChange={(e) => setBusinessHoursData({ ...businessHoursData, applyKitchen: e.target.checked })}
+                                    className="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-2 focus:ring-yellow-400"
+                                />
+                                <span className="font-medium text-gray-700">Apply to Kitchen Staff</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Summary */}
+                    {(businessHoursData.applyCashier || businessHoursData.applyKitchen) && (
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p className="text-sm text-amber-700">
+                                <span className="font-semibold">Operating Hours:</span> {businessHoursData.openTime} - {businessHoursData.closeTime}
+                                <br />
+                                <span className="font-semibold">Applied to:</span> {[
+                                    businessHoursData.applyCashier && 'Cashier',
+                                    businessHoursData.applyKitchen && 'Kitchen'
+                                ].filter(Boolean).join(' and ')}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Save Button */}
+                    <button
+                        onClick={handleSaveBusinessHours}
+                        disabled={savingBusinessHours || (!businessHoursData.applyCashier && !businessHoursData.applyKitchen)}
+                        className="w-full py-2 bg-brand text-brand-dark rounded-lg font-semibold hover:shadow-md disabled:opacity-50 transition"
+                    >
+                        {savingBusinessHours ? 'Saving...' : 'Save Business Hours'}
                     </button>
                 </div>
             )}

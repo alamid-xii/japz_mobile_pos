@@ -35,6 +35,7 @@ import { Order } from "./models/orderModel.js";
 import { OrderItem } from "./models/orderItemModel.js";
 import { Payment } from "./models/paymentModel.js";
 import { Log } from "./models/logModel.js";
+import { BusinessHours } from "./models/businessHoursModel.js";
 import { seed } from "./seed.js";
 import { seedMenu } from "./seedMenu.js";
 import inquirer from "inquirer";

@@ -20,6 +20,7 @@ import { Log } from "../models/logModel.js";
 import { Feedback } from "../models/feedbackModel.js";
 import { Discount } from "../models/discountModel.js";
 import { Voucher } from "../models/voucherModel.js";
+import { BusinessHours } from "../models/businessHoursModel.js";
 import { analyzeWithKeywords } from "../services/gemmaService.js";
 import { sendVerificationCode, verifyCode, sendApprovalEmail, sendPasswordResetCode, verifyPasswordResetCode } from "../services/emailService.js";
 
@@ -2813,6 +2814,74 @@ router.post("/api/vouchers/redeem", verifyToken, async (req, res) => {
     await createLog(req.user.id, 'redeem', 'voucher', voucher.id, req);
 
     res.json({ message: 'Voucher redeemed successfully', voucher });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ========== BUSINESS HOURS API ==========
+
+// Get business hours (or create default if doesn't exist)
+// Public endpoint so login page can fetch hours before authentication
+router.get("/api/business-hours", async (req, res) => {
+  try {
+    let businessHours = await BusinessHours.findOne();
+    
+    // If no business hours record exists, create a default one
+    if (!businessHours) {
+      businessHours = await BusinessHours.create({
+        openTime: "09:00:00",
+        closeTime: "22:00:00",
+        applyCashier: true,
+        applyKitchen: true
+      });
+    }
+    
+    res.json(businessHours);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update business hours
+router.put("/api/business-hours", verifyToken, async (req, res) => {
+  try {
+    const { openTime, closeTime, applyCashier, applyKitchen } = req.body;
+    console.log('PUT /api/business-hours body:', req.body, 'user:', req.user?.id);
+    
+    // Convert HH:MM format to HH:MM:SS if needed
+    const formatTime = (time) => {
+      if (!time) return null;
+      // If time is already HH:MM:SS format (contains 8 chars), return as is
+      if (time.length === 8) return time;
+      // If time is HH:MM format (5 chars), add :00 seconds
+      if (time.length === 5) return time + ':00';
+      return time;
+    };
+    
+    let businessHours = await BusinessHours.findOne();
+    
+    // If no business hours record exists, create one
+    if (!businessHours) {
+      businessHours = await BusinessHours.create({
+        openTime: formatTime(openTime) || "09:00:00",
+        closeTime: formatTime(closeTime) || "22:00:00",
+        applyCashier: applyCashier !== undefined ? applyCashier : true,
+        applyKitchen: applyKitchen !== undefined ? applyKitchen : true
+      });
+    } else {
+      // Update existing record
+      if (openTime !== undefined) businessHours.openTime = formatTime(openTime);
+      if (closeTime !== undefined) businessHours.closeTime = formatTime(closeTime);
+      if (applyCashier !== undefined) businessHours.applyCashier = applyCashier;
+      if (applyKitchen !== undefined) businessHours.applyKitchen = applyKitchen;
+      
+      await businessHours.save();
+    }
+    
+    await createLog(req.user.id, 'update', 'business_hours', businessHours.id, req);
+    
+    res.json({ message: 'Business hours updated successfully', businessHours });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

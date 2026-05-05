@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Plus, Minus, ShoppingCart, Speaker, Mic } from 'lucide-react';
 import { menuCategoryAPI, menuItemAPI, salesAPI } from '../../services/api';
 
 interface Category { id: number; name: string; }
@@ -40,6 +40,9 @@ export default function POS() {
     const [selectedSize, setSelectedSize] = useState('');
     const [selectedFlavor, setSelectedFlavor] = useState('');
     const [selectedTemperature, setSelectedTemperature] = useState('');
+    const [speakerEnabled, setSpeakerEnabled] = useState(true);
+    const [listening, setListening] = useState(false);
+    const recognitionRef = useRef<any>(null);
 
     useEffect(() => { const saved = localStorage.getItem('cashierCart'); if (saved) try { setCart(JSON.parse(saved)); } catch { /* ignore */ } }, []);
     useEffect(() => { localStorage.setItem('cashierCart', JSON.stringify(cart)); }, [cart]);
@@ -105,6 +108,40 @@ export default function POS() {
     }, [selectedCategory]);
 
     useEffect(() => { fetchData(true); }, []);
+
+    const speakText = (text: string) => {
+        try {
+            const utter = new SpeechSynthesisUtterance(text);
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utter);
+        } catch (e) { console.error('TTS error', e); }
+    };
+
+    const startListening = () => {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) return alert('Speech recognition not supported in this browser');
+        try {
+            const rec = new SpeechRecognition();
+            rec.lang = 'en-US';
+            rec.interimResults = false;
+            rec.maxAlternatives = 1;
+            rec.onstart = () => setListening(true);
+            rec.onend = () => setListening(false);
+            rec.onerror = (e: any) => { console.error('Recognition error', e); setListening(false); };
+            rec.onresult = (ev: any) => {
+                const text = ev.results[0][0].transcript;
+                // speak back as confirmation
+                speakText(text);
+            };
+            rec.start();
+            recognitionRef.current = rec;
+        } catch (e) { console.error(e); }
+    };
+
+    const stopListening = () => {
+        try { recognitionRef.current?.stop(); } catch (e) { }
+        setListening(false);
+    };
 
     const filtered = selectedCategory ? products.filter(p => p.categoryId === selectedCategory) : products;
     const catIcon = getCategoryIcon(categories.find(c => c.id === selectedCategory)?.name || '');
@@ -174,6 +211,16 @@ export default function POS() {
             {/* Desktop Header */}
             <div className="hidden md:flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 shrink-0">
                 <h1 className="text-2xl font-bold text-yellow-900">Point of Sale</h1>
+                <div className="flex items-center gap-3">
+                    <button onClick={() => setSpeakerEnabled(prev => !prev)} title={speakerEnabled ? 'Speaker on' : 'Speaker off'}
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition cursor-pointer border border-gray-200 ${speakerEnabled ? 'bg-yellow-100 text-yellow-700' : 'hover:bg-gray-100 text-gray-600'}`}>
+                        <Speaker size={18} />
+                    </button>
+                    <button onClick={() => listening ? stopListening() : startListening()} title={listening ? 'Stop listening' : 'Broadcast via mic'}
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition cursor-pointer border border-gray-200 ${listening ? 'bg-red-100 text-red-600' : 'hover:bg-gray-100 text-gray-600'}`}>
+                        <Mic size={18} />
+                    </button>
+                </div>
             </div>
 
             {/* MOBILE: full-screen cart toggle */}
@@ -209,7 +256,10 @@ export default function POS() {
                                     <span>Total:</span><span>₱{total.toFixed(2)}</span>
                                 </div>
                                 <button className="w-full py-3.5 bg-brand text-brand-dark border-none rounded-lg text-base font-semibold cursor-pointer mt-3 hover:shadow-md hover:shadow-yellow-300/40 transition font-[inherit]"
-                                    onClick={() => navigate('/cashier/payment', { state: { total: total.toFixed(2), items: cart, itemCount: cart.length } })}>
+                                    onClick={() => {
+                                        if (speakerEnabled) speakText(`Proceeding to checkout. Total ${total.toFixed(2)} pesos`);
+                                        navigate('/cashier/payment', { state: { total: total.toFixed(2), items: cart, itemCount: cart.length } });
+                                    }}>
                                     Proceed to Checkout
                                 </button>
                             </>
