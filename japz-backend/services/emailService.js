@@ -1,19 +1,20 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 // Store verification codes in memory (in production, use Redis or database)
 const verificationCodes = new Map();
 const passwordResetCodes = new Map();
 
-// Create transporter - configure with your email service
-const createTransporter = () => {
-    return nodemailer.createTransport({
-        service: process.env.EMAIL_SERVICE || 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD // Use App Password for Gmail
-        }
-    });
+// Create Resend client
+const getResend = () => {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+        throw new Error('RESEND_API_KEY is not set. Please add it to your environment variables.');
+    }
+    return new Resend(apiKey);
 };
+
+// Email sender address - use Resend's shared domain (free tier) or your own verified domain
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'JAPZ POS <onboarding@resend.dev>';
 
 // Generate 6-digit code
 const generateCode = () => {
@@ -28,34 +29,32 @@ export const sendVerificationCode = async (email, name) => {
     // Store code with email as key
     verificationCodes.set(email.toLowerCase(), { code, expiresAt, name });
 
-    const transporter = createTransporter();
-
-    const mailOptions = {
-        from: `"JAPZ POS" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Verify Your Email - JAPZ POS',
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #1a1a1a; margin-bottom: 10px;">JAPZ POS</h1>
-                </div>
-                <div style="background-color: #f9f9f9; border-radius: 12px; padding: 30px; text-align: center;">
-                    <h2 style="color: #333; margin-bottom: 10px;">Welcome, ${name}!</h2>
-                    <p style="color: #666; margin-bottom: 20px;">Use the verification code below to complete your registration:</p>
-                    <div style="background-color: #FFCE1B; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</span>
-                    </div>
-                    <p style="color: #999; font-size: 14px;">This code expires in 10 minutes.</p>
-                </div>
-                <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
-                    If you didn't request this code, please ignore this email.
-                </p>
-            </div>
-        `
-    };
+    const resend = getResend();
 
     try {
-        await transporter.sendMail(mailOptions);
+        await resend.emails.send({
+            from: FROM_EMAIL,
+            to: [email],
+            subject: 'Verify Your Email - JAPZ POS',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #1a1a1a; margin-bottom: 10px;">JAPZ POS</h1>
+                    </div>
+                    <div style="background-color: #f9f9f9; border-radius: 12px; padding: 30px; text-align: center;">
+                        <h2 style="color: #333; margin-bottom: 10px;">Welcome, ${name}!</h2>
+                        <p style="color: #666; margin-bottom: 20px;">Use the verification code below to complete your registration:</p>
+                        <div style="background-color: #FFCE1B; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                            <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</span>
+                        </div>
+                        <p style="color: #999; font-size: 14px;">This code expires in 10 minutes.</p>
+                    </div>
+                    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
+                        If you didn't request this code, please ignore this email.
+                    </p>
+                </div>
+            `
+        });
         return { success: true };
     } catch (error) {
         console.error('Email send error:', error);
@@ -93,35 +92,33 @@ export const sendPasswordResetCode = async (email, name) => {
     // Store code with email as key
     passwordResetCodes.set(email.toLowerCase(), { code, expiresAt, name });
 
-    const transporter = createTransporter();
-
-    const mailOptions = {
-        from: `"JAPZ POS" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Password Reset - JAPZ POS',
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #1a1a1a; margin-bottom: 10px;">JAPZ POS</h1>
-                </div>
-                <div style="background-color: #f9f9f9; border-radius: 12px; padding: 30px; text-align: center;">
-                    <h2 style="color: #333; margin-bottom: 10px;">Password Reset Request</h2>
-                    <p style="color: #666; margin-bottom: 10px;">Hi ${name},</p>
-                    <p style="color: #666; margin-bottom: 20px;">Use the code below to reset your password:</p>
-                    <div style="background-color: #FFCE1B; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</span>
-                    </div>
-                    <p style="color: #999; font-size: 14px;">This code expires in 15 minutes.</p>
-                </div>
-                <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
-                    If you didn't request a password reset, please ignore this email or contact support if you're concerned.
-                </p>
-            </div>
-        `
-    };
+    const resend = getResend();
 
     try {
-        await transporter.sendMail(mailOptions);
+        await resend.emails.send({
+            from: FROM_EMAIL,
+            to: [email],
+            subject: 'Password Reset - JAPZ POS',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #1a1a1a; margin-bottom: 10px;">JAPZ POS</h1>
+                    </div>
+                    <div style="background-color: #f9f9f9; border-radius: 12px; padding: 30px; text-align: center;">
+                        <h2 style="color: #333; margin-bottom: 10px;">Password Reset Request</h2>
+                        <p style="color: #666; margin-bottom: 10px;">Hi ${name},</p>
+                        <p style="color: #666; margin-bottom: 20px;">Use the code below to reset your password:</p>
+                        <div style="background-color: #FFCE1B; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                            <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</span>
+                        </div>
+                        <p style="color: #999; font-size: 14px;">This code expires in 15 minutes.</p>
+                    </div>
+                    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
+                        If you didn't request a password reset, please ignore this email or contact support if you're concerned.
+                    </p>
+                </div>
+            `
+        });
         return { success: true };
     } catch (error) {
         console.error('Email send error:', error);
@@ -153,7 +150,7 @@ export const verifyPasswordResetCode = (email, code) => {
 
 // Send approval notification email
 export const sendApprovalEmail = async (email, name, approved, role = null) => {
-    const transporter = createTransporter();
+    const resend = getResend();
 
     const subject = approved
         ? 'Account Approved - JAPZ POS'
@@ -208,15 +205,13 @@ export const sendApprovalEmail = async (email, name, approved, role = null) => {
             </div>
         `;
 
-    const mailOptions = {
-        from: `"JAPZ POS" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject,
-        html
-    };
-
     try {
-        await transporter.sendMail(mailOptions);
+        await resend.emails.send({
+            from: FROM_EMAIL,
+            to: [email],
+            subject,
+            html
+        });
         return { success: true };
     } catch (error) {
         console.error('Email send error:', error);

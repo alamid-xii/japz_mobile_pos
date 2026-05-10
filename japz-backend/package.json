@@ -29,6 +29,7 @@
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.9.2",
     "nodemailer": "^6.9.9",
+    "resend": "^6.12.3",
     "sequelize": "^6.37.3"
   }
 }
