@@ -2887,15 +2887,12 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
   }
 });
 
-// TEMP: Check email config (no send)
+// TEMP: Check email config
 router.get("/api/test-email-config", (req, res) => {
   res.json({
-    hasBREVO_SMTP_USER: !!process.env.BREVO_SMTP_USER,
-    hasBREVO_SMTP_PASS: !!process.env.BREVO_SMTP_PASS,
-    hasBREVO_FROM_EMAIL: !!process.env.BREVO_FROM_EMAIL,
-    BREVO_USER_PREVIEW: process.env.BREVO_SMTP_USER ? process.env.BREVO_SMTP_USER.substring(0, 10) + '...' : 'NOT SET',
-    hasEMAIL_USER: !!process.env.EMAIL_USER,
-    usingProvider: process.env.BREVO_SMTP_USER ? 'BREVO' : 'GMAIL_FALLBACK',
+    hasRESEND_API_KEY: !!process.env.RESEND_API_KEY,
+    RESEND_KEY_PREVIEW: process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.substring(0, 10) + '...' : 'NOT SET',
+    provider: 'RESEND_REST_API',
   });
 });
 
