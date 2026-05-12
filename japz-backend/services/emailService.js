@@ -11,16 +11,22 @@ const sendEmail = async (to, subject, htmlContent) => {
 
     const senderEmail = process.env.BREVO_FROM_EMAIL || 'detorresphilip08@gmail.com';
 
-    const { data } = await axios.post('https://api.brevo.com/v3/smtp/email', {
-        sender: { name: 'JAPZ POS', email: senderEmail },
-        to: [{ email: to }],
-        subject,
-        htmlContent,
-    }, {
-        headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
-        timeout: 15000,
-    });
-    return data;
+    try {
+        const { data } = await axios.post('https://api.brevo.com/v3/smtp/email', {
+            sender: { name: 'JAPZ POS', email: senderEmail },
+            to: [{ email: to }],
+            subject,
+            htmlContent,
+        }, {
+            headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
+            timeout: 15000,
+        });
+        return data;
+    } catch (err) {
+        const detail = err.response ? JSON.stringify(err.response.data) : err.message;
+        console.error('Brevo API error:', detail);
+        throw new Error('Brevo: ' + detail);
+    }
 };
 
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
