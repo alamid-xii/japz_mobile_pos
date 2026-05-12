@@ -1,20 +1,38 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 // Store verification codes in memory (in production, use Redis or database)
 const verificationCodes = new Map();
 const passwordResetCodes = new Map();
 
-// Create Resend client
-const getResend = () => {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-        throw new Error('RESEND_API_KEY is not set. Please add it to your environment variables.');
+// Create SMTP transporter - supports Brevo (free 300/day) or Gmail fallback
+const createTransporter = () => {
+    // Use Brevo SMTP if configured (recommended for cloud deployment)
+    if (process.env.BREVO_SMTP_USER && process.env.BREVO_SMTP_PASS) {
+        return nodemailer.createTransport({
+            host: 'smtp-relay.brevo.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.BREVO_SMTP_USER,
+                pass: process.env.BREVO_SMTP_PASS,
+            },
+        });
     }
-    return new Resend(apiKey);
+
+    // Fallback to Gmail (works locally, may fail on cloud servers)
+    return nodemailer.createTransport({
+        service: process.env.EMAIL_SERVICE || 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
+        },
+    });
 };
 
-// Email sender address - use Resend's shared domain (free tier) or your own verified domain
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'JAPZ POS <onboarding@resend.dev>';
+// Sender email - use Brevo verified sender or Gmail
+const getFromEmail = () => {
+    return process.env.BREVO_FROM_EMAIL || process.env.EMAIL_USER || 'noreply@japzpos.com';
+};
 
 // Generate 6-digit code
 const generateCode = () => {
@@ -29,32 +47,34 @@ export const sendVerificationCode = async (email, name) => {
     // Store code with email as key
     verificationCodes.set(email.toLowerCase(), { code, expiresAt, name });
 
-    const resend = getResend();
+    const transporter = createTransporter();
+
+    const mailOptions = {
+        from: `"JAPZ POS" <${getFromEmail()}>`,
+        to: email,
+        subject: 'Verify Your Email - JAPZ POS',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #1a1a1a; margin-bottom: 10px;">JAPZ POS</h1>
+                </div>
+                <div style="background-color: #f9f9f9; border-radius: 12px; padding: 30px; text-align: center;">
+                    <h2 style="color: #333; margin-bottom: 10px;">Welcome, ${name}!</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Use the verification code below to complete your registration:</p>
+                    <div style="background-color: #FFCE1B; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</span>
+                    </div>
+                    <p style="color: #999; font-size: 14px;">This code expires in 10 minutes.</p>
+                </div>
+                <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
+                    If you didn't request this code, please ignore this email.
+                </p>
+            </div>
+        `
+    };
 
     try {
-        await resend.emails.send({
-            from: FROM_EMAIL,
-            to: [email],
-            subject: 'Verify Your Email - JAPZ POS',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #1a1a1a; margin-bottom: 10px;">JAPZ POS</h1>
-                    </div>
-                    <div style="background-color: #f9f9f9; border-radius: 12px; padding: 30px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 10px;">Welcome, ${name}!</h2>
-                        <p style="color: #666; margin-bottom: 20px;">Use the verification code below to complete your registration:</p>
-                        <div style="background-color: #FFCE1B; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                            <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</span>
-                        </div>
-                        <p style="color: #999; font-size: 14px;">This code expires in 10 minutes.</p>
-                    </div>
-                    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
-                        If you didn't request this code, please ignore this email.
-                    </p>
-                </div>
-            `
-        });
+        await transporter.sendMail(mailOptions);
         return { success: true };
     } catch (error) {
         console.error('Email send error:', error);
@@ -92,33 +112,35 @@ export const sendPasswordResetCode = async (email, name) => {
     // Store code with email as key
     passwordResetCodes.set(email.toLowerCase(), { code, expiresAt, name });
 
-    const resend = getResend();
+    const transporter = createTransporter();
+
+    const mailOptions = {
+        from: `"JAPZ POS" <${getFromEmail()}>`,
+        to: email,
+        subject: 'Password Reset - JAPZ POS',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #1a1a1a; margin-bottom: 10px;">JAPZ POS</h1>
+                </div>
+                <div style="background-color: #f9f9f9; border-radius: 12px; padding: 30px; text-align: center;">
+                    <h2 style="color: #333; margin-bottom: 10px;">Password Reset Request</h2>
+                    <p style="color: #666; margin-bottom: 10px;">Hi ${name},</p>
+                    <p style="color: #666; margin-bottom: 20px;">Use the code below to reset your password:</p>
+                    <div style="background-color: #FFCE1B; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</span>
+                    </div>
+                    <p style="color: #999; font-size: 14px;">This code expires in 15 minutes.</p>
+                </div>
+                <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
+                    If you didn't request a password reset, please ignore this email or contact support if you're concerned.
+                </p>
+            </div>
+        `
+    };
 
     try {
-        await resend.emails.send({
-            from: FROM_EMAIL,
-            to: [email],
-            subject: 'Password Reset - JAPZ POS',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #1a1a1a; margin-bottom: 10px;">JAPZ POS</h1>
-                    </div>
-                    <div style="background-color: #f9f9f9; border-radius: 12px; padding: 30px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 10px;">Password Reset Request</h2>
-                        <p style="color: #666; margin-bottom: 10px;">Hi ${name},</p>
-                        <p style="color: #666; margin-bottom: 20px;">Use the code below to reset your password:</p>
-                        <div style="background-color: #FFCE1B; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                            <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</span>
-                        </div>
-                        <p style="color: #999; font-size: 14px;">This code expires in 15 minutes.</p>
-                    </div>
-                    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
-                        If you didn't request a password reset, please ignore this email or contact support if you're concerned.
-                    </p>
-                </div>
-            `
-        });
+        await transporter.sendMail(mailOptions);
         return { success: true };
     } catch (error) {
         console.error('Email send error:', error);
@@ -150,7 +172,7 @@ export const verifyPasswordResetCode = (email, code) => {
 
 // Send approval notification email
 export const sendApprovalEmail = async (email, name, approved, role = null) => {
-    const resend = getResend();
+    const transporter = createTransporter();
 
     const subject = approved
         ? 'Account Approved - JAPZ POS'
@@ -205,13 +227,15 @@ export const sendApprovalEmail = async (email, name, approved, role = null) => {
             </div>
         `;
 
+    const mailOptions = {
+        from: `"JAPZ POS" <${getFromEmail()}>`,
+        to: email,
+        subject,
+        html
+    };
+
     try {
-        await resend.emails.send({
-            from: FROM_EMAIL,
-            to: [email],
-            subject,
-            html
-        });
+        await transporter.sendMail(mailOptions);
         return { success: true };
     } catch (error) {
         console.error('Email send error:', error);
