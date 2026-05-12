@@ -2887,4 +2887,24 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
   }
 });
 
-// ========== TEMPORARY SEED (REMOVE AFTER USE) ==========
+// TEMP: Email diagnostic endpoint
+router.get("/api/test-email-config", async (req, res) => {
+  const config = {
+    hasBREVO_SMTP_USER: !!process.env.BREVO_SMTP_USER,
+    hasBREVO_SMTP_PASS: !!process.env.BREVO_SMTP_PASS,
+    hasBREVO_FROM_EMAIL: !!process.env.BREVO_FROM_EMAIL,
+    hasEMAIL_USER: !!process.env.EMAIL_USER,
+    hasEMAIL_PASSWORD: !!process.env.EMAIL_PASSWORD,
+    BREVO_SMTP_USER_VALUE: process.env.BREVO_SMTP_USER ? process.env.BREVO_SMTP_USER.substring(0, 10) + '...' : 'NOT SET',
+  };
+  
+  // Try to send a test email
+  try {
+    const result = await sendVerificationCode("detorresphilip08@gmail.com", "Test");
+    res.json({ ...config, emailTest: "SUCCESS", result });
+  } catch (error) {
+    res.json({ ...config, emailTest: "FAILED", error: error.message, stack: error.stack });
+  }
+});
+
+export default router;
