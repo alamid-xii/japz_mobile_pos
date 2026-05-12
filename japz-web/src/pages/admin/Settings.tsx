@@ -591,7 +591,7 @@ export default function Settings() {
                                     <p className="text-yellow-700 font-bold text-2xl mb-4" style={{ fontFamily: "'Dancing Script', cursive" }}>Leave us a Review</p>
                                     <div className="bg-white rounded-xl p-3 inline-block shadow-sm mb-4">
                                         <img
-                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`http://10.164.132.96:5173/feedback?key=${activeQrKey}`)}`}
+                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${window.location.origin}/feedback?key=${activeQrKey}`)}`}
                                             alt="Feedback QR Code"
                                             className="w-40 h-40"
                                             crossOrigin="anonymous"
@@ -631,7 +631,7 @@ export default function Settings() {
                                         // Fetch both images as data URLs
                                         const [logoDataUrl, qrDataUrl] = await Promise.all([
                                             fetchAsDataUrl('/logo.jpg'),
-                                            fetchAsDataUrl(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`http://10.164.132.96:5173/feedback?key=${activeQrKey}`)}`),
+                                            fetchAsDataUrl(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`${window.location.origin}/feedback?key=${activeQrKey}`)}`),
                                         ]);
                                         const [logoImg, qrImg] = await Promise.all([loadImg(logoDataUrl), loadImg(qrDataUrl)]);
 
@@ -738,7 +738,7 @@ export default function Settings() {
                                         }, 'image/png');
                                     } catch (err) {
                                         console.error('Error generating QR poster:', err);
-                                        window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`http://10.164.132.96:5173/feedback?key=${activeQrKey}`)}`, '_blank');
+                                        window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`${window.location.origin}/feedback?key=${activeQrKey}`)}`, '_blank');
                                     }
                                 }}
                                 className="w-full flex items-center justify-center gap-2 py-2 bg-brand text-brand-dark rounded-lg font-semibold hover:shadow-md transition"

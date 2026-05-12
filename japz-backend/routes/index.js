@@ -2887,23 +2887,4 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
   }
 });
 
-// TEMP: Check email config
-router.get("/api/test-email-config", (req, res) => {
-  res.json({
-    hasMAILJET_API_KEY: !!process.env.MAILJET_API_KEY,
-    hasMAILJET_SECRET_KEY: !!process.env.MAILJET_SECRET_KEY,
-    provider: 'MAILJET_REST_API',
-  });
-});
-
-// TEMP: Test send email
-router.post("/api/test-email-send", async (req, res) => {
-  try {
-    const result = await sendVerificationCode("detorresphilip08@gmail.com", "Test");
-    res.json({ status: "SUCCESS", result });
-  } catch (error) {
-    res.json({ status: "FAILED", error: error.message });
-  }
-});
-
 export default router;
