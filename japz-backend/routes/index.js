@@ -2890,9 +2890,9 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
 // TEMP: Check email config
 router.get("/api/test-email-config", (req, res) => {
   res.json({
-    hasBREVO_API_KEY: !!process.env.BREVO_API_KEY,
-    BREVO_KEY_PREVIEW: process.env.BREVO_API_KEY ? process.env.BREVO_API_KEY.substring(0, 12) + '...' : 'NOT SET',
-    provider: 'BREVO_REST_API',
+    hasMAILJET_API_KEY: !!process.env.MAILJET_API_KEY,
+    hasMAILJET_SECRET_KEY: !!process.env.MAILJET_SECRET_KEY,
+    provider: 'MAILJET_REST_API',
   });
 });
 

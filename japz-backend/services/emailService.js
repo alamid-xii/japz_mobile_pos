@@ -4,28 +4,32 @@ import axios from 'axios';
 const verificationCodes = new Map();
 const passwordResetCodes = new Map();
 
-// Brevo REST API - uses HTTPS (port 443, never blocked)
-const sendEmail = async (to, subject, htmlContent) => {
-    const apiKey = process.env.BREVO_API_KEY;
-    if (!apiKey) throw new Error('BREVO_API_KEY not set');
+// Mailjet REST API - HTTPS, 200 emails/day free, instant activation
+const sendEmail = async (to, subject, htmlPart) => {
+    const apiKey = process.env.MAILJET_API_KEY;
+    const secretKey = process.env.MAILJET_SECRET_KEY;
+    if (!apiKey || !secretKey) throw new Error('MAILJET_API_KEY or MAILJET_SECRET_KEY not set');
 
-    const senderEmail = process.env.BREVO_FROM_EMAIL || 'detorresphilip08@gmail.com';
+    const senderEmail = process.env.MAILJET_FROM_EMAIL || 'detorresphilip08@gmail.com';
 
     try {
-        const { data } = await axios.post('https://api.brevo.com/v3/smtp/email', {
-            sender: { name: 'JAPZ POS', email: senderEmail },
-            to: [{ email: to }],
-            subject,
-            htmlContent,
+        const { data } = await axios.post('https://api.mailjet.com/v3.1/send', {
+            Messages: [{
+                From: { Email: senderEmail, Name: 'JAPZ POS' },
+                To: [{ Email: to }],
+                Subject: subject,
+                HTMLPart: htmlPart,
+            }]
         }, {
-            headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
+            auth: { username: apiKey, password: secretKey },
+            headers: { 'Content-Type': 'application/json' },
             timeout: 15000,
         });
         return data;
     } catch (err) {
         const detail = err.response ? JSON.stringify(err.response.data) : err.message;
-        console.error('Brevo API error:', detail);
-        throw new Error('Brevo: ' + detail);
+        console.error('Mailjet API error:', detail);
+        throw new Error('Mailjet: ' + detail);
     }
 };
 
