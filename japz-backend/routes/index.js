@@ -2887,23 +2887,25 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
   }
 });
 
-// TEMP: Email diagnostic endpoint
-router.get("/api/test-email-config", async (req, res) => {
-  const config = {
+// TEMP: Check email config (no send)
+router.get("/api/test-email-config", (req, res) => {
+  res.json({
     hasBREVO_SMTP_USER: !!process.env.BREVO_SMTP_USER,
     hasBREVO_SMTP_PASS: !!process.env.BREVO_SMTP_PASS,
     hasBREVO_FROM_EMAIL: !!process.env.BREVO_FROM_EMAIL,
+    BREVO_USER_PREVIEW: process.env.BREVO_SMTP_USER ? process.env.BREVO_SMTP_USER.substring(0, 10) + '...' : 'NOT SET',
     hasEMAIL_USER: !!process.env.EMAIL_USER,
-    hasEMAIL_PASSWORD: !!process.env.EMAIL_PASSWORD,
-    BREVO_SMTP_USER_VALUE: process.env.BREVO_SMTP_USER ? process.env.BREVO_SMTP_USER.substring(0, 10) + '...' : 'NOT SET',
-  };
-  
-  // Try to send a test email
+    usingProvider: process.env.BREVO_SMTP_USER ? 'BREVO' : 'GMAIL_FALLBACK',
+  });
+});
+
+// TEMP: Test send email
+router.post("/api/test-email-send", async (req, res) => {
   try {
     const result = await sendVerificationCode("detorresphilip08@gmail.com", "Test");
-    res.json({ ...config, emailTest: "SUCCESS", result });
+    res.json({ status: "SUCCESS", result });
   } catch (error) {
-    res.json({ ...config, emailTest: "FAILED", error: error.message, stack: error.stack });
+    res.json({ status: "FAILED", error: error.message });
   }
 });
 

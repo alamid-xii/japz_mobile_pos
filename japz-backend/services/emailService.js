@@ -16,6 +16,9 @@ const createTransporter = () => {
                 user: process.env.BREVO_SMTP_USER,
                 pass: process.env.BREVO_SMTP_PASS,
             },
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 15000,
         });
     }
 
