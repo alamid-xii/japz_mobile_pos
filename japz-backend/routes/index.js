@@ -2887,4 +2887,33 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
   }
 });
 
+// ========== TEMPORARY SEED ENDPOINT (REMOVE AFTER USE) ==========
+router.post("/api/seed-users-temp-xyz", async (req, res) => {
+  try {
+    const users = [
+      { name: "John Paul Malvarosa", email: "malvarosajohnpaul@gmail.com", password: "Paul@burger123", role: "admin" },
+      { name: "Felix Jasper Matunan", email: "felixjaspermatunan18@gmail.com", password: "Japzadmin@2018", role: "admin" },
+      { name: "Jerwin Nitural", email: "nituraljerwin12@gmail.com", password: "Jerwincashier12", role: "cashier" },
+      { name: "Jonas Opeña", email: "opeñajonas6@gmail.com", password: "Jonascoffee6", role: "kitchen" },
+      { name: "Martin Nitural", email: "nituralmartin9@gmail.com", password: "martin@coolers15", role: "kitchen" },
+      { name: "Jhon Seen Asi", email: "asijhonseen25@gmail.com", password: "asi@pasta25", role: "kitchen" },
+    ];
+
+    const results = [];
+    for (const u of users) {
+      const existing = await User.findOne({ where: { email: u.email } });
+      if (existing) {
+        results.push({ email: u.email, status: "already exists" });
+        continue;
+      }
+      const hashed = await bcrypt.hash(u.password, 10);
+      await User.create({ name: u.name, email: u.email, password: hashed, role: u.role, status: "approved" });
+      results.push({ email: u.email, status: "created" });
+    }
+    res.json({ message: "Seed complete", results });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
