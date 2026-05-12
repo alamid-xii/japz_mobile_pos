@@ -2887,4 +2887,213 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
   }
 });
 
+// ========== TEMPORARY ORDER SEED (REMOVE AFTER USE) ==========
+router.post("/api/seed-orders-temp-xyz", async (req, res) => {
+  try {
+    // Get cashiers and kitchen staff from DB
+    const cashiers = await User.findAll({ where: { role: 'cashier', status: 'approved' } });
+    const kitchenStaff = await User.findAll({ where: { role: 'kitchen', status: 'approved' } });
+    const menuItems = await MenuItem.findAll({ where: { status: 'available' } });
+
+    if (!menuItems.length) return res.status(400).json({ error: "No menu items found" });
+    if (!cashiers.length) return res.status(400).json({ error: "No cashiers found" });
+
+    const customerNames = [
+      "Maria Santos", "Juan Dela Cruz", "Ana Reyes", "Carlos Garcia",
+      "Rosa Mendoza", "Pedro Ramos", "Liza Cruz", "Miguel Torres",
+      "Sofia Villanueva", "Mark Bautista", "Jasmine Flores", "Angelo Pascual",
+      "Christine Navarro", "Ryan Mercado", "Nicole Aquino", "Kevin Manalo",
+      "Angelica Rivera", "Joshua Dizon", "Patricia Lim", "Daniel Castillo",
+      "Bianca Morales", "Ethan Aguilar", "Camille Hernandez", "Nathan Soriano",
+      "Hannah Valdez", "Gabriel Salazar", "Samantha Gutierrez", "Adrian Perez",
+      "Denise Ocampo", "Bryan Fernandez", "Kathleen Tan", "Ralph Miranda",
+      "Alyssa Santos", "Jerome Cruz", "Monica Reyes", "Christian Garcia",
+      "April Gonzales", "James De Leon", "Grace Magno", "Vincent Romero",
+      "Trisha Domingo", "Paolo Santiago", "Megan Tolentino", "Raph Enriquez",
+      "Janelle Castro", "Marco Velasco", "Rachel Ignacio", "Leo Panganiban",
+      "Chloe Dela Rosa", "Ian Mendoza", "Bea Concepcion", "Jerico Roxas"
+    ];
+
+    const feedbackComments = {
+      positive: [
+        "Sobrang sarap ng food! Will definitely come back!",
+        "Love the burgers here, best in town!",
+        "Great service and delicious food. Highly recommended!",
+        "The pasta is amazing! Perfect flavor.",
+        "Super friendly staff and the food came quickly.",
+        "Best coffee I've had! Keep it up JAPZ!",
+        "The sandwich was packed with flavor. 10/10!",
+        "Affordable and delicious. My new go-to place!",
+        "Everything was cooked perfectly. Great experience!",
+        "The coolers are so refreshing, perfect on a hot day!",
+        "My family loved everything we ordered. Coming back soon!",
+        "The portion sizes are generous. Super satisfied!",
+        "Food quality is consistently great every time I visit.",
+        "Masarap ang beverages nila, try niyo!",
+        "Excellent food and clean place. Very impressed!"
+      ],
+      neutral: [
+        "Food was okay, nothing special but decent.",
+        "Average experience. Food arrived a bit late.",
+        "Portion could be bigger but taste is fine.",
+        "Okay naman, pwede na for the price.",
+        "Not bad, but I expected more from the burger.",
+        "Service was fine, food was standard.",
+        "It's alright. Would be better with more variety."
+      ],
+      negative: [
+        "Food took too long to arrive.",
+        "The order was wrong, had to wait for correction.",
+        "Could improve on the seasoning.",
+        "A bit pricey for what you get.",
+        "The drink was too sweet for my taste."
+      ]
+    };
+
+    const feedbackTags = {
+      positive: [["Great Food", "Fast Service"], ["Delicious", "Good Value"], ["Friendly Staff"], ["Great Taste", "Fresh Ingredients"], ["Will Come Back"]],
+      neutral: [["Average"], ["Needs Improvement"], ["Okay Food"], ["Slow Service"]],
+      negative: [["Slow Service"], ["Wrong Order"], ["Overpriced"], ["Needs Improvement"]]
+    };
+
+    const orderTypes = ['dine-in', 'dine-in', 'dine-in', 'take-out', 'take-out', 'delivery'];
+    const paymentMethods = ['cash', 'cash', 'cash', 'cash', 'digital', 'card'];
+
+    let totalOrders = 0;
+    let totalFeedback = 0;
+    let orderCounter = 1;
+
+    // March 18-30, 2026
+    for (let day = 18; day <= 30; day++) {
+      const ordersToday = Math.floor(Math.random() * 101) + 50; // 50-150
+
+      for (let i = 0; i < ordersToday; i++) {
+        // Random time between 9:00 AM (9) and 9:00 PM (21)
+        const hour = Math.floor(Math.random() * 12) + 9;
+        const minute = Math.floor(Math.random() * 60);
+        const second = Math.floor(Math.random() * 60);
+        const orderDate = new Date(2026, 2, day, hour, minute, second); // Month is 0-indexed
+
+        // Pick random cashier
+        const cashier = cashiers[Math.floor(Math.random() * cashiers.length)];
+        const preparer = kitchenStaff.length ? kitchenStaff[Math.floor(Math.random() * kitchenStaff.length)] : null;
+        const customer = customerNames[Math.floor(Math.random() * customerNames.length)];
+        const orderType = orderTypes[Math.floor(Math.random() * orderTypes.length)];
+        const payMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+
+        // Random 1-5 items per order
+        const numItems = Math.floor(Math.random() * 5) + 1;
+        const selectedItems = [];
+        const usedItems = new Set();
+        for (let j = 0; j < numItems; j++) {
+          let item;
+          let attempts = 0;
+          do {
+            item = menuItems[Math.floor(Math.random() * menuItems.length)];
+            attempts++;
+          } while (usedItems.has(item.id) && attempts < 20);
+          if (!usedItems.has(item.id)) {
+            usedItems.add(item.id);
+            const qty = Math.floor(Math.random() * 3) + 1;
+            selectedItems.push({ item, qty });
+          }
+        }
+
+        if (!selectedItems.length) continue;
+
+        const subtotal = selectedItems.reduce((sum, si) => sum + (parseFloat(si.item.price) * si.qty), 0);
+        const hasDiscount = Math.random() < 0.1; // 10% chance of discount
+        const discount = hasDiscount ? Math.round(subtotal * 0.1 * 100) / 100 : 0;
+        const total = Math.round((subtotal - discount) * 100) / 100;
+
+        const orderNum = `ORD-${String(2026).slice(2)}0${3}${String(day).padStart(2,'0')}-${String(orderCounter).padStart(4,'0')}`;
+        orderCounter++;
+
+        // Create order
+        const order = await Order.create({
+          orderNumber: orderNum,
+          cashierId: cashier.id,
+          preparedById: preparer ? preparer.id : null,
+          customerName: customer,
+          subtotal,
+          discount,
+          total,
+          status: 'completed',
+          completedAt: orderDate,
+          orderType,
+          tableNumber: orderType === 'dine-in' ? String(Math.floor(Math.random() * 12) + 1) : null,
+          deliveryAddress: orderType === 'delivery' ? `${Math.floor(Math.random()*999)+1} Brgy. ${['San Roque','Poblacion','Lumangbayan','Bongabong','Calapan'][Math.floor(Math.random()*5)]}, Oriental Mindoro` : null,
+          notes: Math.random() < 0.15 ? ['No onions please', 'Extra rice', 'Less ice', 'Extra spicy', 'No mayo', 'Well done please'][Math.floor(Math.random()*6)] : null,
+          createdAt: orderDate,
+          updatedAt: orderDate,
+        });
+
+        // Create order items
+        for (const si of selectedItems) {
+          await OrderItem.create({
+            orderId: order.id,
+            menuItemId: si.item.id,
+            name: si.item.name,
+            price: si.item.price,
+            quantity: si.qty,
+            total: parseFloat(si.item.price) * si.qty,
+            createdAt: orderDate,
+            updatedAt: orderDate,
+          });
+        }
+
+        // Create payment
+        const amountReceived = payMethod === 'cash'
+          ? Math.ceil(total / 50) * 50 + (Math.random() < 0.3 ? 50 : 0)
+          : total;
+        await Payment.create({
+          orderId: order.id,
+          method: payMethod,
+          amount: total,
+          amountReceived,
+          change: Math.round((amountReceived - total) * 100) / 100,
+          status: 'completed',
+          createdAt: orderDate,
+          updatedAt: orderDate,
+        });
+
+        totalOrders++;
+
+        // ~25% chance of leaving feedback
+        if (Math.random() < 0.25) {
+          const ratingRoll = Math.random();
+          let rating, sentimentType;
+          if (ratingRoll < 0.6) { rating = Math.random() < 0.5 ? 5 : 4; sentimentType = 'positive'; }
+          else if (ratingRoll < 0.85) { rating = 3; sentimentType = 'neutral'; }
+          else { rating = Math.random() < 0.6 ? 2 : 1; sentimentType = 'negative'; }
+
+          const comments = feedbackComments[sentimentType];
+          const tagOptions = feedbackTags[sentimentType];
+          const feedbackDate = new Date(orderDate.getTime() + Math.floor(Math.random() * 3600000));
+
+          await Feedback.create({
+            orderId: order.id,
+            orderNumber: orderNum,
+            rating,
+            tags: tagOptions[Math.floor(Math.random() * tagOptions.length)],
+            comment: comments[Math.floor(Math.random() * comments.length)],
+            source: Math.random() < 0.6 ? 'qr_code' : 'direct',
+            sentiment: sentimentType,
+            processed: true,
+            status: 'processed',
+            createdAt: feedbackDate,
+            updatedAt: feedbackDate,
+          });
+          totalFeedback++;
+        }
+      }
+    }
+
+    res.json({ message: "Seed complete!", totalOrders, totalFeedback });
+  } catch (error) {
+    console.error("Seed error:", error);
+    res.status(500).json({ error: error.message, stack: error.stack });
+  }
+});
+
 export default router;
