@@ -4,7 +4,7 @@ import axios from 'axios';
 // Replace localhost with network IP for mobile device access
 const getBaseUrl = () => {
     const envUrl = import.meta.env.VITE_API_URL;
-    if (envUrl) return envUrl;
+    if (envUrl) return envUrl.replace(/\/$/, '');
     
     // Automatically detect hostname (works for localhost and network IP)
     const hostname = window.location.hostname;

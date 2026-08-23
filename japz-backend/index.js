@@ -129,9 +129,9 @@ try {
   const adminCount = await User.count({ where: { role: 'admin' } });
   if (adminCount === 0) {
     const bcryptModule = await import('bcrypt');
-    const hashed = await bcryptModule.default.hash('admin123', 10);
-    await User.create({ name: 'Admin', email: 'admin@japz.com', password: hashed, role: 'admin', status: 'approved' });
-    console.log('  ✓ Default admin account created (admin@japz.com / admin123)');
+    const hashed = await bcryptModule.default.hash('password', 10);
+    await User.create({ name: 'Admin', email: 'admin@gmail.com', password: hashed, role: 'admin', status: 'approved' });
+    console.log('  ✓ Default admin account created (admin@gmail.com / password)');
   } else {
     console.log(`  ✓ ${adminCount} admin account(s) verified`);
   }

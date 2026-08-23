@@ -40,20 +40,26 @@ import { seed } from "./seed.js";
 import { seedMenu } from "./seedMenu.js";
 import inquirer from "inquirer";
 
-// Server-level connection (no database selected)
-const rootSequelize = new Sequelize("mysql://root:@localhost:3306/");
+// Connect without selecting a database so the configured local database can be created.
+const dbName = process.env.DB_DATABASE || "japz_pos";
+const rootSequelize = new Sequelize("", process.env.DB_USER || "root", process.env.DB_PASSWORD || "", {
+  host: process.env.DB_HOST || "localhost",
+  port: parseInt(process.env.DB_PORT, 10) || 3306,
+  dialect: "mysql",
+  logging: false,
+});
 
 const { createDb } = await inquirer.prompt([
   {
     type: "confirm",
     name: "createDb",
-    message: "Database 'japz_backend' may not exist. Create it?",
+    message: `Database '${dbName}' may not exist. Create it?`,
     default: true,
   },
 ]);
 
 if (createDb) {
-  await rootSequelize.query("CREATE DATABASE IF NOT EXISTS japz_backend;");
+  await rootSequelize.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
   console.log("✅ Database created (if it did not exist)");
 }
 

@@ -27,7 +27,8 @@ SOFTWARE.
 import { Sequelize } from "sequelize";
 import 'dotenv/config';
 
-// Support Railway's DATABASE_URL, MYSQL_URL, or MYSQL_PUBLIC_URL
+// Support Railway's DATABASE_URL, MYSQL_URL, or MYSQL_PUBLIC_URL.
+// Local development uses the DB_* variables below.
 const DATABASE_URL = process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQL_PUBLIC_URL;
 
 // Railway also provides individual MySQL variables
@@ -86,7 +87,7 @@ if (DATABASE_URL) {
     process.env.DB_PASSWORD || "",
     {
       host: process.env.DB_HOST || "localhost",
-      port: process.env.DB_PORT || 3306,
+      port: parseInt(process.env.DB_PORT, 10) || 3306,
       dialect: "mysql",
       logging: process.env.NODE_ENV === 'development' ? console.log : false
     }
