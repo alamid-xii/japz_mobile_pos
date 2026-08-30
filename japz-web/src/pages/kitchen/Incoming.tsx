@@ -221,15 +221,12 @@ export default function KitchenIncoming() {
                     </button>
                 );
             case 'ready':
+                // Handing over is the cashier's step. The kitchen's job ends here.
                 return (
-                    <button
-                        onClick={(e) => { e.stopPropagation(); updateOrderStatus(order.id, 'completed'); }}
-                        disabled={isProcessing}
-                        className="w-full py-3 mt-3 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold text-[15px] flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-                    >
+                    <div className="w-full py-3 mt-3 rounded-lg bg-green-50 border border-green-200 text-green-700 font-semibold text-[15px] flex items-center justify-center gap-2">
                         <CheckCircle size={18} />
-                        {isProcessing ? 'Processing...' : 'Complete Order'}
-                    </button>
+                        Sent to Cashier
+                    </div>
                 );
             default:
                 return null;

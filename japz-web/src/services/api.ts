@@ -154,6 +154,44 @@ export const ordersAPI = {
         api.put(`/api/orders/${id}/status`, { status }),
 };
 
+// ---- Kitchen → Cashier → Rider delivery workflow ----
+export const workflowAPI = {
+    kitchenOrders: () => api.get('/api/kitchen/orders'),
+    setItemStatus: (itemId: number, status: 'pending' | 'preparing' | 'ready') =>
+        api.put(`/api/kitchen/items/${itemId}/status`, { status }),
+
+    readyOrders: () => api.get('/api/cashier/ready-orders'),
+    availableRiders: () => api.get('/api/cashier/available-riders'),
+    assignRider: (orderId: number, riderId: number) =>
+        api.post(`/api/cashier/orders/${orderId}/assign-rider`, { riderId }),
+    completeOrder: (orderId: number) =>
+        api.post(`/api/cashier/orders/${orderId}/complete`),
+
+    myDeliveries: () => api.get('/api/rider/deliveries'),
+    startDelivery: (deliveryId: number) =>
+        api.post(`/api/rider/deliveries/${deliveryId}/start`),
+    /** Proof photo is mandatory; the server rejects the call without it. */
+    markDelivered: (deliveryId: number, proof: File, coords?: { lat: number; lng: number }, notes?: string) => {
+        const form = new FormData();
+        form.append('proof', proof);
+        if (coords) { form.append('lat', String(coords.lat)); form.append('lng', String(coords.lng)); }
+        if (notes) form.append('notes', notes);
+        return api.post(`/api/rider/deliveries/${deliveryId}/deliver`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 60000,
+        });
+    },
+    setRiderAvailability: (availability: 'available' | 'offline') =>
+        api.put('/api/rider/availability', { availability }),
+
+    receipt: (orderNumber: string) => api.get(`/api/receipts/${encodeURIComponent(orderNumber)}`),
+    adminDeliveries: () => api.get('/api/admin/deliveries'),
+    orderEvents: (orderId: number) => api.get(`/api/admin/orders/${orderId}/events`),
+    riders: () => api.get('/api/admin/riders'),
+    updateRider: (id: number, data: { name?: string; phone?: string; status?: string; availability?: string }) =>
+        api.put(`/api/admin/riders/${id}`, data),
+};
+
 export const salesAPI = {
     getAnalytics: (period?: 'today' | 'week' | 'month' | 'year', startDate?: string, endDate?: string) =>
         api.get('/api/sales/analytics', { params: { period, startDate, endDate } }),

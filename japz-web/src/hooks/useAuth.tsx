@@ -5,7 +5,7 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    role: 'admin' | 'cashier' | 'kitchen';
+    role: 'admin' | 'cashier' | 'kitchen' | 'rider';
     token?: string;
     assignedCategories?: number[];
 }

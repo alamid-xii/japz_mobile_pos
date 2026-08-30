@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useEffect } from 'react';
-import { ClipboardList, CheckSquare, User } from 'lucide-react';
+import { Utensils, ClipboardList, CheckSquare, User } from 'lucide-react';
 
 export default function KitchenLayout() {
     const { user, isInitialized } = useAuth();
@@ -20,6 +20,7 @@ export default function KitchenLayout() {
 
     const tabs = [
         { path: '/kitchen/incoming', icon: ClipboardList, label: 'Incoming' },
+        { path: '/kitchen/prep', icon: Utensils, label: 'Prep Board' },
         { path: '/kitchen/completed', icon: CheckSquare, label: 'Completed' },
         { path: '/kitchen/profile', icon: User, label: 'Profile' },
     ];

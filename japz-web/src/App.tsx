@@ -30,6 +30,9 @@ import Profile from './pages/cashier/Profile';
 import KitchenIncoming from './pages/kitchen/Incoming';
 import KitchenCompleted from './pages/kitchen/Completed';
 import KitchenProfile from './pages/kitchen/Profile';
+import ReadyOrders from './pages/cashier/ReadyOrders';
+import PrepBoard from './pages/kitchen/PrepBoard';
+import RiderDeliveries from './pages/rider/Deliveries';
 import Feedback from './pages/public/Feedback';
 import StorefrontLayout from './pages/public/storefront/StorefrontLayout';
 import StorefrontHome from './pages/public/storefront/Home';
@@ -99,6 +102,7 @@ export default function App() {
             <Route index element={<Navigate to="pos" replace />} />
             <Route path="pos" element={<POS />} />
             <Route path="orders" element={<ActiveOrders />} />
+            <Route path="ready" element={<ReadyOrders />} />
             <Route path="history" element={<OrderHistory />} />
             <Route path="payment" element={<PaymentSelection />} />
             <Route path="cash-payment" element={<CashPayment />} />
@@ -106,6 +110,18 @@ export default function App() {
             <Route path="menuboard" element={<MenuBoard />} />
             <Route path="profile" element={<Profile />} />
           </Route>
+
+          {/* Rider Routes - Protected. Riders reach nothing else in the app. */}
+          <Route path="/rider" element={
+            <ProtectedRoute allowedRoles={['rider']}>
+              <RiderDeliveries />
+            </ProtectedRoute>
+          } />
+          <Route path="/rider/deliveries" element={
+            <ProtectedRoute allowedRoles={['rider']}>
+              <RiderDeliveries />
+            </ProtectedRoute>
+          } />
 
           {/* Kitchen Routes - Protected */}
           <Route path="/kitchen" element={
@@ -115,6 +131,7 @@ export default function App() {
           }>
             <Route index element={<Navigate to="incoming" replace />} />
             <Route path="incoming" element={<KitchenIncoming />} />
+            <Route path="prep" element={<PrepBoard />} />
             <Route path="completed" element={<KitchenCompleted />} />
             <Route path="profile" element={<KitchenProfile />} />
           </Route>

@@ -32,6 +32,7 @@ import router from "./routes/index.js";
 import publicOrdersRouter from "./routes/publicOrders.js";
 import customerAuthRouter from "./routes/customerAuth.js";
 import menuImagesRouter from "./routes/menuImages.js";
+import deliveryRouter from "./routes/delivery.js";
 import fs from 'fs';
 import hbs from "hbs";
 import cors from "cors";
@@ -255,6 +256,7 @@ fs.readdir(partialsDir, (err, files) => {
     });
 });
 
+app.use("/", deliveryRouter);
 app.use("/", menuImagesRouter);
 app.use("/", customerAuthRouter);
 app.use("/", publicOrdersRouter);

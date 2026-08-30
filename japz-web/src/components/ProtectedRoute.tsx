@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    allowedRoles: ('admin' | 'cashier' | 'kitchen')[];
+    allowedRoles: ('admin' | 'cashier' | 'kitchen' | 'rider')[];
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
@@ -26,10 +26,11 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
 
     // Logged in but wrong role - redirect to their correct dashboard
     if (!allowedRoles.includes(user.role)) {
-        const roleRedirects = {
+        const roleRedirects: Record<string, string> = {
             admin: '/admin/dashboard',
             cashier: '/cashier/pos',
             kitchen: '/kitchen/incoming',
+            rider: '/rider/deliveries',
         };
         return <Navigate to={roleRedirects[user.role]} replace />;
     }

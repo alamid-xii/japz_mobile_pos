@@ -7,6 +7,7 @@ import { useStorefrontBase } from './StorefrontLayout';
 import DeliveryMap from './components/DeliveryMap';
 import DeliveryEta, { type DeliveryInfo } from './components/DeliveryEta';
 import RateOrder from './components/RateOrder';
+import DeliveryReceipt from '../../../components/DeliveryReceipt';
 
 interface TrackedItem { name: string; quantity: number; total: string | number; modifiers?: Record<string, string> | null }
 interface TrackedOrder {
@@ -49,6 +50,7 @@ export default function TrackPage() {
     const [order, setOrder] = useState<TrackedOrder | null>(null);
     const [loading, setLoading] = useState(!!orderNumber);
     const [error, setError] = useState<string | null>(null);
+    const [showReceipt, setShowReceipt] = useState(false);
 
     const fetchOrder = useCallback(async (num: string) => {
         try {
@@ -229,7 +231,17 @@ export default function TrackPage() {
                     <span>Total</span><span>{peso(order.total)}</span>
                 </div>
                 {order.notes && <p className="text-sm text-gray-500 mt-3">Note: {order.notes}</p>}
+
+                <button
+                    onClick={() => setShowReceipt(true)}
+                    className="mt-3 w-full border border-gray-200 rounded-2xl py-3 text-sm font-bold text-slate-700"
+                >
+                    View receipt
+                </button>
             </section>
+            {showReceipt && (
+                <DeliveryReceipt orderNumber={order.orderNumber} onClose={() => setShowReceipt(false)} />
+            )}
         </div>
     );
 }

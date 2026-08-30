@@ -52,6 +52,22 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+/**
+ * Blocks non-back-office accounts from the general staff API.
+ *
+ * verifyToken only proves a token is valid — it never checked the role, so a
+ * rider (or a customer) token could read sales reports, inventory and the user
+ * list. Riders use /api/rider/* and customers use /api/public/*; neither has any
+ * business here. Applied on top of verifyToken so existing admin/cashier/kitchen
+ * access is unchanged.
+ */
+const backOfficeOnly = (req, res, next) => {
+  if (['rider', 'customer'].includes(req.user?.role)) {
+    return res.status(403).json({ error: 'You do not have access to this.' });
+  }
+  next();
+};
+
 // ========== API ENDPOINTS FOR MOBILE APP ==========
 
 // Send verification code to email (Step 1 of registration)
@@ -435,7 +451,7 @@ router.post("/api/auth/reset-password", async (req, res) => {
 // ========== USER APPROVAL API ==========
 
 // Get all pending users
-router.get("/api/users/pending", verifyToken, async (req, res) => {
+router.get("/api/users/pending", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const pendingUsers = await User.findAll({
       where: { status: 'pending' },
@@ -449,7 +465,7 @@ router.get("/api/users/pending", verifyToken, async (req, res) => {
 });
 
 // Get all approved users (includes inactive for management)
-router.get("/api/users/approved", verifyToken, async (req, res) => {
+router.get("/api/users/approved", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const approvedUsers = await User.findAll({
       where: { status: { [Op.in]: ['approved', 'inactive'] } },
@@ -463,11 +479,11 @@ router.get("/api/users/approved", verifyToken, async (req, res) => {
 });
 
 // Approve a pending user and assign a role
-router.put("/api/users/:id/approve", verifyToken, async (req, res) => {
+router.put("/api/users/:id/approve", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { role, assignedCategories } = req.body;
-    if (!role || !['cashier', 'kitchen', 'admin'].includes(role)) {
-      return res.status(400).json({ error: 'Valid role required (cashier, kitchen, or admin)' });
+    if (!role || !['cashier', 'kitchen', 'admin', 'rider'].includes(role)) {
+      return res.status(400).json({ error: 'Valid role required (cashier, kitchen, admin, or rider)' });
     }
 
     const user = await User.findByPk(req.params.id);
@@ -476,6 +492,9 @@ router.put("/api/users/:id/approve", verifyToken, async (req, res) => {
 
     user.role = role;
     user.status = 'approved';
+    // A new rider starts offline: they mark themselves available when they
+    // begin a shift, so the cashier never sees an idle account as ready.
+    if (role === 'rider') user.availability = 'offline';
 
     // Save assigned categories for kitchen staff
     if (role === 'kitchen' && assignedCategories && Array.isArray(assignedCategories)) {
@@ -516,7 +535,7 @@ router.put("/api/users/:id/approve", verifyToken, async (req, res) => {
 });
 
 // Reject a pending user
-router.put("/api/users/:id/reject", verifyToken, async (req, res) => {
+router.put("/api/users/:id/reject", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -552,7 +571,7 @@ router.put("/api/users/:id/reject", verifyToken, async (req, res) => {
 });
 
 // Toggle user status (activate/deactivate)
-router.put("/api/users/:id/toggle-status", verifyToken, async (req, res) => {
+router.put("/api/users/:id/toggle-status", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -593,11 +612,11 @@ router.put("/api/users/:id/toggle-status", verifyToken, async (req, res) => {
 });
 
 // Update user role (for approved users)
-router.put("/api/users/:id/role", verifyToken, async (req, res) => {
+router.put("/api/users/:id/role", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { role, assignedCategories } = req.body;
-    if (!role || !['cashier', 'kitchen', 'admin'].includes(role)) {
-      return res.status(400).json({ error: 'Valid role required (cashier, kitchen, or admin)' });
+    if (!role || !['cashier', 'kitchen', 'admin', 'rider'].includes(role)) {
+      return res.status(400).json({ error: 'Valid role required (cashier, kitchen, admin, or rider)' });
     }
 
     const user = await User.findByPk(req.params.id);
@@ -756,7 +775,7 @@ router.get("/api/kitchen-stations", async (req, res) => {
 });
 
 // Create kitchen station
-router.post("/api/kitchen-stations", verifyToken, async (req, res) => {
+router.post("/api/kitchen-stations", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { name, category, description } = req.body;
     if (!name || !category) {
@@ -786,7 +805,7 @@ router.get("/api/menu-categories", async (req, res) => {
 });
 
 // Create menu category
-router.post("/api/menu-categories", verifyToken, async (req, res) => {
+router.post("/api/menu-categories", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { name, description, icon } = req.body;
 
@@ -818,7 +837,7 @@ router.post("/api/menu-categories", verifyToken, async (req, res) => {
 });
 
 // Update menu category
-router.put("/api/menu-categories/:id", verifyToken, async (req, res) => {
+router.put("/api/menu-categories/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { name, description, icon, status } = req.body;
     const category = await MenuCategory.findByPk(req.params.id);
@@ -844,7 +863,7 @@ router.put("/api/menu-categories/:id", verifyToken, async (req, res) => {
 });
 
 // Delete menu category
-router.delete("/api/menu-categories/:id", verifyToken, async (req, res) => {
+router.delete("/api/menu-categories/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const category = await MenuCategory.findByPk(req.params.id);
     if (!category) {
@@ -861,7 +880,7 @@ router.delete("/api/menu-categories/:id", verifyToken, async (req, res) => {
 
 // Get all menu items
 // Get all menu items including archived (admin only)
-router.get("/api/menu-items/admin/all", verifyToken, async (req, res) => {
+router.get("/api/menu-items/admin/all", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const items = await MenuItem.findAll({
       include: [
@@ -919,7 +938,7 @@ router.get("/api/menu-items/category/:categoryId", async (req, res) => {
 });
 
 // Create menu item
-router.post("/api/menu-items", verifyToken, async (req, res) => {
+router.post("/api/menu-items", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { name, categoryId, price, description, hasSize, sizes, hasFlavor, flavors, hasTemperature, temperatures, trackStock, stock } = req.body;
 
@@ -974,7 +993,7 @@ router.post("/api/menu-items", verifyToken, async (req, res) => {
 });
 
 // Update menu item
-router.put("/api/menu-items/:id", verifyToken, async (req, res) => {
+router.put("/api/menu-items/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { name, categoryId, price, description, status, hasSize, sizes, hasFlavor, flavors, hasTemperature, temperatures, trackStock, stock, archived, imageUrl, featured, featuredLabel } = req.body;
     const item = await MenuItem.findByPk(req.params.id);
@@ -1045,7 +1064,7 @@ router.put("/api/menu-items/:id", verifyToken, async (req, res) => {
 });
 
 // Delete menu item
-router.delete("/api/menu-items/:id", verifyToken, async (req, res) => {
+router.delete("/api/menu-items/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const item = await MenuItem.findByPk(req.params.id);
     if (!item) {
@@ -1068,7 +1087,7 @@ router.delete("/api/menu-items/:id", verifyToken, async (req, res) => {
 // ========== STOCK MANAGEMENT API ==========
 
 // Set general default stock for ALL items
-router.put("/api/stocks/set-general-default", verifyToken, async (req, res) => {
+router.put("/api/stocks/set-general-default", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { defaultStock } = req.body;
     if (defaultStock === undefined || defaultStock < 0) {
@@ -1086,7 +1105,7 @@ router.put("/api/stocks/set-general-default", verifyToken, async (req, res) => {
 });
 
 // Restock a single item (adds to current stock, does NOT change defaultStock)
-router.put("/api/stocks/restock/:id", verifyToken, async (req, res) => {
+router.put("/api/stocks/restock/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { quantity } = req.body;
     if (!quantity || quantity < 1) {
@@ -1104,7 +1123,7 @@ router.put("/api/stocks/restock/:id", verifyToken, async (req, res) => {
 });
 
 // Manual reset: reset all items' stock to their defaultStock right now
-router.post("/api/stocks/reset-now", verifyToken, async (req, res) => {
+router.post("/api/stocks/reset-now", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const items = await MenuItem.findAll();
@@ -1122,7 +1141,7 @@ router.post("/api/stocks/reset-now", verifyToken, async (req, res) => {
 // ========== ORDERS API ==========
 
 // Create order
-router.post("/api/orders", verifyToken, async (req, res) => {
+router.post("/api/orders", verifyToken, backOfficeOnly, async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const { orderNumber, cashierId, cashier, subtotal, discount, total, payment, items, status, createdAt, customerName, orderType, tableNumber, deliveryAddress, notes } = req.body;
@@ -1227,7 +1246,7 @@ router.post("/api/orders", verifyToken, async (req, res) => {
 });
 
 // Get all orders (with optional status filter)
-router.get("/api/orders", verifyToken, async (req, res) => {
+router.get("/api/orders", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { status } = req.query;
     const where = status ? { status } : {};
@@ -1261,7 +1280,7 @@ router.get("/api/orders", verifyToken, async (req, res) => {
 // ========== SALES ANALYTICS ==========
 
 // Get sales analytics with date range
-router.get("/api/sales/analytics", verifyToken, async (req, res) => {
+router.get("/api/sales/analytics", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { period = 'week', startDate, endDate } = req.query;
 
@@ -1571,7 +1590,7 @@ router.get("/api/sales/analytics", verifyToken, async (req, res) => {
 });
 
 // Get sales summary for dashboard
-router.get("/api/sales/summary", verifyToken, async (req, res) => {
+router.get("/api/sales/summary", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -1638,7 +1657,7 @@ router.get("/api/sales/summary", verifyToken, async (req, res) => {
 });
 
 // Get detailed order report for export with date range
-router.get("/api/sales/detailed-report", verifyToken, async (req, res) => {
+router.get("/api/sales/detailed-report", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
@@ -1750,7 +1769,7 @@ router.get("/api/sales/detailed-report", verifyToken, async (req, res) => {
 });
 
 // Get order by ID
-router.get("/api/orders/:id", verifyToken, async (req, res) => {
+router.get("/api/orders/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const order = await Order.findByPk(req.params.id, {
       include: [
@@ -1781,7 +1800,7 @@ router.get("/api/orders/:id", verifyToken, async (req, res) => {
 });
 
 // Update order status
-router.put("/api/orders/:id/status", verifyToken, async (req, res) => {
+router.put("/api/orders/:id/status", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { status, riderName, riderPhone } = req.body;
     const validStatuses = ['pending', 'preparing', 'ready', 'out-for-delivery', 'completed', 'cancelled'];
@@ -1795,6 +1814,15 @@ router.put("/api/orders/:id/status", verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
+    // The kitchen finishes cooking; the cashier hands over (or a rider delivers).
+    // Letting the kitchen jump straight to 'completed' skipped the cashier step
+    // entirely, so an order could never reach the Ready Orders screen.
+    if (status === 'completed' && req.user?.role === 'kitchen') {
+      return res.status(403).json({
+        error: 'Mark the order ready — the cashier completes it.',
+      });
+    }
+
     const oldStatus = order.status;
     order.status = status;
     // Set preparedById when kitchen staff starts preparing the order
@@ -1804,6 +1832,29 @@ router.put("/api/orders/:id/status", verifyToken, async (req, res) => {
     // Set completedAt timestamp only when status becomes 'completed'
     if (status === 'completed') {
       order.completedAt = new Date();
+    }
+
+    // Keep per-item state in step with a whole-order move.
+    //
+    // The Prep Board drives the order status FROM its items, but this older
+    // endpoint sets the order directly. Without syncing, an order could read
+    // 'ready' while every item was still 'pending', and the cashier would be
+    // blocked from completing it by the all-items-ready rule.
+    if (['preparing', 'ready', 'completed'].includes(status)) {
+      const itemStatus = status === 'preparing' ? 'preparing' : 'ready';
+      await OrderItem.update(
+        {
+          status: itemStatus,
+          ...(itemStatus === 'ready' ? { readyAt: new Date(), preparedById: req.user?.id ?? null } : {}),
+        },
+        {
+          where: {
+            orderId: order.id,
+            // Never walk an already-ready item back to preparing.
+            ...(itemStatus === 'preparing' ? { status: 'pending' } : {}),
+          },
+        },
+      );
     }
     // Dispatching a delivery stamps the time the customer's estimate counts from,
     // and records who is bringing it so the customer can call them.
@@ -2010,7 +2061,7 @@ router.post("/api/payments", verifyToken, async (req, res) => {
 // ========== LOGS API ==========
 
 // Get all logs with optional filtering
-router.get("/api/logs", verifyToken, async (req, res) => {
+router.get("/api/logs", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { action, module, userId, entityType, status, limit = 50, offset = 0 } = req.query;
 
@@ -2039,7 +2090,7 @@ router.get("/api/logs", verifyToken, async (req, res) => {
 });
 
 // Get logs for a specific entity
-router.get("/api/logs/entity/:entityType/:entityId", verifyToken, async (req, res) => {
+router.get("/api/logs/entity/:entityType/:entityId", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { entityType, entityId } = req.params;
     const logs = await Log.findAll({
@@ -2058,7 +2109,7 @@ router.get("/api/logs/entity/:entityType/:entityId", verifyToken, async (req, re
 });
 
 // Get logs for a specific user
-router.get("/api/logs/user/:userId", verifyToken, async (req, res) => {
+router.get("/api/logs/user/:userId", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { userId } = req.params;
     const logs = await Log.findAll({
@@ -2268,7 +2319,7 @@ router.post("/api/feedback/submit", async (req, res) => {
 });
 
 // Get feedback analytics (protected)
-router.get("/api/feedback/analytics", verifyToken, async (req, res) => {
+router.get("/api/feedback/analytics", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { startDate, endDate, limit = 100 } = req.query;
 
@@ -2365,7 +2416,7 @@ router.get("/api/feedback/analytics", verifyToken, async (req, res) => {
 });
 
 // Export feedback with order details (protected)
-router.get("/api/feedback/export", verifyToken, async (req, res) => {
+router.get("/api/feedback/export", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
@@ -2444,7 +2495,7 @@ router.get("/api/feedback/export", verifyToken, async (req, res) => {
 });
 
 // Get all feedback (protected)
-router.get("/api/feedback", verifyToken, async (req, res) => {
+router.get("/api/feedback", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { status, limit = 50, offset = 0 } = req.query;
 
@@ -2491,7 +2542,7 @@ router.get("/api/feedback", verifyToken, async (req, res) => {
 });
 
 // Get feedback by ID (protected)
-router.get("/api/feedback/:id", verifyToken, async (req, res) => {
+router.get("/api/feedback/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const feedback = await Feedback.findByPk(req.params.id, {
       include: [
@@ -2514,7 +2565,7 @@ router.get("/api/feedback/:id", verifyToken, async (req, res) => {
 });
 
 // Update feedback (protected)
-router.put("/api/feedback/:id", verifyToken, async (req, res) => {
+router.put("/api/feedback/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { status, processed, aiAnalysis, themes, sentiment } = req.body;
     const feedback = await Feedback.findByPk(req.params.id);
@@ -2541,7 +2592,7 @@ router.put("/api/feedback/:id", verifyToken, async (req, res) => {
 });
 
 // Delete feedback (protected)
-router.delete("/api/feedback/:id", verifyToken, async (req, res) => {
+router.delete("/api/feedback/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const feedback = await Feedback.findByPk(req.params.id);
 
@@ -2560,7 +2611,7 @@ router.delete("/api/feedback/:id", verifyToken, async (req, res) => {
 // ========== DISCOUNTS API ==========
 
 // Get all discounts
-router.get("/api/discounts", verifyToken, async (req, res) => {
+router.get("/api/discounts", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const discounts = await Discount.findAll({
       order: [['createdAt', 'DESC']]
@@ -2572,7 +2623,7 @@ router.get("/api/discounts", verifyToken, async (req, res) => {
 });
 
 // Create discount
-router.post("/api/discounts", verifyToken, async (req, res) => {
+router.post("/api/discounts", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { name, percentage } = req.body;
 
@@ -2597,7 +2648,7 @@ router.post("/api/discounts", verifyToken, async (req, res) => {
 });
 
 // Update discount
-router.put("/api/discounts/:id", verifyToken, async (req, res) => {
+router.put("/api/discounts/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const discount = await Discount.findByPk(req.params.id);
 
@@ -2637,7 +2688,7 @@ router.put("/api/discounts/:id", verifyToken, async (req, res) => {
 });
 
 // Delete discount
-router.delete("/api/discounts/:id", verifyToken, async (req, res) => {
+router.delete("/api/discounts/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const discount = await Discount.findByPk(req.params.id);
 
@@ -2658,7 +2709,7 @@ router.delete("/api/discounts/:id", verifyToken, async (req, res) => {
 // ========== VOUCHERS API ==========
 
 // Get all vouchers
-router.get("/api/vouchers", verifyToken, async (req, res) => {
+router.get("/api/vouchers", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const vouchers = await Voucher.findAll({
       order: [['createdAt', 'DESC']]
@@ -2670,7 +2721,7 @@ router.get("/api/vouchers", verifyToken, async (req, res) => {
 });
 
 // Create voucher (supports bulk creation with quantity)
-router.post("/api/vouchers", verifyToken, async (req, res) => {
+router.post("/api/vouchers", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { name, amount, startDate, endDate, quantity = 1 } = req.body;
 
@@ -2738,7 +2789,7 @@ router.post("/api/vouchers", verifyToken, async (req, res) => {
 });
 
 // Update voucher
-router.put("/api/vouchers/:id", verifyToken, async (req, res) => {
+router.put("/api/vouchers/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const voucher = await Voucher.findByPk(req.params.id);
 
@@ -2790,7 +2841,7 @@ router.put("/api/vouchers/:id", verifyToken, async (req, res) => {
 });
 
 // Delete voucher
-router.delete("/api/vouchers/:id", verifyToken, async (req, res) => {
+router.delete("/api/vouchers/:id", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const voucher = await Voucher.findByPk(req.params.id);
 
@@ -2809,7 +2860,7 @@ router.delete("/api/vouchers/:id", verifyToken, async (req, res) => {
 });
 
 // Redeem voucher (increment used count)
-router.post("/api/vouchers/redeem", verifyToken, async (req, res) => {
+router.post("/api/vouchers/redeem", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { code } = req.body;
 
@@ -2858,7 +2909,7 @@ router.get("/api/business-hours", async (req, res) => {
 });
 
 // Update business hours
-router.put("/api/business-hours", verifyToken, async (req, res) => {
+router.put("/api/business-hours", verifyToken, backOfficeOnly, async (req, res) => {
   try {
     const { openTime, closeTime, applyCashier, applyKitchen, deliveryEtaMinMinutes, deliveryEtaMaxMinutes, storeLat, storeLng, gcashNumber, gcashName } = req.body;
     console.log('PUT /api/business-hours body:', req.body, 'user:', req.user?.id);

@@ -21,10 +21,11 @@ export default function PublicRoute({ children }: PublicRouteProps) {
 
     // If user is logged in, redirect to their dashboard
     if (user) {
-        const roleRedirects = {
+        const roleRedirects: Record<string, string> = {
             admin: '/admin/dashboard',
             cashier: '/cashier/pos',
             kitchen: '/kitchen/incoming',
+            rider: '/rider/deliveries',
         };
         const from = (location.state as any)?.from?.pathname || roleRedirects[user.role];
         return <Navigate to={from} replace />;

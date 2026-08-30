@@ -8,6 +8,10 @@ interface Props {
     storeLat?: number | null;
     storeLng?: number | null;
     label?: string;
+    /** Name for the origin marker. Defaults to the restaurant. */
+    originLabel?: string;
+    /** Live origin: re-routes as it changes, for a rider en route. */
+    liveOrigin?: boolean;
 }
 
 const TILE = 256;
@@ -40,7 +44,10 @@ const haversineKm = (aLat: number, aLng: number, bLat: number, bLng: number) => 
  * engine here, so it shows direction and distance, nothing more. And it is not
  * a rider's position: nothing in this system reports where a rider is.
  */
-export default function DeliveryMap({ lat, lng, storeLat, storeLng, label }: Props) {
+export default function DeliveryMap({
+    lat, lng, storeLat, storeLng, label,
+    originLabel = 'JAPZ Grill', liveOrigin = false,
+}: Props) {
     const boxRef = useRef<HTMLDivElement>(null);
     const [width, setWidth] = useState(0);
 
@@ -83,7 +90,10 @@ export default function DeliveryMap({ lat, lng, storeLat, storeLng, label }: Pro
             }
         })();
         return () => { cancelled = true; };
-    }, [hasStore, storeLat, storeLng, lat, lng]);
+        // A live origin moves constantly; rounding the dependency to ~4dp
+        // (about 11 m) stops every GPS jitter triggering a new route lookup.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasStore, liveOrigin ? storeLat?.toFixed(3) : storeLat, liveOrigin ? storeLng?.toFixed(3) : storeLng, lat, lng]);
 
     // Everything that must stay on screen: the endpoints, plus the route when we
     // have one, so a curving road is not clipped at the edges.
@@ -232,7 +242,7 @@ export default function DeliveryMap({ lat, lng, storeLat, storeLng, label }: Pro
                         <span className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
                             <Store size={11} className="text-brand" />
                         </span>
-                        <span className="font-bold text-slate-900">JAPZ Grill</span>
+                        <span className="font-bold text-slate-900">{originLabel}</span>
                         {route ? (
                             <span className="text-slate-400 flex items-center gap-1">
                                 · <RouteIcon size={11} />
