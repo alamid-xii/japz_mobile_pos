@@ -24,6 +24,17 @@ export const BusinessHours = sequelize.define(
       defaultValue: true,
       allowNull: false,
     },
+    gcashNumber: {
+      type: DataTypes.STRING(32),
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Where customers send GCash transfers. Null hides the option.',
+    },
+    gcashName: {
+      type: DataTypes.STRING(120),
+      allowNull: true,
+      defaultValue: null,
+    },
     storeLat: {
       type: DataTypes.DECIMAL(10, 7),
       allowNull: true,

@@ -46,6 +46,18 @@ export const Payment = sequelize.define("Payment", {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: true,
   },
+  provider: {
+    type: DataTypes.STRING(32),
+    allowNull: true,
+    defaultValue: null,
+    comment: "Wallet or scheme used, e.g. 'GCash'. Null for plain cash.",
+  },
+  reference: {
+    type: DataTypes.STRING(64),
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Customer-entered transfer reference, for staff to verify manually',
+  },
   status: {
     type: DataTypes.ENUM('pending', 'completed', 'failed'),
     allowNull: false,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Minus, Plus, ShoppingBag, ArrowLeft, Wallet } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, ArrowLeft, Banknote, CreditCard, Smartphone, Copy, Check } from 'lucide-react';
 import { itemImage } from '../../../utils/menuImages';
 import { publicOrderAPI, customerAuthAPI, type SavedAddress } from '../../../services/api';
 import { useStorefront, peso } from './StorefrontContext';
@@ -8,6 +8,7 @@ import { useCustomerAuth } from './CustomerAuthContext';
 import Thumb from './components/Thumb';
 import EmptyState from './components/EmptyState';
 import AddressPicker from './components/AddressPicker';
+import MapPicker from './components/MapPicker';
 import { useStorefrontBase } from './StorefrontLayout';
 
 type OrderType = 'dine-in' | 'take-out' | 'delivery';
@@ -17,7 +18,7 @@ export default function CartPage() {
     const base = useStorefrontBase();
     const {
         cart, cartCount, cartTotal, changeQty, clearCart, productById,
-        categoryNameById, shopOpen, tableNumber: qrTable,
+        categoryNameById, shopOpen, tableNumber: qrTable, paymentMethods,
     } = useStorefront();
     const { customer, ready: authReady } = useCustomerAuth();
 
@@ -29,6 +30,10 @@ export default function CartPage() {
     const [tableNumber, setTableNumber] = useState(qrTable);
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [notes, setNotes] = useState('');
+    const [payMethod, setPayMethod] = useState<string>('cash');
+    const [payReference, setPayReference] = useState('');
+    const [copied, setCopied] = useState(false);
+    const [mapOpen, setMapOpen] = useState(false);
     const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
     const [locating, setLocating] = useState(false);
     const [locateError, setLocateError] = useState<string | null>(null);
@@ -149,6 +154,10 @@ export default function CartPage() {
             }
         }
 
+        if (payMethod === 'gcash' && !payReference.trim()) {
+            return setError('Please enter your GCash reference number.');
+        }
+
         setSubmitting(true);
         try {
             const res = await publicOrderAPI.place({
@@ -169,6 +178,8 @@ export default function CartPage() {
                 addressLabel: orderType === 'delivery' && usingNewAddress && saveAddress
                     ? addressLabel.trim() || undefined : undefined,
                 notes: notes.trim() || undefined,
+                paymentMethod: payMethod,
+                paymentReference: payMethod === 'gcash' ? payReference.trim() : undefined,
             });
             clearCart();
             navigate(`${base}/track/${res.data.order.orderNumber}`, { replace: true });
@@ -191,6 +202,17 @@ export default function CartPage() {
             />
         );
     }
+
+    // GCash is always listed so customers can see it is planned. When the server
+    // has no account configured it renders disabled rather than hidden: visible,
+    // but never presented as something that can actually be paid right now.
+    const methodsWithGcash: Array<{ key: string; label: string; hint: string; account?: string; accountName?: string | null; unavailable: boolean }> =
+        paymentMethods.some(m => m.key === 'gcash')
+            ? paymentMethods.map(m => ({ ...m, unavailable: false }))
+            : [
+                ...paymentMethods.map(m => ({ ...m, unavailable: false })),
+                { key: 'gcash', label: 'GCash', hint: 'Not set up yet — please choose another method', unavailable: true },
+            ];
 
     const field = 'w-full rounded-2xl bg-gray-50 text-gray-900 placeholder-gray-400 border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition duration-150';
 
@@ -292,6 +314,7 @@ export default function CartPage() {
                                 onUseSuggestion={() => suggestion && applySuggestion(suggestion)}
                                 onDismissSuggestion={() => setSuggestion(null)}
                                 onAddressTyped={() => setAutoFilled(null)}
+                                onOpenMap={() => setMapOpen(true)}
                                 saveIt={saveAddress}
                                 onToggleSave={setSaveAddress}
                                 label={addressLabel}
@@ -308,19 +331,100 @@ export default function CartPage() {
                     </section>
 
                     <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                        <p className="text-xs font-extrabold text-gray-900 uppercase tracking-wide mb-3">Payment method</p>
-                        {/* Only one method is real today: settle with staff. No card
-                            processing exists in this system. */}
-                        <div className="flex items-center gap-3 rounded-2xl border-2 border-brand bg-brand/10 px-4 py-3">
-                            <span className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center shrink-0">
-                                <Wallet size={18} className="text-gray-900" />
-                            </span>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-sm font-bold text-gray-900">Pay at the counter</p>
-                                <p className="text-[11px] text-gray-500">Settle when you collect or receive your order</p>
-                            </div>
-                            <span className="w-5 h-5 rounded-full border-[6px] border-brand shrink-0" />
+                        <p className="text-xs font-extrabold text-slate-900 uppercase tracking-wide mb-3">Payment method</p>
+
+                        {/* Nothing here charges the card or wallet: there is no
+                            payment gateway. The customer picks how they will pay
+                            and staff confirm it on handover. */}
+                        <div className="space-y-2">
+                            {methodsWithGcash.map(m => {
+                                const active = payMethod === m.key;
+                                const Icon = m.key === 'cash' ? Banknote : m.key === 'card' ? CreditCard : Smartphone;
+                                const unavailable = m.unavailable;
+                                return (
+                                    <button
+                                        key={m.key}
+                                        type="button"
+                                        disabled={unavailable}
+                                        onClick={() => !unavailable && setPayMethod(m.key)}
+                                        aria-pressed={active}
+                                        className={`w-full flex items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition duration-150 ${
+                                            unavailable ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                                                : active ? 'border-brand bg-brand/10' : 'border-gray-200 bg-white'
+                                        }`}
+                                    >
+                                        <span className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                            active ? 'bg-brand' : 'bg-gray-100'
+                                        }`}>
+                                            <Icon size={18} className={active ? 'text-slate-900' : 'text-slate-500'} />
+                                        </span>
+                                        <span className="min-w-0 flex-1">
+                                            <span className="flex items-center gap-2 flex-wrap">
+                                                <span className="text-sm font-bold text-slate-900">{m.label}</span>
+                                                {unavailable && (
+                                                    <span className="text-[9px] font-extrabold bg-gray-200 text-slate-500 rounded-full px-2 py-0.5">
+                                                        COMING SOON
+                                                    </span>
+                                                )}
+                                            </span>
+                                            <span className="block text-[11px] text-slate-500">{m.hint}</span>
+                                        </span>
+                                        {!unavailable && (
+                                            <span className={`w-5 h-5 rounded-full shrink-0 ${
+                                                active ? 'border-[6px] border-brand' : 'border-2 border-gray-300'
+                                            }`} />
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
+
+                        {/* GCash: show where to send and collect the reference so
+                            staff can check it against their own app. */}
+                        {payMethod === 'gcash' && (() => {
+                            const g = paymentMethods.find(m => m.key === 'gcash');
+                            if (!g?.account) return null;
+                            return (
+                                <div className="mt-3 rounded-2xl bg-gray-50 border border-gray-200 p-4">
+                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Send exactly</p>
+                                    <p className="text-lg font-extrabold text-slate-900">{peso(cartTotal)}</p>
+
+                                    <div className="mt-2 flex items-center gap-2">
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-bold text-slate-900">{g.account}</p>
+                                            {g.accountName && <p className="text-[11px] text-slate-500">{g.accountName}</p>}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                navigator.clipboard?.writeText(g.account!).then(
+                                                    () => { setCopied(true); setTimeout(() => setCopied(false), 1500); },
+                                                    () => { /* clipboard blocked; the number is on screen anyway */ },
+                                                );
+                                            }}
+                                            className="ml-auto shrink-0 flex items-center gap-1 text-[11px] font-bold text-slate-600 border border-gray-200 rounded-full px-3 py-1.5"
+                                        >
+                                            {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied' : 'Copy'}
+                                        </button>
+                                    </div>
+
+                                    <input
+                                        value={payReference}
+                                        onChange={e => setPayReference(e.target.value.slice(0, 64))}
+                                        className={field + ' mt-3'}
+                                        placeholder="GCash reference number"
+                                        inputMode="numeric"
+                                    />
+                                    <p className="text-[11px] text-slate-500 mt-1.5">
+                                        Send the payment first, then enter the reference. Staff verify it before your order is released.
+                                    </p>
+                                </div>
+                            );
+                        })()}
+
+                        <p className="text-[11px] text-slate-400 mt-3">
+                            Your order isn't charged online — payment is confirmed by our staff.
+                        </p>
                     </section>
                 </>
             )}
@@ -351,6 +455,21 @@ export default function CartPage() {
                     : step === 'cart' ? (customer ? 'Check out' : 'Sign in to check out')
                     : 'Place Order'}
             </button>
+
+            {mapOpen && (
+                <MapPicker
+                    initialLat={pin?.lat ?? null}
+                    initialLng={pin?.lng ?? null}
+                    onConfirm={(lat, lng) => {
+                        setPin({ lat, lng });
+                        setMapOpen(false);
+                        // Same reverse-geocode path the "use my location" button takes.
+                        lookUpAddress(lat, lng);
+                    }}
+                    onClose={() => setMapOpen(false)}
+                />
+            )}
+
         </div>
     );
 }

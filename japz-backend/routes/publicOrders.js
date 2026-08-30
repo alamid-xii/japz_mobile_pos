@@ -106,7 +106,30 @@ const isWithinBusinessHours = async () => {
 router.get("/api/public/status", async (req, res) => {
   try {
     const hours = await isWithinBusinessHours();
-    res.json({ acceptingOrders: hours.open, openTime: hours.openTime, closeTime: hours.closeTime });
+    const settings = await BusinessHours.findOne();
+
+    // GCash is offered only when staff have actually configured a number, so a
+    // customer is never shown an account to send money to that we invented.
+    const paymentMethods = [
+      { key: 'cash', label: 'Cash', hint: 'Pay with cash on pickup or delivery' },
+      { key: 'card', label: 'Card', hint: 'Pay by card at the counter' },
+    ];
+    if (settings?.gcashNumber) {
+      paymentMethods.push({
+        key: 'gcash',
+        label: 'GCash',
+        hint: 'Send the exact total, then enter your reference number',
+        account: settings.gcashNumber,
+        accountName: settings.gcashName || null,
+      });
+    }
+
+    res.json({
+      acceptingOrders: hours.open,
+      openTime: hours.openTime,
+      closeTime: hours.closeTime,
+      paymentMethods,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -358,7 +381,7 @@ router.get("/api/public/route", async (req, res) => {
 router.post("/api/public/orders", verifyCustomer, throttle, async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
-    const { items, orderType, tableNumber, deliveryAddress, deliveryLat, deliveryLng, deliveryAddressId, saveAddress, addressLabel, customerName, customerPhone, notes, paymentMethod } = req.body;
+    const { items, orderType, tableNumber, deliveryAddress, deliveryLat, deliveryLng, deliveryAddressId, saveAddress, addressLabel, customerName, customerPhone, notes, paymentMethod, paymentReference } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
       await transaction.rollback();
@@ -393,11 +416,26 @@ router.post("/api/public/orders", verifyCustomer, throttle, async (req, res) => 
       await transaction.rollback();
       return res.status(400).json({ error: 'Please add a valid contact number to your profile.' });
     }
-    // 'counter' means the customer pays staff on arrival; 'digital' is reserved
-    // for a gateway-backed flow and is rejected until one is wired up.
-    if (paymentMethod && !['counter'].includes(paymentMethod)) {
+    // No gateway is wired up, so none of these CHARGE the customer. They record
+    // how the customer intends to pay; staff confirm it on handover.
+    const chosenMethod = paymentMethod || 'cash';
+    if (!['cash', 'card', 'gcash', 'counter'].includes(chosenMethod)) {
       await transaction.rollback();
-      return res.status(400).json({ error: 'That payment method is not available yet.' });
+      return res.status(400).json({ error: 'That payment method is not available.' });
+    }
+
+    const settings = await BusinessHours.findOne();
+    if (chosenMethod === 'gcash') {
+      // Refuse GCash outright if no destination is configured, rather than
+      // taking an order the customer cannot actually pay for.
+      if (!settings?.gcashNumber) {
+        await transaction.rollback();
+        return res.status(400).json({ error: 'GCash is not available right now. Please choose another method.' });
+      }
+      if (!String(paymentReference || '').trim()) {
+        await transaction.rollback();
+        return res.status(400).json({ error: 'Please enter your GCash reference number.' });
+      }
     }
 
     // Coordinates are optional; when present they must be a real point on Earth.
@@ -531,10 +569,14 @@ router.post("/api/public/orders", verifyCustomer, throttle, async (req, res) => 
       }
     }
 
-    // Unpaid until staff settle it at the counter.
+    // Unpaid until a human confirms it: cash and card are settled on handover,
+    // and a GCash reference still has to be checked against the store's own app.
+    const METHOD_MAP = { cash: 'cash', counter: 'cash', card: 'card', gcash: 'digital' };
     await Payment.create({
       orderId: order.id,
-      method: 'cash',
+      method: METHOD_MAP[chosenMethod] || 'cash',
+      provider: chosenMethod === 'gcash' ? 'GCash' : null,
+      reference: chosenMethod === 'gcash' ? String(paymentReference).trim().slice(0, 64) : null,
       amount: subtotal,
       status: 'pending',
     }, { transaction });

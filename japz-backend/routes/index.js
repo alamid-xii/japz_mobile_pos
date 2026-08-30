@@ -2860,7 +2860,7 @@ router.get("/api/business-hours", async (req, res) => {
 // Update business hours
 router.put("/api/business-hours", verifyToken, async (req, res) => {
   try {
-    const { openTime, closeTime, applyCashier, applyKitchen, deliveryEtaMinMinutes, deliveryEtaMaxMinutes, storeLat, storeLng } = req.body;
+    const { openTime, closeTime, applyCashier, applyKitchen, deliveryEtaMinMinutes, deliveryEtaMaxMinutes, storeLat, storeLng, gcashNumber, gcashName } = req.body;
     console.log('PUT /api/business-hours body:', req.body, 'user:', req.user?.id);
 
     // Convert HH:MM format to HH:MM:SS if needed
@@ -2897,6 +2897,13 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
       }
       if (deliveryEtaMaxMinutes !== undefined && Number.isFinite(parseInt(deliveryEtaMaxMinutes, 10))) {
         businessHours.deliveryEtaMaxMinutes = clampMinutes(deliveryEtaMaxMinutes);
+      }
+      // E-wallet destination shown to online customers.
+      if (gcashNumber !== undefined) {
+        businessHours.gcashNumber = String(gcashNumber || '').trim().slice(0, 32) || null;
+      }
+      if (gcashName !== undefined) {
+        businessHours.gcashName = String(gcashName || '').trim().slice(0, 120) || null;
       }
       // Store coordinates for the delivery map line.
       if (storeLat !== undefined && storeLng !== undefined) {

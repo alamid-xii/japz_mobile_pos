@@ -1,4 +1,4 @@
-import { Check, MapPin, LocateFixed, Plus, Trash2, Star, X } from 'lucide-react';
+import { Check, MapPin, LocateFixed, Plus, Trash2, Star, X, Map as MapIcon } from 'lucide-react';
 import type { SavedAddress } from '../../../../services/api';
 
 interface Props {
@@ -27,6 +27,8 @@ interface Props {
     onUseSuggestion?: () => void;
     onDismissSuggestion?: () => void;
     onAddressTyped?: () => void;
+    /** Opens the drag-to-pin map. */
+    onOpenMap?: () => void;
 }
 
 const field =
@@ -41,7 +43,7 @@ export default function AddressPicker({
     saved, selectedId, usingNew, onPick, onUseNew, onDelete,
     address, onAddressChange, pin, locating, locateError, onLocate,
     saveIt, onToggleSave, label, onLabelChange,
-    geocoding, suggestion, onUseSuggestion, onDismissSuggestion, onAddressTyped,
+    geocoding, suggestion, onUseSuggestion, onDismissSuggestion, onAddressTyped, onOpenMap,
 }: Props) {
     return (
         <div className="space-y-2">
@@ -158,17 +160,29 @@ export default function AddressPicker({
                         </div>
                     )}
 
-                    <button
-                        type="button"
-                        onClick={onLocate}
-                        disabled={locating}
-                        className={`w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold border transition duration-150 ${
-                            pin ? 'bg-brand/15 border-brand text-gray-900' : 'bg-white border-gray-200 text-gray-600'
-                        }`}
-                    >
-                        {pin ? <Check size={16} /> : locating ? <LocateFixed size={16} className="animate-pulse" /> : <MapPin size={16} />}
-                        {pin ? 'Location pinned' : locating ? 'Getting location…' : 'Pin my location on the map'}
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={onLocate}
+                            disabled={locating}
+                            className={`flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold border transition duration-150 ${
+                                pin ? 'bg-brand/15 border-brand text-slate-900' : 'bg-white border-gray-200 text-slate-600'
+                            }`}
+                        >
+                            {pin ? <Check size={16} /> : locating ? <LocateFixed size={16} className="animate-pulse" /> : <MapPin size={16} />}
+                            {pin ? 'Pinned' : locating ? 'Locating…' : 'Use my location'}
+                        </button>
+
+                        {onOpenMap && (
+                            <button
+                                type="button"
+                                onClick={onOpenMap}
+                                className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold border border-gray-200 bg-white text-slate-600 transition duration-150"
+                            >
+                                <MapIcon size={16} /> {pin ? 'Adjust on map' : 'Open map'}
+                            </button>
+                        )}
+                    </div>
                     {locateError && <p className="text-[11px] text-amber-700">{locateError}</p>}
                     {pin && !geocoding && (
                         <p className="text-[11px] text-slate-400">

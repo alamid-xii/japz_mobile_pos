@@ -181,6 +181,16 @@ export interface PublicOrderPayload {
     saveAddress?: boolean;
     addressLabel?: string;
     notes?: string;
+    paymentMethod?: string;
+    paymentReference?: string;
+}
+
+export interface PaymentMethodOption {
+    key: 'cash' | 'card' | 'gcash';
+    label: string;
+    hint: string;
+    account?: string;
+    accountName?: string | null;
 }
 
 export interface SavedAddress {

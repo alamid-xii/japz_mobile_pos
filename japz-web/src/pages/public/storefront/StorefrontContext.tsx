@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { menuCategoryAPI, menuItemAPI, publicOrderAPI } from '../../../services/api';
+import { menuCategoryAPI, menuItemAPI, publicOrderAPI, type PaymentMethodOption } from '../../../services/api';
 
 export interface SizeOption { name: string; price: number }
 export interface Product {
@@ -50,6 +50,7 @@ interface StorefrontValue {
     loadError: string | null;
     shopOpen: boolean;
     hours: { openTime?: string; closeTime?: string };
+    paymentMethods: PaymentMethodOption[];
     tableNumber: string;
     cart: CartLine[];
     cartCount: number;
@@ -109,6 +110,7 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
     const [loadError, setLoadError] = useState<string | null>(null);
     const [shopOpen, setShopOpen] = useState(true);
     const [hours, setHours] = useState<{ openTime?: string; closeTime?: string }>({});
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethodOption[]>([]);
 
     // The table from a QR scan has to survive tab navigation, which drops the
     // query string, so it is mirrored into sessionStorage for this visit only.
@@ -177,6 +179,7 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
                 setSoldById(new Map(pop.map((p: any) => [Number(p.id), Number(p.sold) || 0])));
                 setShopOpen(!!statusRes.data?.acceptingOrders);
                 setHours({ openTime: statusRes.data?.openTime, closeTime: statusRes.data?.closeTime });
+                setPaymentMethods(statusRes.data?.paymentMethods || []);
             } catch {
                 setLoadError('Could not load the menu. Please check your connection and try again.');
             } finally {
@@ -309,6 +312,7 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
         loadError,
         shopOpen,
         hours,
+        paymentMethods,
         tableNumber,
         cart,
         cartCount: cart.reduce((n, l) => n + l.quantity, 0),
