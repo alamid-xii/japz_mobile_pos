@@ -976,7 +976,7 @@ router.post("/api/menu-items", verifyToken, async (req, res) => {
 // Update menu item
 router.put("/api/menu-items/:id", verifyToken, async (req, res) => {
   try {
-    const { name, categoryId, price, description, status, hasSize, sizes, hasFlavor, flavors, hasTemperature, temperatures, trackStock, stock, archived } = req.body;
+    const { name, categoryId, price, description, status, hasSize, sizes, hasFlavor, flavors, hasTemperature, temperatures, trackStock, stock, archived, imageUrl, featured, featuredLabel } = req.body;
     const item = await MenuItem.findByPk(req.params.id);
 
     if (!item) {
@@ -999,6 +999,10 @@ router.put("/api/menu-items/:id", verifyToken, async (req, res) => {
     if (stock !== undefined) item.stock = stock;
     if (req.body.defaultStock !== undefined) item.defaultStock = req.body.defaultStock;
     if (archived !== undefined) item.archived = archived;
+    // Storefront presentation
+    if (imageUrl !== undefined) item.imageUrl = imageUrl || null;
+    if (featured !== undefined) item.featured = !!featured;
+    if (featuredLabel !== undefined) item.featuredLabel = String(featuredLabel || '').trim().slice(0, 40) || null;
 
     // Handle category change
     if (categoryId && categoryId !== oldCategoryId) {
@@ -1779,8 +1783,8 @@ router.get("/api/orders/:id", verifyToken, async (req, res) => {
 // Update order status
 router.put("/api/orders/:id/status", verifyToken, async (req, res) => {
   try {
-    const { status } = req.body;
-    const validStatuses = ['pending', 'preparing', 'ready', 'completed', 'cancelled'];
+    const { status, riderName, riderPhone } = req.body;
+    const validStatuses = ['pending', 'preparing', 'ready', 'out-for-delivery', 'completed', 'cancelled'];
 
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
@@ -1800,6 +1804,16 @@ router.put("/api/orders/:id/status", verifyToken, async (req, res) => {
     // Set completedAt timestamp only when status becomes 'completed'
     if (status === 'completed') {
       order.completedAt = new Date();
+    }
+    // Dispatching a delivery stamps the time the customer's estimate counts from,
+    // and records who is bringing it so the customer can call them.
+    if (status === 'out-for-delivery') {
+      if (order.orderType !== 'delivery') {
+        return res.status(400).json({ error: 'Only delivery orders can be marked out for delivery.' });
+      }
+      if (!order.outForDeliveryAt) order.outForDeliveryAt = new Date();
+      if (riderName !== undefined) order.riderName = String(riderName || '').trim() || null;
+      if (riderPhone !== undefined) order.riderPhone = String(riderPhone || '').trim() || null;
     }
     await order.save();
 
@@ -2846,7 +2860,7 @@ router.get("/api/business-hours", async (req, res) => {
 // Update business hours
 router.put("/api/business-hours", verifyToken, async (req, res) => {
   try {
-    const { openTime, closeTime, applyCashier, applyKitchen } = req.body;
+    const { openTime, closeTime, applyCashier, applyKitchen, deliveryEtaMinMinutes, deliveryEtaMaxMinutes, storeLat, storeLng } = req.body;
     console.log('PUT /api/business-hours body:', req.body, 'user:', req.user?.id);
 
     // Convert HH:MM format to HH:MM:SS if needed
@@ -2876,6 +2890,28 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
       if (applyCashier !== undefined) businessHours.applyCashier = applyCashier;
       if (applyKitchen !== undefined) businessHours.applyKitchen = applyKitchen;
 
+      // Delivery estimate window shown to customers.
+      const clampMinutes = (v) => Math.max(1, Math.min(240, parseInt(v, 10)));
+      if (deliveryEtaMinMinutes !== undefined && Number.isFinite(parseInt(deliveryEtaMinMinutes, 10))) {
+        businessHours.deliveryEtaMinMinutes = clampMinutes(deliveryEtaMinMinutes);
+      }
+      if (deliveryEtaMaxMinutes !== undefined && Number.isFinite(parseInt(deliveryEtaMaxMinutes, 10))) {
+        businessHours.deliveryEtaMaxMinutes = clampMinutes(deliveryEtaMaxMinutes);
+      }
+      // Store coordinates for the delivery map line.
+      if (storeLat !== undefined && storeLng !== undefined) {
+        const la = Number(storeLat), ln = Number(storeLng);
+        if (Number.isFinite(la) && Number.isFinite(ln) && Math.abs(la) <= 90 && Math.abs(ln) <= 180) {
+          businessHours.storeLat = la;
+          businessHours.storeLng = ln;
+        } else if (storeLat === null && storeLng === null) {
+          businessHours.storeLat = null;
+          businessHours.storeLng = null;
+        }
+      }
+      if (businessHours.deliveryEtaMaxMinutes < businessHours.deliveryEtaMinMinutes) {
+        businessHours.deliveryEtaMaxMinutes = businessHours.deliveryEtaMinMinutes;
+      }
       await businessHours.save();
     }
 

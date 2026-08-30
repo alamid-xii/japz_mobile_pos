@@ -26,6 +26,30 @@ export const MenuItem = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    imageUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Photo for this item; falls back to a category image when null',
+    },
+    featured: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: "Staff pick shown in the storefront hero; separate from the sales-derived best-seller badge",
+    },
+    featuredLabel: {
+      type: DataTypes.STRING(40),
+      allowNull: true,
+      defaultValue: null,
+      comment: "Badge wording for a featured item, e.g. 'Today's Pick'",
+    },
+    addonForCategoryIds: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+      comment: 'For Add-ons items only: which menu categories this extra may be offered with. null = offer everywhere.',
+    },
     hasSize: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

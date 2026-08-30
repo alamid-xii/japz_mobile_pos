@@ -47,9 +47,10 @@ export const Payment = sequelize.define("Payment", {
     allowNull: true,
   },
   status: {
-    type: DataTypes.ENUM('completed', 'failed'),
+    type: DataTypes.ENUM('pending', 'completed', 'failed'),
     allowNull: false,
     defaultValue: 'completed',
+    comment: "'pending' = online order awaiting settlement at the counter or by a gateway",
   },
 });
 

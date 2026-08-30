@@ -29,11 +29,11 @@ services:
         sync: false
       - key: GOOGLE_SPREADSHEET_ID
         sync: false
-      - key: EMAIL_SERVICE
-        value: gmail
-      - key: EMAIL_USER
+      - key: MAILJET_API_KEY
         sync: false
-      - key: EMAIL_PASSWORD
+      - key: MAILJET_SECRET_KEY
+        sync: false
+      - key: MAILJET_FROM_EMAIL
         sync: false
       - key: FRONTEND_URL
         sync: false

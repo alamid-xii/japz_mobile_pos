@@ -163,7 +163,13 @@ export default function POS() {
             const currentQty = prev.filter(i => i.id === product.id).reduce((sum, i) => sum + i.quantity, 0);
             if (product.trackStock && product.stock != null && (currentQty + 1) > product.stock) return prev;
             const idx = prev.findIndex(i => i.id === product.id && !i.selectedSize && !i.selectedFlavor && !i.selectedTemperature);
-            if (idx !== -1) { const u = [...prev]; u[idx].quantity += 1; return u; }
+            // Replace the line rather than mutating it. `[...prev]` is a shallow
+            // copy, so `u[idx].quantity += 1` would edit the object React still
+            // holds in state — and StrictMode runs this updater twice, applying
+            // the increment twice (1 then 3 instead of 2).
+            if (idx !== -1) {
+                return prev.map((line, i) => i === idx ? { ...line, quantity: line.quantity + 1 } : line);
+            }
             return [...prev, { ...product, quantity: 1, itemPrice: product.price }];
         });
     };
@@ -174,8 +180,19 @@ export default function POS() {
         setCart(prev => {
             const currentQty = prev.filter(i => i.id === selectedProduct.id).reduce((sum, i) => sum + i.quantity, 0);
             if (selectedProduct.trackStock && selectedProduct.stock != null && (currentQty + 1) > selectedProduct.stock) return prev;
-            const idx = prev.findIndex(i => i.id === selectedProduct.id && i.selectedSize === selectedSize && i.selectedFlavor === selectedFlavor && i.selectedTemperature === selectedTemperature);
-            if (idx !== -1) { const u = [...prev]; u[idx].quantity += 1; return u; }
+            // Options are stored as `value || undefined`, but compared against the
+            // raw '' state. Without normalising, `undefined === ''` is false, so an
+            // identical line never matched and every add created a duplicate row.
+            const same = (a?: string, b?: string) => (a || '') === (b || '');
+            const idx = prev.findIndex(i =>
+                i.id === selectedProduct.id &&
+                same(i.selectedSize, selectedSize) &&
+                same(i.selectedFlavor, selectedFlavor) &&
+                same(i.selectedTemperature, selectedTemperature));
+            // Same shallow-copy mutation bug as addToCart; replace, don't mutate.
+            if (idx !== -1) {
+                return prev.map((line, i) => i === idx ? { ...line, quantity: line.quantity + 1 } : line);
+            }
             return [...prev, { ...selectedProduct, quantity: 1, selectedSize: selectedSize || undefined, selectedFlavor: selectedFlavor || undefined, selectedTemperature: selectedTemperature || undefined, itemPrice: price }];
         });
         setShowOptionsModal(false);
@@ -188,7 +205,9 @@ export default function POS() {
             const otherQty = cart.filter((c, i) => c.id === item.id && i !== idx).reduce((s, c) => s + c.quantity, 0);
             if ((otherQty + qty) > product.stock) return;
         }
-        setCart(prev => { const u = [...prev]; u[idx].quantity = qty; return u; });
+        // An assignment survives a double-invoked updater, but it still mutates
+        // state in place, so keep it pure for the same reason.
+        setCart(prev => prev.map((line, i) => i === idx ? { ...line, quantity: qty } : line));
     };
     const total = cart.reduce((s, i) => s + (i.itemPrice || i.price) * i.quantity, 0);
 

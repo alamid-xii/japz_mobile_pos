@@ -29,6 +29,9 @@ import path from "path";
 import session from "express-session";
 import flash from "connect-flash";
 import router from "./routes/index.js";
+import publicOrdersRouter from "./routes/publicOrders.js";
+import customerAuthRouter from "./routes/customerAuth.js";
+import menuImagesRouter from "./routes/menuImages.js";
 import fs from 'fs';
 import hbs from "hbs";
 import cors from "cors";
@@ -252,6 +255,9 @@ fs.readdir(partialsDir, (err, files) => {
     });
 });
 
+app.use("/", menuImagesRouter);
+app.use("/", customerAuthRouter);
+app.use("/", publicOrdersRouter);
 app.use("/", router);
 
 export default app;

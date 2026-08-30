@@ -31,6 +31,13 @@ import KitchenIncoming from './pages/kitchen/Incoming';
 import KitchenCompleted from './pages/kitchen/Completed';
 import KitchenProfile from './pages/kitchen/Profile';
 import Feedback from './pages/public/Feedback';
+import StorefrontLayout from './pages/public/storefront/StorefrontLayout';
+import StorefrontHome from './pages/public/storefront/Home';
+import StorefrontMenu from './pages/public/storefront/MenuPage';
+import StorefrontCart from './pages/public/storefront/CartPage';
+import StorefrontTrack from './pages/public/storefront/TrackPage';
+import StorefrontAuth from './pages/public/storefront/AuthPage';
+import StorefrontProfile from './pages/public/storefront/ProfilePage';
 import './index.css';
 
 export default function App() {
@@ -48,6 +55,23 @@ export default function App() {
 
           {/* Customer Feedback - Fully Public (no auth check) */}
           <Route path="/feedback" element={<Feedback />} />
+
+          {/* ---------------------------------------------------------------
+              CUSTOMER STOREFRONT - separate public entry point with its own
+              top/bottom navigation shell. /japz is canonical; /order/* stays
+              mounted so QR codes already in the wild keep working.
+          ---------------------------------------------------------------- */}
+          {['/japz', '/order'].map(prefix => (
+            <Route key={prefix} path={prefix} element={<StorefrontLayout />}>
+              <Route index element={<StorefrontHome />} />
+              <Route path="menu" element={<StorefrontMenu />} />
+              <Route path="cart" element={<StorefrontCart />} />
+              <Route path="track" element={<StorefrontTrack />} />
+              <Route path="track/:orderNumber" element={<StorefrontTrack />} />
+              <Route path="auth" element={<StorefrontAuth />} />
+              <Route path="profile" element={<StorefrontProfile />} />
+            </Route>
+          ))}
 
           {/* Admin Routes - Protected */}
           <Route path="/admin" element={

@@ -31,8 +31,9 @@ export const User = sequelize.define("User", {
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
   password: { type: DataTypes.STRING, allowNull: false },
-  role: { type: DataTypes.ENUM('admin', 'cashier', 'kitchen'), defaultValue: 'cashier', allowNull: false },
+  role: { type: DataTypes.ENUM('admin', 'cashier', 'kitchen', 'customer'), defaultValue: 'cashier', allowNull: false },
   status: { type: DataTypes.ENUM('pending', 'approved', 'rejected', 'inactive'), defaultValue: 'pending', allowNull: false },
+  phone: { type: DataTypes.STRING, allowNull: true, defaultValue: null }, // storefront customers
   assignedCategories: { type: DataTypes.JSON, defaultValue: [], allowNull: true } // For kitchen staff - array of category IDs
 });
 export { sequelize }; 

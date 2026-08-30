@@ -24,6 +24,30 @@ export const BusinessHours = sequelize.define(
       defaultValue: true,
       allowNull: false,
     },
+    storeLat: {
+      type: DataTypes.DECIMAL(10, 7),
+      allowNull: true,
+      defaultValue: null,
+      comment: "The restaurant's latitude, used to draw the delivery line",
+    },
+    storeLng: {
+      type: DataTypes.DECIMAL(10, 7),
+      allowNull: true,
+      defaultValue: null,
+      comment: "The restaurant's longitude, used to draw the delivery line",
+    },
+    deliveryEtaMinMinutes: {
+      type: DataTypes.INTEGER,
+      defaultValue: 30,
+      allowNull: false,
+      comment: 'Lower bound of the delivery estimate shown to customers',
+    },
+    deliveryEtaMaxMinutes: {
+      type: DataTypes.INTEGER,
+      defaultValue: 45,
+      allowNull: false,
+      comment: 'Upper bound of the delivery estimate shown to customers',
+    },
     applyKitchen: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
