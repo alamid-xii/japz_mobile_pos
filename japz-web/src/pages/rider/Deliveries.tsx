@@ -7,6 +7,7 @@ import { workflowAPI, getApiBaseUrl } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import DeliveryMap from '../public/storefront/components/DeliveryMap';
 import DeliveryReceipt from '../../components/DeliveryReceipt';
+import TimeClock from '../../components/TimeClock';
 
 interface DeliveryOrder {
     orderNumber: string;
@@ -242,6 +243,8 @@ export default function RiderDeliveries() {
                             <span className="font-bold"> Offline </span> above to go available.
                         </div>
                     )}
+
+                    {tab === 'history' && <TimeClock />}
 
                     {rows.length === 0 ? (
                         <div className="text-center py-16">

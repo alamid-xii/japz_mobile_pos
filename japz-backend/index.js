@@ -33,6 +33,9 @@ import publicOrdersRouter from "./routes/publicOrders.js";
 import customerAuthRouter from "./routes/customerAuth.js";
 import menuImagesRouter from "./routes/menuImages.js";
 import deliveryRouter from "./routes/delivery.js";
+import payrollRouter from "./routes/payroll.js";
+import reservationsRouter from "./routes/reservations.js";
+import paymentsRouter from "./routes/payments.js";
 import fs from 'fs';
 import hbs from "hbs";
 import cors from "cors";
@@ -48,7 +51,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(process.cwd(), "public")));
 
@@ -257,6 +260,9 @@ fs.readdir(partialsDir, (err, files) => {
 });
 
 app.use("/", deliveryRouter);
+app.use("/", payrollRouter);
+app.use("/", reservationsRouter);
+app.use("/", paymentsRouter);
 app.use("/", menuImagesRouter);
 app.use("/", customerAuthRouter);
 app.use("/", publicOrdersRouter);

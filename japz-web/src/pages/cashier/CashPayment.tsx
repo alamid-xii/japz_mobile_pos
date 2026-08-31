@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
+import PosGatewayPayment from '../../components/PosGatewayPayment';
 import { ordersAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -10,7 +11,7 @@ export default function CashPayment() {
     const { user } = useAuth();
     const {
         total, subtotal, discount, discountId, voucherCode, voucherAmount, items, paymentMethod = 'cash',
-        customerName, orderType, tableNumber, deliveryAddress, notes
+        customerName, orderType, tableNumber, deliveryAddress, notes, gatewayMethod
     } = (location.state as any) || {};
 
     const [amountReceived, setAmountReceived] = useState('');
@@ -26,6 +27,114 @@ export default function CashPayment() {
     const quickAmounts = [50, 100, 200, 500, 1000];
 
     if (!total) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><p>No order data</p></div>;
+
+    // Gateway payments have no cash to count: the order is created unpaid and
+    // released only once PayMongo confirms.
+    const isGateway = paymentMethod === 'gateway';
+    const [gatewayOrder, setGatewayOrder] = useState<string | null>(null);
+    const [gatewayError, setGatewayError] = useState<string | null>(null);
+    const startedRef = useRef(false);
+
+    const buildOrder = (orderNumber: string) => {
+        const itemsArray = Array.isArray(items) ? items : [];
+        return {
+            orderNumber,
+            cashierId: user?.id,
+            cashier: user?.name,
+            customerName,
+            total: totalNum,
+            subtotal: Number(subtotal || totalNum),
+            discount: Number(discount || 0),
+            discountId: discountId || null,
+            voucherCode: voucherCode || null,
+            voucherAmount: voucherAmount ? Number(voucherAmount) : null,
+            payment: {
+                method: 'digital' as const,
+                amount: totalNum,
+                amountReceived: 0,
+                change: 0,
+            },
+            items: itemsArray.map((i: any) => ({
+                id: i.id.toString(),
+                name: i.name,
+                price: i.itemPrice || i.price,
+                quantity: i.quantity,
+                total: (i.itemPrice || i.price) * i.quantity,
+                modifiers: { size: i.selectedSize || null, flavor: i.selectedFlavor || null, temperature: i.selectedTemperature || null },
+            })),
+            // Held out of the kitchen queue until the money is confirmed.
+            status: 'awaiting-payment',
+            orderType: orderType || null,
+            tableNumber: tableNumber || null,
+            deliveryAddress: deliveryAddress || null,
+            notes: notes || null,
+        };
+    };
+
+    // Creates the unpaid order once, then hands over to the QR screen.
+    useEffect(() => {
+        if (!isGateway || startedRef.current || !total) return;
+        startedRef.current = true;
+        (async () => {
+            const orderNumber = `ORD-${Date.now().toString().slice(-8)}`;
+            try {
+                await ordersAPI.create(buildOrder(orderNumber));
+                setGatewayOrder(orderNumber);
+            } catch (e: any) {
+                setGatewayError(e?.response?.data?.error || 'Could not start the order.');
+                startedRef.current = false;
+            }
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isGateway, total]);
+
+    const finishGateway = () => {
+        localStorage.removeItem('cashierCart');
+        navigate('/cashier/receipt', {
+            state: {
+                orderNumber: gatewayOrder,
+                total: totalNum,
+                subtotal: Number(subtotal || totalNum),
+                discount: Number(discount || 0),
+                discountId: discountId || null,
+                voucherCode: voucherCode || null,
+                voucherAmount: voucherAmount ? Number(voucherAmount) : null,
+                amountReceived: totalNum,
+                change: 0,
+                items,
+                method: 'digital',
+                customerName, orderType, tableNumber, deliveryAddress,
+                cashier: user?.name,
+            },
+            replace: true,
+        });
+    };
+
+    if (isGateway) {
+        return (
+            <div className="p-4 md:p-8 flex flex-col items-center justify-center h-full">
+                {gatewayError ? (
+                    <div className="max-w-sm text-center">
+                        <p className="font-bold text-slate-900 mb-1">Could not start the payment</p>
+                        <p className="text-sm text-slate-500 mb-4">{gatewayError}</p>
+                        <button onClick={() => navigate(-1)} className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold">
+                            Go back
+                        </button>
+                    </div>
+                ) : !gatewayOrder ? (
+                    <p className="text-slate-500 text-sm">Creating the order…</p>
+                ) : (
+                    <PosGatewayPayment
+                        orderNumber={gatewayOrder}
+                        total={totalNum}
+                        onPaid={finishGateway}
+                        onClose={() => navigate('/cashier/pos', { replace: true })}
+                        initialMethod={gatewayMethod}
+                    />
+                )}
+            </div>
+        );
+    }
 
     const handlePay = async () => {
         if (!isValidPayment) return;

@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useEffect } from 'react';
-import { LayoutDashboard, Users, Package, Warehouse, MessageCircle, BarChart3, Settings, Ticket } from 'lucide-react';
+import { LayoutDashboard, Users, Package, Warehouse, MessageCircle, BarChart3, Settings, Ticket, CalendarCheck, Wallet } from 'lucide-react';
 
 export default function AdminLayout() {
     const { user, isInitialized } = useAuth();
@@ -25,6 +25,8 @@ export default function AdminLayout() {
         { path: '/admin/stocks', icon: Warehouse, label: 'Stocks' },
         { path: '/admin/sales', icon: BarChart3, label: 'Sales' },
         { path: '/admin/discounts-vouchers', icon: Ticket, label: 'Promotions' },
+        { path: '/admin/reservations', icon: CalendarCheck, label: 'Reservations' },
+        { path: '/admin/payroll', icon: Wallet, label: 'Payroll' },
         { path: '/admin/feedback', icon: MessageCircle, label: 'Feedback' },
         { path: '/admin/settings', icon: Settings, label: 'Settings' },
     ];

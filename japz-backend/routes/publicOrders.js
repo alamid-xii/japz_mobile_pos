@@ -8,6 +8,7 @@ import { Order } from "../models/orderModel.js";
 import { OrderItem } from "../models/orderItemModel.js";
 import { Payment } from "../models/paymentModel.js";
 import { BusinessHours } from "../models/businessHoursModel.js";
+import * as paymongo from "../services/paymongoService.js";
 import { Discount } from "../models/discountModel.js";
 import { Voucher } from "../models/voucherModel.js";
 import { Op } from "sequelize";
@@ -112,9 +113,31 @@ router.get("/api/public/status", async (req, res) => {
     // customer is never shown an account to send money to that we invented.
     const paymentMethods = [
       { key: 'cash', label: 'Cash', hint: 'Pay with cash on pickup or delivery' },
-      { key: 'card', label: 'Card', hint: 'Pay by card at the counter' },
     ];
-    if (settings?.gcashNumber) {
+
+    // With a gateway key configured, card and GCash are charged for real
+    // through PayMongo. Without one they fall back to what staff settle by
+    // hand, so nothing ever claims to charge a card that it cannot.
+    const gatewayMethods = paymongo.isConfigured() ? paymongo.enabledMethods() : [];
+    if (gatewayMethods.includes('card')) {
+      paymentMethods.push({
+        key: 'paymongo_card',
+        label: 'Credit / Debit Card',
+        hint: 'Pay now, securely on PayMongo',
+        gateway: true,
+      });
+    } else {
+      paymentMethods.push({ key: 'card', label: 'Card', hint: 'Pay by card at the counter' });
+    }
+
+    if (gatewayMethods.includes('gcash')) {
+      paymentMethods.push({
+        key: 'paymongo_gcash',
+        label: 'GCash',
+        hint: 'Pay now through GCash',
+        gateway: true,
+      });
+    } else if (settings?.gcashNumber) {
       paymentMethods.push({
         key: 'gcash',
         label: 'GCash',
@@ -419,13 +442,19 @@ router.post("/api/public/orders", verifyCustomer, throttle, async (req, res) => 
     // No gateway is wired up, so none of these CHARGE the customer. They record
     // how the customer intends to pay; staff confirm it on handover.
     const chosenMethod = paymentMethod || 'cash';
-    if (!['cash', 'card', 'gcash', 'counter'].includes(chosenMethod)) {
+    const GATEWAY_METHODS = { paymongo_card: 'card', paymongo_gcash: 'gcash' };
+    const isGateway = Object.prototype.hasOwnProperty.call(GATEWAY_METHODS, chosenMethod);
+    if (isGateway && !paymongo.isConfigured()) {
+      await transaction.rollback();
+      return res.status(400).json({ error: 'Online payment is not available right now. Please choose cash.' });
+    }
+    if (!isGateway && !['cash', 'card', 'gcash', 'counter'].includes(chosenMethod)) {
       await transaction.rollback();
       return res.status(400).json({ error: 'That payment method is not available.' });
     }
 
     const settings = await BusinessHours.findOne();
-    if (chosenMethod === 'gcash') {
+    if (chosenMethod === 'gcash') {  // manual transfer only; the gateway needs no reference
       // Refuse GCash outright if no destination is configured, rather than
       // taking an order the customer cannot actually pay for.
       if (!settings?.gcashNumber) {
@@ -539,7 +568,8 @@ router.post("/api/public/orders", verifyCustomer, throttle, async (req, res) => 
       subtotal,
       discount: 0,
       total: subtotal,
-      status: 'pending',
+      // A gateway order must not reach the kitchen before it is paid for.
+      status: isGateway ? 'awaiting-payment' : 'pending',
       source: 'online',
       orderType,
       tableNumber: orderType === 'dine-in' ? String(tableNumber).trim() : null,
@@ -571,13 +601,21 @@ router.post("/api/public/orders", verifyCustomer, throttle, async (req, res) => 
 
     // Unpaid until a human confirms it: cash and card are settled on handover,
     // and a GCash reference still has to be checked against the store's own app.
-    const METHOD_MAP = { cash: 'cash', counter: 'cash', card: 'card', gcash: 'digital' };
+    const METHOD_MAP = {
+      cash: 'cash', counter: 'cash', card: 'card', gcash: 'digital',
+      paymongo_card: 'card', paymongo_gcash: 'digital',
+    };
     await Payment.create({
       orderId: order.id,
       method: METHOD_MAP[chosenMethod] || 'cash',
-      provider: chosenMethod === 'gcash' ? 'GCash' : null,
+      provider: chosenMethod === 'gcash' ? 'GCash'
+        : chosenMethod === 'paymongo_gcash' ? 'GCash'
+        : chosenMethod === 'paymongo_card' ? 'Card'
+        : null,
       reference: chosenMethod === 'gcash' ? String(paymentReference).trim().slice(0, 64) : null,
       amount: subtotal,
+      // Still pending for a gateway order: only PayMongo's own confirmation
+      // may mark it completed.
       status: 'pending',
     }, { transaction });
 
@@ -609,7 +647,11 @@ router.post("/api/public/orders", verifyCustomer, throttle, async (req, res) => 
     }
 
     res.status(201).json({
-      message: 'Order placed',
+      message: isGateway ? 'Order created, payment required' : 'Order placed',
+      // The client uses this to send the customer on to PayMongo instead of
+      // straight to the tracking page.
+      requiresPayment: isGateway,
+      gatewayMethod: isGateway ? GATEWAY_METHODS[chosenMethod] : null,
       order: {
         orderNumber: order.orderNumber,
         status: order.status,

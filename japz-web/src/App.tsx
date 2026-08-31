@@ -19,6 +19,8 @@ import Settings from './pages/admin/Settings';
 import FeedbackHub from './pages/admin/FeedbackHub';
 import SalesForecast from './pages/admin/SalesForecast';
 import DiscountsVouchers from './pages/admin/DiscountsVouchers';
+import Payroll from './pages/admin/Payroll';
+import Reservations from './pages/admin/Reservations';
 import POS from './pages/cashier/POS';
 import ActiveOrders from './pages/cashier/ActiveOrders';
 import OrderHistory from './pages/cashier/OrderHistory';
@@ -41,6 +43,8 @@ import StorefrontCart from './pages/public/storefront/CartPage';
 import StorefrontTrack from './pages/public/storefront/TrackPage';
 import StorefrontAuth from './pages/public/storefront/AuthPage';
 import StorefrontProfile from './pages/public/storefront/ProfilePage';
+import StorefrontReserve from './pages/public/storefront/ReservePage';
+import StorefrontPayReturn from './pages/public/storefront/PayReturnPage';
 import './index.css';
 
 export default function App() {
@@ -73,6 +77,8 @@ export default function App() {
               <Route path="track/:orderNumber" element={<StorefrontTrack />} />
               <Route path="auth" element={<StorefrontAuth />} />
               <Route path="profile" element={<StorefrontProfile />} />
+              <Route path="reserve" element={<StorefrontReserve />} />
+              <Route path="pay/return" element={<StorefrontPayReturn />} />
             </Route>
           ))}
 
@@ -90,6 +96,8 @@ export default function App() {
             <Route path="feedback" element={<FeedbackHub />} />
             <Route path="sales" element={<SalesForecast />} />
             <Route path="discounts-vouchers" element={<DiscountsVouchers />} />
+            <Route path="payroll" element={<Payroll />} />
+            <Route path="reservations" element={<Reservations />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 
@@ -108,6 +116,7 @@ export default function App() {
             <Route path="cash-payment" element={<CashPayment />} />
             <Route path="receipt" element={<Receipt />} />
             <Route path="menuboard" element={<MenuBoard />} />
+            <Route path="reservations" element={<Reservations />} />
             <Route path="profile" element={<Profile />} />
           </Route>
 

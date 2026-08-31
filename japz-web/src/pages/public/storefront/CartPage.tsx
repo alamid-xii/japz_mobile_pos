@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, ArrowLeft, Banknote, CreditCard, Smartphone, Copy, Check } from 'lucide-react';
 import { itemImage } from '../../../utils/menuImages';
-import { publicOrderAPI, customerAuthAPI, type SavedAddress } from '../../../services/api';
+import { publicOrderAPI, customerAuthAPI, paymentAPI, type SavedAddress } from '../../../services/api';
 import { useStorefront, peso } from './StorefrontContext';
 import { useCustomerAuth } from './CustomerAuthContext';
 import Thumb from './components/Thumb';
@@ -154,7 +154,7 @@ export default function CartPage() {
             }
         }
 
-        if (payMethod === 'gcash' && !payReference.trim()) {
+        if (payMethod === 'gcash' && !payReference.trim()) {  // manual transfer only
             return setError('Please enter your GCash reference number.');
         }
 
@@ -181,8 +181,17 @@ export default function CartPage() {
                 paymentMethod: payMethod,
                 paymentReference: payMethod === 'gcash' ? payReference.trim() : undefined,
             });
+            const placed = res.data.order.orderNumber;
             clearCart();
-            navigate(`${base}/track/${res.data.order.orderNumber}`, { replace: true });
+
+            // A gateway order is not really placed until it is paid for: hand
+            // the customer to PayMongo instead of to the tracking page.
+            if (res.data.requiresPayment) {
+                const pay = await paymentAPI.checkout(placed, res.data.gatewayMethod);
+                window.location.href = pay.data.checkoutUrl;
+                return;
+            }
+            navigate(`${base}/track/${placed}`, { replace: true });
         } catch (err: any) {
             // The server owns pricing, stock and availability, so its message wins.
             setError(err?.response?.data?.error || 'Could not place your order. Please try again.');
@@ -203,16 +212,9 @@ export default function CartPage() {
         );
     }
 
-    // GCash is always listed so customers can see it is planned. When the server
-    // has no account configured it renders disabled rather than hidden: visible,
-    // but never presented as something that can actually be paid right now.
-    const methodsWithGcash: Array<{ key: string; label: string; hint: string; account?: string; accountName?: string | null; unavailable: boolean }> =
-        paymentMethods.some(m => m.key === 'gcash')
-            ? paymentMethods.map(m => ({ ...m, unavailable: false }))
-            : [
-                ...paymentMethods.map(m => ({ ...m, unavailable: false })),
-                { key: 'gcash', label: 'GCash', hint: 'Not set up yet — please choose another method', unavailable: true },
-            ];
+    // Use payment methods exactly as the server provides them.
+    // When PayMongo is configured, card and GCash are included automatically.
+    const methodsWithGcash = paymentMethods.map(m => ({ ...m, unavailable: false }));
 
     const field = 'w-full rounded-2xl bg-gray-50 text-gray-900 placeholder-gray-400 border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition duration-150';
 

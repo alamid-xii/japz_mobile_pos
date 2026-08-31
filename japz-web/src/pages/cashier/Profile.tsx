@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User } from 'lucide-react';
+import TimeClock from '../../components/TimeClock';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function Profile() {
@@ -15,6 +16,7 @@ export default function Profile() {
     return (
         <div className="p-4 md:p-6 h-full overflow-y-auto">
             <div className="max-w-2xl mx-auto">
+                <div className="mb-6"><TimeClock /></div>
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-xl md:text-2xl font-bold">Profile</h1>
                     <button onClick={handleLogout}

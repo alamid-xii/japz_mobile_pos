@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CheckCircle, ChefHat, Clock, PackageCheck, XCircle, Search, Bike } from 'lucide-react';
+import { CheckCircle, ChefHat, Clock, PackageCheck, XCircle, Search, Bike, CreditCard } from 'lucide-react';
 import { publicOrderAPI } from '../../../services/api';
 import { peso } from './StorefrontContext';
 import { useStorefrontBase } from './StorefrontLayout';
@@ -12,7 +12,7 @@ import DeliveryReceipt from '../../../components/DeliveryReceipt';
 interface TrackedItem { name: string; quantity: number; total: string | number; modifiers?: Record<string, string> | null }
 interface TrackedOrder {
     orderNumber: string;
-    status: 'pending' | 'preparing' | 'ready' | 'out-for-delivery' | 'completed' | 'cancelled';
+    status: 'awaiting-payment' | 'pending' | 'preparing' | 'ready' | 'out-for-delivery' | 'completed' | 'cancelled';
     orderType: string | null;
     tableNumber: string | null;
     total: string | number;
@@ -134,6 +134,7 @@ export default function TrackPage() {
     }
 
     const cancelled = order.status === 'cancelled';
+    const awaitingPayment = order.status === 'awaiting-payment';
     const isDelivery = order.orderType === 'delivery';
     const STEPS = isDelivery ? DELIVERY_STEPS : PICKUP_STEPS;
     const currentStep = STEPS.findIndex(s => s.key === order.status);
@@ -174,6 +175,22 @@ export default function TrackPage() {
                     storeLng={order.delivery.storeLng}
                     label={order.delivery.address || undefined}
                 />
+            )}
+
+            {awaitingPayment && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
+                    <CreditCard size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                    <div className="text-sm text-amber-900">
+                        <p className="font-bold">Waiting for payment</p>
+                        <p>This order has not been paid for yet, so the kitchen has not started it.</p>
+                        <button
+                            onClick={() => navigate(`${base}/pay/return?order=${order.orderNumber}`)}
+                            className="mt-2 font-bold underline underline-offset-4"
+                        >
+                            Finish paying
+                        </button>
+                    </div>
+                </div>
             )}
 
             {cancelled ? (

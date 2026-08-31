@@ -341,4 +341,96 @@ export const businessHoursAPI = {
         api.put('/api/business-hours', data),
 };
 
+// ===== PAYROLL =====
+// Attendance is the staff's own record; everything else is admin-only and the
+// server enforces that regardless of what the UI shows.
+export const attendanceAPI = {
+    me: () => api.get('/api/attendance/me'),
+    clockIn: () => api.post('/api/attendance/clock-in'),
+    clockOut: () => api.post('/api/attendance/clock-out'),
+    myPayslips: () => api.get('/api/payroll/my-payslips'),
+};
+
+export const payrollAPI = {
+    getSettings: () => api.get('/api/payroll/settings'),
+    saveSettings: (data: Record<string, number>) => api.put('/api/payroll/settings', data),
+
+    staff: () => api.get('/api/payroll/staff'),
+    setRate: (userId: number, payType: 'hourly' | 'monthly', payRate: number) =>
+        api.put(`/api/payroll/staff/${userId}/rate`, { payType, payRate }),
+
+    attendance: (params?: { from?: string; to?: string; userId?: number }) =>
+        api.get('/api/payroll/attendance', { params }),
+    closeShift: (logId: number, clockOutAt?: string) =>
+        api.put(`/api/payroll/attendance/${logId}/close`, { clockOutAt }),
+
+    periods: () => api.get('/api/payroll/periods'),
+    createPeriod: (data: { label: string; startDate: string; endDate: string }) =>
+        api.post('/api/payroll/periods', data),
+    period: (id: number) => api.get(`/api/payroll/periods/${id}`),
+    generate: (id: number) => api.post(`/api/payroll/periods/${id}/generate`),
+    finalize: (id: number) => api.post(`/api/payroll/periods/${id}/finalize`),
+    deletePeriod: (id: number) => api.delete(`/api/payroll/periods/${id}`),
+    updatePayslip: (id: number, data: { otherDeductionLabel?: string | null; otherDeductionAmount: number; notes?: string }) =>
+        api.put(`/api/payroll/payslips/${id}`, data),
+};
+
+// ===== RESERVATIONS =====
+export const reservationAPI = {
+    list: (params?: { date?: string; status?: string }) => api.get('/api/reservations', { params }),
+    create: (data: Record<string, unknown>) => api.post('/api/reservations', data),
+    confirm: (id: number, tableId?: number, message?: string) =>
+        api.put(`/api/reservations/${id}/confirm`, { tableId, message }),
+    decline: (id: number, message?: string) => api.put(`/api/reservations/${id}/decline`, { message }),
+    setStatus: (id: number, status: 'seated' | 'completed' | 'no-show' | 'cancelled', message?: string) =>
+        api.put(`/api/reservations/${id}/status`, { status, message }),
+    freeTables: (id: number) => api.get(`/api/reservations/${id}/free-tables`),
+    /** Free tables for a slot that has no booking yet (walk-in entry). */
+    freeTablesForSlot: (date: string, time: string, partySize: number, durationMinutes = 90) =>
+        api.get('/api/reservations-free-tables', { params: { date, time, partySize, durationMinutes } }),
+
+    tables: () => api.get('/api/reservations-tables'),
+    createTable: (data: { name: string; capacity: number; area?: string }) =>
+        api.post('/api/reservations-tables', data),
+    updateTable: (id: number, data: Record<string, unknown>) =>
+        api.put(`/api/reservations-tables/${id}`, data),
+    deleteTable: (id: number) => api.delete(`/api/reservations-tables/${id}`),
+};
+
+/** Storefront side. Availability is open; booking needs a customer session. */
+export const publicReservationAPI = {
+    availability: (date: string, time: string, partySize: number, durationMinutes = 90) =>
+        api.get('/api/public/reservations/availability', { params: { date, time, partySize, durationMinutes } }),
+    book: (data: { reservationDate: string; startTime: string; partySize: number; durationMinutes?: number; customerPhone?: string; notes?: string }) =>
+        api.post('/api/public/reservations', data),
+    mine: () => api.get('/api/public/reservations/mine'),
+    cancel: (code: string) => api.post(`/api/public/reservations/${encodeURIComponent(code)}/cancel`),
+};
+
+// ===== PAYMONGO =====
+// Nothing here confirms a payment. Confirmation always comes from the server
+// asking PayMongo, so a customer cannot mark their own order paid.
+export const paymentAPI = {
+    /** Whether card/GCash are actually live. Safe to call signed out. */
+    config: () => api.get('/api/public/payments/config'),
+    /** Returns the hosted checkout URL to send the customer to. */
+    checkout: (orderNumber: string, method?: 'card' | 'gcash') =>
+        api.post('/api/public/payments/checkout', { orderNumber, method }),
+    status: (orderNumber: string) =>
+        api.get(`/api/public/payments/status/${encodeURIComponent(orderNumber)}`),
+    cancel: (orderNumber: string) =>
+        api.post(`/api/public/payments/cancel/${encodeURIComponent(orderNumber)}`),
+};
+
+/** Counter payments: the cashier shows a QR, the customer pays on their phone. */
+export const posPaymentAPI = {
+    checkout: (orderNumber: string, method?: 'card' | 'gcash') =>
+        api.post('/api/payments/pos/checkout', { orderNumber, method }),
+    status: (orderNumber: string) =>
+        api.get(`/api/payments/pos/status/${encodeURIComponent(orderNumber)}`),
+    cancel: (orderNumber: string) =>
+        api.post(`/api/payments/pos/cancel/${encodeURIComponent(orderNumber)}`),
+    sessions: () => api.get('/api/payments/sessions'),
+};
+
 export default api;

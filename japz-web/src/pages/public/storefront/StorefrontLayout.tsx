@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Home, UtensilsCrossed, ShoppingBag, Receipt, User, Clock, Bell } from 'lucide-react';
+import { Home, UtensilsCrossed, ShoppingBag, Receipt, User, Clock, Bell, CalendarCheck } from 'lucide-react';
 import { StorefrontProvider, useStorefront } from './StorefrontContext';
 import MiniCart from './components/MiniCart';
 import Toast from './components/Toast';
@@ -27,6 +27,7 @@ const TABS = [
     { to: '', label: 'Home', icon: Home, end: true },
     { to: '/menu', label: 'Menu', icon: UtensilsCrossed, end: false },
     { to: '/cart', label: 'Cart', icon: ShoppingBag, end: false },
+    { to: '/reserve', label: 'Reserve', icon: CalendarCheck, end: false },
     { to: '/track', label: 'Orders', icon: Receipt, end: false },
     { to: '/profile', label: 'Profile', icon: User, end: false },
 ];
@@ -190,21 +191,21 @@ function Shell() {
                 )}
 
                 <nav className="bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
-                    <div className="max-w-5xl mx-auto grid grid-cols-5">
+                    <div className="max-w-5xl mx-auto grid grid-cols-6">
                         {TABS.map(({ to, label, icon: Icon, end }) => (
                             <NavLink
                                 key={label}
                                 to={`${base}${to}`}
                                 end={end}
                                 className={({ isActive }) =>
-                                    `relative flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-semibold transition duration-150 ${
+                                    `relative flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] leading-tight font-semibold whitespace-nowrap transition duration-150 ${
                                         isActive ? 'text-gray-900' : 'text-gray-400'
                                     }`
                                 }
                             >
                                 {({ isActive }) => (
                                     <>
-                                        <span className={`relative flex items-center justify-center w-12 h-7 rounded-full transition duration-150 ${
+                                        <span className={`relative flex items-center justify-center w-10 h-7 rounded-full transition duration-150 ${
                                             isActive ? 'bg-brand' : ''
                                         }`}>
                                             <Icon size={19} />

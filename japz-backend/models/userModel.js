@@ -36,6 +36,10 @@ export const User = sequelize.define("User", {
   phone: { type: DataTypes.STRING, allowNull: true, defaultValue: null }, // storefront customers and riders
   // Riders only. Drives who the cashier may assign a delivery to.
   availability: { type: DataTypes.ENUM('available', 'on-delivery', 'offline', 'inactive'), defaultValue: 'offline', allowNull: false },
+  // Payroll. Set by the admin; 0 until then, so an unrated employee produces a
+  // zero payslip rather than a guessed one.
+  payType: { type: DataTypes.ENUM('hourly', 'monthly'), defaultValue: 'hourly', allowNull: false },
+  payRate: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0, allowNull: false },
   assignedCategories: { type: DataTypes.JSON, defaultValue: [], allowNull: true } // For kitchen staff - array of category IDs
 });
 export { sequelize }; 
