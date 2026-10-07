@@ -1,3 +1,4 @@
+import { createRequestId } from '../../utils/requestId';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
@@ -15,6 +16,9 @@ export default function CashPayment() {
 
     const [amountReceived, setAmountReceived] = useState('');
     const [processing, setProcessing] = useState(false);
+    const [error, setError] = useState('');
+    const [clientRequestId] = useState(createRequestId());
+    const [orderNumber] = useState(() => `ORD-${Date.now()}-${createRequestId().slice(0, 8)}`);
 
     const totalNum = Number(total || 0);
     const received = Number(amountReceived || 0);
@@ -25,17 +29,18 @@ export default function CashPayment() {
 
     const quickAmounts = [50, 100, 200, 500, 1000];
 
-    if (!total) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><p>No order data</p></div>;
+    if (total === undefined || total === null) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><p>No order data</p></div>;
 
     const handlePay = async () => {
-        if (!isValidPayment) return;
+        if (!isValidPayment || processing) return;
+        setError('');
 
         setProcessing(true);
         try {
-            const orderNumber = `ORD-${Date.now().toString().slice(-8)}`;
             const itemsArray = Array.isArray(items) ? items : [];
             const orderData = {
                 orderNumber,
+                clientRequestId,
                 cashierId: user?.id,
                 cashier: user?.name,
                 customerName,
@@ -65,7 +70,6 @@ export default function CashPayment() {
                 deliveryAddress: deliveryAddress || null,
                 notes: notes || null,
             };
-            console.log('Sending order data:', orderData);
             await ordersAPI.create(orderData);
             localStorage.removeItem('cashierCart');
             navigate('/cashier/receipt', {
@@ -91,7 +95,7 @@ export default function CashPayment() {
             });
         } catch (e: any) {
             console.error('Payment error:', e);
-            alert('Payment failed: ' + (e.response?.data?.error || e.message || 'Unknown error'));
+            setError(e.response?.data?.error || 'Payment could not be saved. Retry the payment or return to the cart.');
         }
         finally { setProcessing(false); }
     };
@@ -105,6 +109,7 @@ export default function CashPayment() {
                 </button>
                 <h1 className="text-xl md:text-2xl font-bold text-center capitalize">{paymentMethod} Payment</h1>
 
+                {error && <div role="alert" className="p-3 my-4 rounded-md bg-red-50 border border-red-200 text-red-800 text-sm">{error}<button className="block min-h-11 mt-2 underline" onClick={() => navigate('/cashier/pos')}>Return to cart</button></div>}
                 {/* Order Info Summary */}
                 <div className="bg-gray-50 rounded-xl p-4 my-4">
                     <div className="flex justify-between py-1">

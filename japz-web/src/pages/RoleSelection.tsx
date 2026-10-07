@@ -13,6 +13,7 @@ export default function RoleSelection() {
                     <button className="w-full py-3 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:shadow-md hover:shadow-yellow-300/40 active:scale-[0.97] transition-all" onClick={() => handleRole('admin')}>Admin</button>
                     <button className="w-full py-3 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:shadow-md hover:shadow-yellow-300/40 active:scale-[0.97] transition-all" onClick={() => handleRole('cashier')}>Cashier</button>
                     <button className="w-full py-3 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:shadow-md hover:shadow-yellow-300/40 active:scale-[0.97] transition-all" onClick={() => handleRole('kitchen')}>Kitchen Staff</button>
+                    <button className="w-full py-3 rounded-lg border border-gray-300 bg-white font-semibold text-gray-900 text-[15px]" onClick={() => handleRole('inventory')}>Inventory</button>
                 </div>
             </div>
         </div>

@@ -37,11 +37,16 @@ import { dirname } from "path";
 import { sequelize } from "./models/userModel.js";
 import { User, Order, OrderItem, Payment, MenuItem, Log } from "./models/index.js";
 
+import { upgradeInventorySchema } from './services/inventorySchema.js';
+import { requireJwtSecret } from './services/securityConfig.js';
+import { bootstrapAccounts } from './services/accountBootstrap.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const JWT_SECRET = requireJwtSecret();
 
 app.use(cors());
 app.use(express.json());
@@ -49,7 +54,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use(session({
-  secret: process.env.JWT_SECRET || "xianfire-secret-key",
+  secret: JWT_SECRET,
   resave: false,
   saveUninitialized: false
 }));
@@ -65,6 +70,8 @@ try {
   // Disable foreign key checks for initial sync
   await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
   console.log('  ✓ Foreign key checks disabled');
+
+  await upgradeInventorySchema();
 
   // Sync all tables
   await sequelize.sync({ alter: false });
@@ -118,52 +125,24 @@ try {
   await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
   console.log('  ✓ Foreign key checks re-enabled');
 
-  // Drop the old Employees table (consolidated into Users)
-  await sequelize.query('DROP TABLE IF EXISTS `Employees`');
-  console.log('  ✓ Old Employees table dropped');
+  // Retain historical employee records after consolidating active users.
+  console.log('  ✓ Historical employee records retained');
 
   // Ensure existing admin users have approved status
   await User.update({ status: 'approved' }, { where: { role: 'admin', status: 'pending' } });
 
-  // Seed default admin account if none exists
+  // Create an admin only from explicitly configured private credentials.
   const adminCount = await User.count({ where: { role: 'admin' } });
   if (adminCount === 0) {
-    const bcryptModule = await import('bcrypt');
-    const hashed = await bcryptModule.default.hash('password', 10);
-    await User.create({ name: 'Admin', email: 'admin@gmail.com', password: hashed, role: 'admin', status: 'approved' });
-    console.log('  ✓ Default admin account created (admin@gmail.com / password)');
+    await bootstrapAccounts(['admin']);
+    if (!(await User.count({ where: { role: 'admin' } }))) {
+      console.log('  No admin account configured. Set private BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD for first-time setup.');
+    }
   } else {
     console.log(`  ✓ ${adminCount} admin account(s) verified`);
   }
 
-  // Migrate existing items: ensure all have trackStock = true and stock is not null
-  await sequelize.query(`UPDATE menu_items SET trackStock = 1 WHERE trackStock = 0`);
-  await sequelize.query(`UPDATE menu_items SET stock = 0 WHERE stock IS NULL`);
-  // Sync: if admin set a defaultStock but stock is still 0, fix it
-  await sequelize.query(`UPDATE menu_items SET stock = defaultStock WHERE stock = 0 AND defaultStock > 0`);
-  console.log('  ✓ All menu items migrated and stock synced');
-
-  // Daily stock reset: reset stock to defaultStock for items not yet reset today
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  const { Op } = await import('sequelize');
-  const itemsToReset = await MenuItem.findAll({
-    where: {
-      [Op.or]: [
-        { lastStockReset: null },
-        { lastStockReset: { [Op.lt]: today } }
-      ]
-    }
-  });
-  if (itemsToReset.length > 0) {
-    for (const item of itemsToReset) {
-      await item.update({ stock: item.defaultStock || 0, lastStockReset: today });
-    }
-    console.log(`  ✓ Daily stock reset applied to ${itemsToReset.length} item(s)`);
-  } else {
-    console.log('  ✓ Stock already reset for today');
-  }
-
-  console.log('✅ Database fully synced');
+  console.log('Database ready. Inventory balances retained.');
 } catch (syncError) {
   console.error('⚠️ Database sync error:', syncError.message);
 
@@ -186,8 +165,10 @@ try {
       // Retry sync
       await sequelize.authenticate();
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-      await sequelize.sync();
+      await upgradeInventorySchema();
+      await sequelize.sync({ alter: false });
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+      await bootstrapAccounts(['admin']);
       console.log('✅ Database fully synced (after auto-create)');
     } catch (createErr) {
       console.error('❌ Could not auto-create database:', createErr.message);
@@ -197,7 +178,7 @@ try {
     try {
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
     } catch (e) { }
-    console.log('⚠️ Server will continue despite sync issues');
+    throw syncError;
   }
 }
 

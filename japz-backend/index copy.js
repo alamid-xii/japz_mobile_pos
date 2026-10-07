@@ -32,6 +32,7 @@ import fs from 'fs';
 import hbs from "hbs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import { requireJwtSecret } from "./services/securityConfig.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,7 +45,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use(session({
-  secret: "xianfire-secret-key",
+  secret: requireJwtSecret(),
   resave: false,
   saveUninitialized: false
 }));

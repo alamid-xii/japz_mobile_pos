@@ -10,7 +10,8 @@ const sendEmail = async (to, subject, htmlPart) => {
     const secretKey = process.env.MAILJET_SECRET_KEY;
     if (!apiKey || !secretKey) throw new Error('MAILJET_API_KEY or MAILJET_SECRET_KEY not set');
 
-    const senderEmail = process.env.MAILJET_FROM_EMAIL || 'detorresphilip08@gmail.com';
+    const senderEmail = process.env.MAILJET_FROM_EMAIL;
+    if (!senderEmail) throw new Error('MAILJET_FROM_EMAIL not set');
 
     try {
         const { data } = await axios.post('https://api.mailjet.com/v3.1/send', {

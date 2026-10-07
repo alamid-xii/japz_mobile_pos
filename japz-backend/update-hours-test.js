@@ -1,10 +1,14 @@
+import "dotenv/config";
 import axios from 'axios';
 
-const API = 'http://localhost:3000';
+const API = process.env.API_URL || 'http://localhost:3000';
 async function run() {
   try {
     console.log('Logging in as admin');
-    const loginRes = await axios.post(`${API}/api/auth/login`, { email: 'admin@japz.com', password: 'admin123' });
+    const email = process.env.BOOTSTRAP_ADMIN_EMAIL;
+    const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;
+    if (!email || !password) throw new Error('Set private BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD before running this utility.');
+    const loginRes = await axios.post(`${API}/api/auth/login`, { email, password });
     const token = loginRes.data.token;
     console.log('Token:', !!token);
 

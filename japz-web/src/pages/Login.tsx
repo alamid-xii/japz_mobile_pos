@@ -68,6 +68,7 @@ export default function Login() {
             // Navigate based on role
             if (result?.role === 'cashier') navigate('/cashier/pos', { replace: true });
             else if (result?.role === 'kitchen') navigate('/kitchen/incoming', { replace: true });
+            else if (result?.role === 'inventory') navigate('/inventory/overview', { replace: true });
             else navigate('/admin/dashboard', { replace: true });
         } catch (err: any) { setError(err.message || 'Login failed'); }
     };

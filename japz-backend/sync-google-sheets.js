@@ -4,15 +4,17 @@ import { analyzeWithKeywords } from "./services/gemmaService.js";
 import 'dotenv/config';
 
 // Google Sheets API URL (public read)
-const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || '1J6rTRo1gtHHjsqfz7GRadn_-E02Z29BYkCqdu6lOuVU';
-const API_KEY = process.env.GOOGLE_SHEETS_API_KEY || 'AIzaSyDcrXTpANSt8dW-iP1vfBkpXLKpvd5CM8A';
+const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
+const API_KEY = process.env.GOOGLE_SHEETS_API_KEY;
 const RANGE = 'Form Responses 1!A:G'; // Adjust range based on your sheet columns
 
 async function fetchGoogleSheetData() {
+    if (!SPREADSHEET_ID || !API_KEY) {
+        throw new Error('Set GOOGLE_SPREADSHEET_ID and GOOGLE_SHEETS_API_KEY in the private backend environment.');
+    }
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}`;
 
     console.log('📊 Fetching data from Google Sheets...');
-    console.log(`URL: ${url.substring(0, 80)}...`);
 
     try {
         const response = await fetch(url);

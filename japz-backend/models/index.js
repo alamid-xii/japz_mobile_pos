@@ -34,6 +34,7 @@ import { Feedback } from './feedbackModel.js';
 import { Discount } from './discountModel.js';
 import { Voucher } from './voucherModel.js';
 import { BusinessHours } from './businessHoursModel.js';
+import { StockMovement, StockAllocation, MenuRecipe, StockReceipt, StockCount, WasteReport } from './inventoryModels.js';
 
 // Define associations
 
@@ -58,5 +59,12 @@ MenuItem.hasMany(OrderItem, { foreignKey: 'menuItemId', as: 'orderItems' });
 // Feedback associations
 Feedback.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 Order.hasMany(Feedback, { foreignKey: 'orderId', as: 'feedbacks' });
+
+StockMovement.belongsTo(MenuItem, { as: 'menuItem', foreignKey: 'menuItemId', onDelete: 'RESTRICT' });
+StockMovement.belongsTo(User, { as: 'user', foreignKey: 'userId', onDelete: 'RESTRICT' });
+StockMovement.belongsTo(Order, { as: 'order', foreignKey: 'orderId', onDelete: 'RESTRICT' });
+StockAllocation.belongsTo(Order, { foreignKey: 'orderId', onDelete: 'RESTRICT' });
+MenuRecipe.belongsTo(MenuItem, { as: 'menuItem', foreignKey: 'menuItemId', onDelete: 'RESTRICT' });
+for (const model of [StockReceipt, StockCount, WasteReport]) model.belongsTo(User, { as: 'user', foreignKey: 'userId', onDelete: 'RESTRICT' });
 
 export { User, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment, Log, Feedback, Discount, Voucher, BusinessHours };

@@ -24,90 +24,34 @@
     */
 
 import { sequelize } from "./models/db.js";
-import { User } from "./models/userModel.js";
-import { Employee } from "./models/employeeModel.js";
 import { BusinessHours } from "./models/businessHoursModel.js";
-import bcrypt from "bcrypt";
+import { bootstrapAccounts } from "./services/accountBootstrap.js";
+import { pathToFileURL } from "node:url";
 
 async function seed() {
-  try {
-    await sequelize.authenticate();
-    console.log("✅ Connected to MySQL database!");
-
-    // Check if admin already exists
-    const existingAdmin = await User.findOne({ where: { email: 'admin@gmail.com' } });
-    const existingCashier = await User.findOne({ where: { email: 'allaimanimtim06@gmail.com' } });
-    const existingKitchen = await User.findOne({ where: { email: 'felipcoz04@gmail.com' } });
-    
-    if (existingAdmin && existingCashier && existingKitchen) {
-      console.log("ℹ️  All accounts already exist. Skipping seed.");
-      return;
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash('password', 10);
-
-    // Create admin user if not exists
-    if (!existingAdmin) {
-      await User.create({
-        name: 'Admin',
-        email: 'admin@gmail.com',
-        password: hashedPassword,
-        role: 'admin',
-        status: 'approved'
-      });
-      console.log("✅ Admin account created successfully!");
-      console.log("📧 Email: admin@gmail.com");
-      console.log("🔑 Password: password");
-    }
-
-    // Create cashier user if not exists
-    if (!existingCashier) {
-      await User.create({
-        name: 'Cashier',
-        email: 'allaimanimtim06@gmail.com',
-        password: hashedPassword,
-        role: 'cashier',
-        status: 'approved'
-      });
-      console.log("✅ Cashier account created successfully!");
-      console.log("📧 Email: allaimanimtim06@gmail.com");
-      console.log("🔑 Password: password");
-    }
-
-    // Create kitchen user if not exists
-    if (!existingKitchen) {
-      await User.create({
-        name: 'Kitchen',
-        email: 'felipcoz04@gmail.com',
-        password: hashedPassword,
-        role: 'kitchen',
-        status: 'approved'
-      });
-      console.log("✅ Kitchen account created successfully!");
-      console.log("📧 Email: felipcoz04@gmail.com");
-      console.log("🔑 Password: password");
-    }
-
-    // Create default business hours if not exists
-    const existingBusinessHours = await BusinessHours.findOne();
-    if (!existingBusinessHours) {
-      await BusinessHours.create({
-        openTime: '09:00:00',
-        closeTime: '22:00:00',
-        applyCashier: true,
-        applyKitchen: true
-      });
-      console.log("✅ Default business hours created (09:00 - 22:00)!");
-    }
-  } catch (err) {
-    console.error("❌ Seeding failed:", err);
-    throw err;
+  await sequelize.authenticate();
+  await bootstrapAccounts(["admin", "cashier", "kitchen"]);
+  const existingBusinessHours = await BusinessHours.findOne();
+  if (!existingBusinessHours) {
+    await BusinessHours.create({
+      openTime: "09:00:00",
+      closeTime: "22:00:00",
+      applyCashier: true,
+      applyKitchen: true,
+    });
+    console.log("Default business hours created.");
   }
 }
 
 export { seed };
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  seed().finally(() => process.exit());
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    await seed();
+  } catch (error) {
+    console.error("Seeding failed:", error.message);
+    process.exitCode = 1;
+  } finally {
+    await sequelize.close();
+  }
 }

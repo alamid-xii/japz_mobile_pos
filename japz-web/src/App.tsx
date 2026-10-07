@@ -32,6 +32,18 @@ import KitchenCompleted from './pages/kitchen/Completed';
 import KitchenProfile from './pages/kitchen/Profile';
 import Feedback from './pages/public/Feedback';
 import './index.css';
+import InventoryLayout from './features/inventory/InventoryLayout';
+import InventoryOverview from './features/inventory/Overview';
+import Supplies from './features/inventory/Supplies';
+import Receiving from './features/inventory/Receiving';
+import { Counts, Losses } from './features/inventory/CountsLosses';
+import Suppliers from './features/inventory/Suppliers';
+import { PreparedStock, MenuAvailability } from './features/inventory/MenuStock';
+import { Movements, Reports } from './features/inventory/HistoryReports';
+import InventoryGuide from './features/inventory/Guide';
+import KitchenWaste from './features/inventory/KitchenWaste';
+import InventoryProfile from './features/inventory/Profile';
+import InventorySettingsPage from './features/inventory/Settings';
 
 export default function App() {
   return (
@@ -48,6 +60,25 @@ export default function App() {
 
           {/* Customer Feedback - Fully Public (no auth check) */}
           <Route path="/feedback" element={<Feedback />} />
+
+          {['/inventory', '/admin/inventory'].map(path => (
+            <Route key={path} path={path} element={<ProtectedRoute allowedRoles={path.startsWith('/admin') ? ['admin'] : ['inventory', 'admin']}><InventoryLayout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<InventoryOverview />} />
+              <Route path="supplies" element={<Supplies />} />
+              <Route path="receiving" element={<Receiving />} />
+              <Route path="prepared" element={<PreparedStock />} />
+              <Route path="menu" element={<MenuAvailability />} />
+              <Route path="counts" element={<Counts />} />
+              <Route path="losses" element={<Losses />} />
+              <Route path="suppliers" element={<Suppliers />} />
+              <Route path="movements" element={<Movements />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="guide" element={<InventoryGuide />} />
+              <Route path="profile" element={<InventoryProfile />} />
+              <Route path="settings" element={<InventorySettingsPage />} />
+            </Route>
+          ))}
 
           {/* Admin Routes - Protected */}
           <Route path="/admin" element={
@@ -93,6 +124,7 @@ export default function App() {
             <Route path="incoming" element={<KitchenIncoming />} />
             <Route path="completed" element={<KitchenCompleted />} />
             <Route path="profile" element={<KitchenProfile />} />
+            <Route path="waste" element={<KitchenWaste />} />
           </Route>
 
           {/* Catch-all */}

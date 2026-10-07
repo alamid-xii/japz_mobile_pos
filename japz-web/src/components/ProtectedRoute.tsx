@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    allowedRoles: ('admin' | 'cashier' | 'kitchen')[];
+    allowedRoles: ('admin' | 'cashier' | 'kitchen' | 'inventory')[];
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
@@ -30,6 +30,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
             admin: '/admin/dashboard',
             cashier: '/cashier/pos',
             kitchen: '/kitchen/incoming',
+            inventory: '/inventory/overview',
         };
         return <Navigate to={roleRedirects[user.role]} replace />;
     }

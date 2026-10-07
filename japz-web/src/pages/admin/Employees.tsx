@@ -129,6 +129,7 @@ export default function Employees() {
     if (loading) return <div className="spinner" />;
 
     const roleBg: Record<string, string> = {
+        inventory: 'bg-gray-100 text-gray-700',
         cashier: 'bg-blue-100 text-blue-700',
         kitchen: 'bg-amber-100 text-amber-700',
         admin: 'bg-emerald-100 text-emerald-700',
@@ -356,6 +357,7 @@ export default function Employees() {
                         <label className="text-[13px] font-medium block mb-2">Assign Role</label>
                         <div className="flex flex-col gap-2 mb-4">
                             {[
+                                { value: 'inventory', label: 'Inventory', desc: 'Supplies, recipes and stock movements' },
                                 { value: 'cashier', label: '💰 Cashier', desc: 'Can process orders and handle payments' },
                                 { value: 'kitchen', label: '👨‍🍳 Kitchen Staff', desc: 'Can view and manage incoming orders' },
                                 { value: 'admin', label: '🔑 Admin', desc: 'Full access to all features' },
@@ -469,6 +471,7 @@ export default function Employees() {
                         <label className="text-[13px] font-medium block mb-2">Change Role</label>
                         <div className="flex flex-col gap-2 mb-4">
                             {[
+                                { value: 'inventory', label: 'Inventory', desc: 'Supplies, recipes and stock movements' },
                                 { value: 'cashier', label: '💰 Cashier', desc: 'Can process orders and handle payments' },
                                 { value: 'kitchen', label: '👨‍🍳 Kitchen Staff', desc: 'Can view and manage incoming orders' },
                                 { value: 'admin', label: '🔑 Admin', desc: 'Full access to all features' },

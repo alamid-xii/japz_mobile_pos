@@ -10,7 +10,7 @@ interface Product {
     hasFlavor?: boolean; flavors?: string[];
     hasTemperature?: boolean; temperatures?: string[];
     status?: 'available' | 'unavailable';
-    trackStock?: boolean; stock?: number | null;
+    trackStock?: boolean; stock?: number | null; reorderLevel?: number; variants?: { size: string | null; flavor: string | null; temperature: string | null; available: number }[]; availabilityReason?: string;
 }
 interface CartItem extends Product {
     quantity: number; selectedSize?: string; selectedFlavor?: string; selectedTemperature?: string; itemPrice: number;
@@ -35,6 +35,7 @@ export default function POS() {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [showCart, setShowCart] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [stockError, setStockError] = useState('');
     const [showOptionsModal, setShowOptionsModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [selectedSize, setSelectedSize] = useState('');
@@ -62,7 +63,7 @@ export default function POS() {
                         } else if (s?.name && s?.price) parsedSizes.push({ name: s.name, price: Number(s.price) });
                     });
                 }
-                return { id: item.id, name: item.name, price: Number(item.price || 0), categoryId: item.categoryId || item.MenuCategoryId, hasSize: item.hasSize || false, sizes: parsedSizes, hasFlavor: item.hasFlavor || false, flavors: item.flavors || [], hasTemperature: item.hasTemperature || false, temperatures: item.temperatures || [], status: item.status || 'available', trackStock: item.trackStock || false, stock: item.stock ?? null };
+                return { id: item.id, name: item.name, price: Number(item.price || 0), categoryId: item.categoryId || item.MenuCategoryId, hasSize: item.hasSize || false, sizes: parsedSizes, hasFlavor: item.hasFlavor || false, flavors: item.flavors || [], hasTemperature: item.hasTemperature || false, temperatures: item.temperatures || [], status: item.status || 'available', trackStock: item.trackStock || false, stock: item.stock ?? null, variants: item.variants || [], reorderLevel: item.reorderLevel ?? 10, availabilityReason: item.availabilityReason || '' };
             });
             setProducts(itms);
 
@@ -103,11 +104,13 @@ export default function POS() {
                 setCategories(cats);
                 if (cats.length > 0 && !selectedCategory) setSelectedCategory(cats[0].id);
             }
-        } catch (e) { console.error(e); }
+            setStockError('');
+        } catch { setStockError('Could not refresh menu stock. Retry before checking out.'); }
         finally { setLoading(false); }
     }, [selectedCategory]);
 
-    useEffect(() => { fetchData(true); }, []);
+    useEffect(() => { void fetchData(true); }, []);
+    useEffect(() => { const refresh = () => { if (document.visibilityState === 'visible') void fetchData(); }; const timer = setInterval(refresh, 15000); window.addEventListener('focus', refresh); return () => { clearInterval(timer); window.removeEventListener('focus', refresh); }; }, [fetchData]);
 
     const speakText = (text: string) => {
         try {
@@ -169,7 +172,10 @@ export default function POS() {
     };
     const addWithOptions = () => {
         if (!selectedProduct) return;
-        if (hasInsufficientStock(selectedProduct)) return;
+        const variant = selectedProduct.variants?.find(variant => (variant.size || '') === selectedSize && (variant.flavor || '') === selectedFlavor && (variant.temperature || '') === selectedTemperature);
+        if (!variant || variant.available <= 0) { setStockError('This option is unavailable. Choose another option or ask Inventory to replenish it.'); return; }
+        const currentQty = cart.filter(item => item.id === selectedProduct.id && (item.selectedSize || '') === selectedSize && (item.selectedFlavor || '') === selectedFlavor && (item.selectedTemperature || '') === selectedTemperature).reduce((sum, item) => sum + item.quantity, 0);
+        if (currentQty + 1 > variant.available) { setStockError('This option has reached its available stock limit.'); return; }
         const price = selectedSize && selectedProduct.sizes ? (selectedProduct.sizes.find(s => s.name === selectedSize)?.price || selectedProduct.price) : selectedProduct.price;
         setCart(prev => {
             const currentQty = prev.filter(i => i.id === selectedProduct.id).reduce((sum, i) => sum + i.quantity, 0);
@@ -196,6 +202,7 @@ export default function POS() {
 
     return (
         <div className="flex flex-col h-full">
+            {stockError && <div role="alert" className="p-3 bg-red-50 text-red-800 border-b border-red-200 text-sm">{stockError}<button className="ml-3 underline min-h-11" onClick={() => void fetchData()}>Refresh stock</button></div>}
             {/* Mobile Header - hidden on desktop */}
             <div className="md:hidden flex items-center justify-between px-2 py-1 pt-[max(12px,env(safe-area-inset-top))] bg-brand shrink-0">
                 <div className="flex items-center gap-2">
@@ -296,7 +303,7 @@ export default function POS() {
                                         </div>
                                         <div className="px-1.5 pb-1.5">
                                             {item.trackStock && item.stock != null && (item.stock ?? 0) > 0 && (
-                                                <div className={`text-[10px] font-medium mb-1 text-center ${(item.stock ?? 0) <= 5 ? 'text-amber-500' : 'text-gray-500'}`}>
+                                                <div className={`text-[10px] font-medium mb-1 text-center ${(item.stock ?? 0) <= (item.reorderLevel ?? 10) ? 'text-amber-500' : 'text-gray-500'}`}>
                                                     {`${(item.stock ?? 0) - getCartQuantity(item.id)} left`}
                                                 </div>
                                             )}
@@ -346,7 +353,7 @@ export default function POS() {
                                     </div>
                                     <div className="px-2 pb-2">
                                         {item.trackStock && item.stock != null && (item.stock ?? 0) > 0 && (
-                                            <div className={`text-[10px] font-medium mb-1 text-center ${(item.stock ?? 0) <= 5 ? 'text-amber-500' : 'text-gray-500'}`}>
+                                            <div className={`text-[10px] font-medium mb-1 text-center ${(item.stock ?? 0) <= (item.reorderLevel ?? 10) ? 'text-amber-500' : 'text-gray-500'}`}>
                                                 {`${(item.stock ?? 0) - getCartQuantity(item.id)} left`}
                                             </div>
                                         )}

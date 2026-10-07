@@ -1,0 +1,37 @@
+# Private configuration; keep only the shareable templates
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Dependencies, builds and generated verification output
+node_modules/
+dist/
+dist-ssr/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+*.tsbuildinfo
+*.log
+*.pid
+*.pid.lock
+
+# Local runtime data, backups and private development tooling
+.local/
+backups/
+*.sql
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+*.key
+*.p12
+*.pfx
+.agents/
+.codex/
+.impeccable/
+impeccable/
+.DS_Store
+Thumbs.db

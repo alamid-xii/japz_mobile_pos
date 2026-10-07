@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Clock, ChefHat, CheckCircle, UtensilsCrossed, User, StickyNote, Play, Check, MapPin, Speaker, Mic } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
+import { isAxiosError } from 'axios';
 
 type StatusFilter = 'pending' | 'preparing' | 'ready';
 
@@ -29,6 +30,7 @@ interface KitchenOrder {
 export default function KitchenIncoming() {
     const { user } = useAuth();
     const [speakerEnabled, setSpeakerEnabled] = useState(true);
+    const [inventoryError, setInventoryError] = useState('');
     const [listening, setListening] = useState(false);
     const recognitionRef = useRef<any>(null);
     const prevOrderIdsRef = useRef<number[]>([]);
@@ -123,10 +125,12 @@ export default function KitchenIncoming() {
         
         setProcessingOrders(prev => new Set(prev).add(orderId));
         try {
+            setInventoryError('');
             await ordersAPI.updateOrderStatus(orderId, newStatus);
             await fetchOrders();
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
+            const message = isAxiosError<{ error?: string }>(error) ? error.response?.data?.error : undefined;
+            setInventoryError(message || 'Order status could not be changed. Try again.');
         } finally {
             setProcessingOrders(prev => {
                 const next = new Set(prev);
@@ -246,6 +250,7 @@ export default function KitchenIncoming() {
 
     return (
         <div className="p-4 md:p-6">
+            {inventoryError && <div role="alert" className="p-3 m-3 bg-red-50 border border-red-200 rounded-md text-red-800">{inventoryError}</div>}
             {/* Header */}
             <div className="mb-6 flex items-center justify-between">
                 <div>

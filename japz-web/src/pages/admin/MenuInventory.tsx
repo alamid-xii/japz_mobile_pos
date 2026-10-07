@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Plus, X, Search, Edit2, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Power, Archive, RotateCcw } from 'lucide-react';
-import { menuCategoryAPI, menuItemAPI } from '../../services/api';
+import api, { menuCategoryAPI, menuItemAPI } from '../../services/api';
 
-interface Category { id: number; name: string; description?: string; icon?: string; status?: 'available' | 'unavailable'; }
+interface Category { id: number; name: string; description?: string; icon?: string; status?: 'active' | 'inactive'; }
 interface SizeWithPrice { name: string; price: number; }
 interface MenuItem {
     id: number; name: string; price: number; categoryId: number;
@@ -146,8 +146,6 @@ export default function MenuInventory() {
     const [itemFlavors, setItemFlavors] = useState('');
     const [itemHasTemperature, setItemHasTemperature] = useState(false);
     const [itemTemperatures, setItemTemperatures] = useState({ hot: true, cold: true });
-    const [itemTrackStock, setItemTrackStock] = useState(false);
-    const [itemStock, setItemStock] = useState('');
     const [hasCombo, setHasCombo] = useState(false);
     const [comboSuffix, setComboSuffix] = useState('Combo');
     const [comboPrice, setComboPrice] = useState('');
@@ -178,7 +176,7 @@ export default function MenuInventory() {
 
     const fetchData = async () => {
         try {
-            const [catRes, itemRes] = await Promise.all([menuCategoryAPI.getAll(), menuItemAPI.getAllAdmin()]);
+            const [catRes, itemRes] = await Promise.all([api.get('/api/inventory/categories'), menuItemAPI.getAllAdmin()]);
             setCategories(catRes.data?.data || catRes.data || []);
             setItems((itemRes.data?.data || itemRes.data || []).map((i: any) => ({
                 ...i,
@@ -197,6 +195,7 @@ export default function MenuInventory() {
     };
 
     useEffect(() => { fetchData(); }, []);
+    useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, viewMode, viewArchived]);
 
     useEffect(() => {
         const handleClickOutside = () => setOpenMenuId(null);
@@ -214,14 +213,13 @@ export default function MenuInventory() {
             else await menuCategoryAPI.create({ name: catName.trim(), description: catDesc.trim() });
             setShowCatModal(false); await fetchData();
             showAlert('success', 'Success', editingCat ? 'Category updated successfully!' : 'Category created successfully!');
-        } catch (e: any) { showAlert('error', 'Error', e.response?.data?.message || 'Failed to save category'); }
+        } catch (e: any) { showAlert('error', 'Error', e.response?.data?.error || 'Failed to save category'); }
         finally { setSaving(false); }
     };
     const openAddItem = (catId?: number) => {
         setEditingItem(null); setItemName(''); setItemPrice(''); setItemCatId(catId || '');
         setItemHasSize(false); setItemSizesData([{ name: '', price: 0 }]); setItemHasFlavor(false); setItemFlavors('');
         setItemHasTemperature(false); setItemTemperatures({ hot: true, cold: true });
-        setItemTrackStock(false); setItemStock('');
         setHasCombo(false); setComboSuffix('Combo'); setComboPrice('');
         setShowItemModal(true);
     };
@@ -248,8 +246,6 @@ export default function MenuInventory() {
         } else {
             setItemTemperatures({ hot: true, cold: true });
         }
-        setItemTrackStock(item.trackStock || false);
-        setItemStock(item.stock != null ? String(item.stock) : '');
         setHasCombo(false); setComboSuffix('Combo'); setComboPrice(''); // Combo only for new items
         setShowItemModal(true);
     };
@@ -294,8 +290,6 @@ export default function MenuInventory() {
             sizes: itemHasSize ? validSizes : [],
             flavors: itemHasFlavor ? itemFlavors.split(',').map(f => f.trim()).filter(Boolean) : [],
             temperatures: itemHasTemperature ? temps : [],
-            trackStock: itemTrackStock,
-            stock: itemTrackStock && itemStock ? Number(itemStock) : null,
         };
         try {
             if (editingItem) {
@@ -319,7 +313,7 @@ export default function MenuInventory() {
                 }
             }
             setShowItemModal(false); await fetchData();
-        } catch (e: any) { showAlert('error', 'Error', e.response?.data?.message || 'Failed to save item'); }
+        } catch (e: any) { showAlert('error', 'Error', e.response?.data?.error || 'Failed to save item'); }
         finally { setSaving(false); }
     };
     const archiveItem = async (item: MenuItem) => {
@@ -332,7 +326,7 @@ export default function MenuInventory() {
                     await fetchData();
                     showAlert('success', 'Archived', 'Menu item archived successfully!');
                 }
-                catch (e: any) { showAlert('error', 'Error', e.response?.data?.message || 'Failed to archive item'); }
+                catch (e: any) { showAlert('error', 'Error', e.response?.data?.error || 'Failed to archive item'); }
             },
             'Archive',
             'amber'
@@ -349,7 +343,7 @@ export default function MenuInventory() {
                     await fetchData();
                     showAlert('success', 'Restored', 'Menu item restored successfully!');
                 }
-                catch (e: any) { showAlert('error', 'Error', e.response?.data?.message || 'Failed to restore item'); }
+                catch (e: any) { showAlert('error', 'Error', e.response?.data?.error || 'Failed to restore item'); }
             },
             'Restore',
             'blue'
@@ -383,12 +377,12 @@ export default function MenuInventory() {
         );
     };
     const toggleCategoryStatus = async (cat: Category) => {
-        const newStatus = cat.status === 'available' ? 'unavailable' : 'available';
-        const message = newStatus === 'unavailable'
+        const newStatus = cat.status === 'active' ? 'inactive' : 'active';
+        const message = newStatus === 'inactive'
             ? `Disable "${cat.name}"? All items in this category will be temporarily unavailable.`
             : `Enable "${cat.name}"? All items in this category will be available.`;
-        const buttonLabel = newStatus === 'unavailable' ? 'Disable' : 'Enable';
-        const buttonColor: 'amber' | 'blue' = newStatus === 'unavailable' ? 'amber' : 'blue';
+        const buttonLabel = newStatus === 'inactive' ? 'Disable' : 'Enable';
+        const buttonColor: 'amber' | 'blue' = newStatus === 'inactive' ? 'amber' : 'blue';
 
         showConfirm(
             `${buttonLabel} Category`,
@@ -397,7 +391,7 @@ export default function MenuInventory() {
                 try {
                     await menuCategoryAPI.update(cat.id, { status: newStatus });
                     await fetchData();
-                    showAlert('success', 'Success', `Category ${newStatus === 'unavailable' ? 'disabled' : 'enabled'} successfully!`);
+                    showAlert('success', 'Success', `Category ${newStatus === 'inactive' ? 'disabled' : 'enabled'} successfully!`);
                 }
                 catch (e) {
                     console.error(e);
@@ -440,11 +434,11 @@ export default function MenuInventory() {
     const handleNextPage = () => setCurrentPage(prev => Math.min(viewMode === 'items' ? totalPages : categoryTotalPages, prev + 1));
 
     return (
-        <div className="p-2 md:p-4 h-full overflow-y-auto bg-gradient-to-b from-white to-slate-100">
+        <div className="admin-menu-page p-4 md:p-8 min-h-full bg-[#f6f7f5]">
             {/* Header */}
             <div className="mb-4 flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-yellow-900">Menu & Inventory</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Menu</h1>
                     <p className="text-gray-500 text-sm">Manage menu items and categories</p>
                 </div>
                 {viewMode === 'items' && (
@@ -532,10 +526,10 @@ export default function MenuInventory() {
                 ) : filteredItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-gray-500 gap-2 py-8"><p>{viewArchived ? 'No item in archive' : (searchQuery ? 'No menu items match your search' : 'No items in this category')}</p></div>
                 ) : (
-                    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-yellow-100 border-b border-gray-200">
+                                <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Item Name</th>
                                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Category</th>
@@ -549,7 +543,7 @@ export default function MenuInventory() {
                                     {paginatedItems.map(item => {
                                         const category = categories.find(c => c.id === item.categoryId);
                                         return (
-                                            <tr key={item.id} className="hover:bg-yellow-50 transition">
+                                            <tr key={item.id} className="hover:bg-gray-50 transition">
                                                 <td className="px-6 py-3">
                                                     <div className="font-semibold text-sm text-gray-800">{item.name}</div>
                                                     {item.description && <div className="text-xs text-gray-500 mt-0.5">{item.description}</div>}
@@ -676,10 +670,10 @@ export default function MenuInventory() {
                 ) : filteredCategories.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-gray-500 gap-2 py-8"><p>No categories match your search</p></div>
                 ) : (
-                    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-yellow-100 border-b border-gray-200">
+                                <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Category Name</th>
                                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Items Count</th>
@@ -690,9 +684,9 @@ export default function MenuInventory() {
                                 <tbody className="divide-y divide-gray-200">
                                     {paginatedCategories.map(cat => {
                                         const itemCount = items.filter(item => item.categoryId === cat.id).length;
-                                        const catStatus = cat.status || 'available';
+                                        const catStatus = cat.status || 'active';
                                         return (
-                                            <tr key={cat.id} className={`hover:bg-yellow-50 transition ${catStatus === 'unavailable' ? 'opacity-60' : ''}`}>
+                                            <tr key={cat.id} className={`hover:bg-gray-50 transition ${catStatus === 'inactive' ? 'opacity-60' : ''}`}>
                                                 <td className="px-6 py-3">
                                                     <div className="font-semibold text-sm text-gray-800">{cat.name}</div>
                                                 </td>
@@ -702,12 +696,12 @@ export default function MenuInventory() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-3">
-                                                    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${catStatus === 'available'
+                                                    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${catStatus === 'active'
                                                             ? 'bg-emerald-100 text-emerald-600'
                                                             : 'bg-red-100 text-red-600'
                                                             }`}
                                                     >
-                                                        {catStatus}
+                                                        {catStatus === 'active' ? 'Enabled' : 'Disabled'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-3">
@@ -740,7 +734,7 @@ export default function MenuInventory() {
                                                                         className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition cursor-pointer border-none bg-transparent flex items-center gap-2"
                                                                     >
                                                                         <Power size={14} />
-                                                                        {catStatus === 'available' ? 'Disable' : 'Enable'}
+                                                                        {catStatus === 'active' ? 'Disable' : 'Enable'}
                                                                     </button>
                                                                 </div>
                                                             )}

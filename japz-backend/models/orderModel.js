@@ -26,6 +26,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "./db.js";
 
 export const Order = sequelize.define("Order", {
+  clientRequestId: { type: DataTypes.STRING(128), allowNull: true, unique: true },
   orderNumber: {
     type: DataTypes.STRING,
     allowNull: false,

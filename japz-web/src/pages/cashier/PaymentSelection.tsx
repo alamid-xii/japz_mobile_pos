@@ -1,10 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Banknote, CreditCard, Smartphone, Check, User, UtensilsCrossed, ShoppingBag, Truck, Gift, Receipt } from 'lucide-react';
-import { discountsVouchersAPI } from '../../services/api';
+import api, { discountsVouchersAPI } from '../../services/api';
+import { isAxiosError } from 'axios';
 
 type PaymentMethod = 'cash' | 'card' | 'digital';
 type OrderType = 'dine-in' | 'take-out' | 'delivery';
+
+interface CartStockItem {
+    id: number | string;
+    quantity: number;
+    selectedSize?: string | null;
+    selectedFlavor?: string | null;
+    selectedTemperature?: string | null;
+}
 
 export default function PaymentSelection() {
     const navigate = useNavigate();
@@ -22,6 +31,7 @@ export default function PaymentSelection() {
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [notes, setNotes] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [checkingStock, setCheckingStock] = useState(false);
 
     useEffect(() => {
         const fetchDiscounts = async () => {
@@ -102,8 +112,17 @@ export default function PaymentSelection() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleProceed = () => {
-        if (!validate()) return;
+    const handleProceed = async () => {
+        if (checkingStock || !validate()) return;
+        setCheckingStock(true);
+        try {
+            await api.post('/api/inventory/cart-check', { orderType, items: (items || []).map((item: CartStockItem) => ({ id: item.id, quantity: item.quantity, modifiers: { size: item.selectedSize || null, flavor: item.selectedFlavor || null, temperature: item.selectedTemperature || null } })) });
+        } catch (error) {
+            const message = isAxiosError<{ error?: string }>(error) ? error.response?.data?.error : undefined;
+            setErrors(previous => ({ ...previous, stock: message || 'Could not check stock. Try again.' }));
+            setCheckingStock(false); return;
+        }
+        setCheckingStock(false);
         navigate('/cashier/cash-payment', {
             state: {
                 total: finalTotal.toFixed(2),
@@ -140,6 +159,7 @@ export default function PaymentSelection() {
     return (
         <div className="min-h-full flex flex-col items-center p-5 md:p-8 md:pt-12">
             <div className="w-full max-w-3xl">
+                {errors.stock && <div role="alert" className="p-3 mb-4 border border-red-200 bg-red-50 text-red-800 rounded-md text-sm">{errors.stock}<button className="block min-h-11 underline" onClick={() => navigate('/cashier/pos')}>Return to cart</button></div>}
                 <div className="relative flex justify-center mb-6">
                     <button className="absolute left-0 inline-flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 cursor-pointer font-medium text-sm"
                         onClick={() => navigate(-1)}>
