@@ -1,3 +1,4 @@
+import Form from '../components/Form';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
@@ -30,8 +31,8 @@ export default function ForgotPassword() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-full px-4 py-6 bg-gradient-to-br from-yellow-50 via-yellow-100/50 to-white overflow-hidden">
-            <div className="w-full max-w-[420px] flex flex-col items-center md:bg-white md:rounded-2xl md:shadow-lg md:px-10 md:py-10">
+        <div className="auth-shell">
+            <div className="auth-panel">
                 <button
                     onClick={() => navigate('/login')}
                     className="self-start mb-4 flex items-center gap-1 text-yellow-700 hover:text-yellow-800 text-sm font-medium"
@@ -42,7 +43,7 @@ export default function ForgotPassword() {
 
                 {!submitted ? (
                     <>
-                        <img src="/logo.jpg" alt="JAPZ POS" className="w-[72px] h-[72px] rounded-lg object-contain mb-2 md:w-[120px] md:h-[120px] md:mb-5" />
+                        <img src="/logo.jpg" alt="JAPZ POS" className="auth-logo" />
                         <h1 className="text-xl font-bold text-gray-900 mb-1 md:text-2xl">Forgot Password?</h1>
                         <p className="text-xs text-center text-gray-500 mb-6 md:text-sm">Enter your email address and we'll send you a link to reset your password</p>
 
@@ -52,11 +53,11 @@ export default function ForgotPassword() {
                             </div>
                         )}
 
-                        <form className="w-full flex flex-col gap-3" onSubmit={handleSubmit}>
+                        <Form noValidate className="w-full flex flex-col gap-3" onSubmit={handleSubmit}>
                             <div className="flex flex-col gap-1">
-                                <label className="text-[13px] font-medium text-gray-900">Email Address</label>
-                                <input
-                                    type="email"
+                                <label htmlFor="forgotpassword-field-1" className="text-[13px] font-medium text-gray-900">Email Address</label>
+                                <input id="forgotpassword-field-1"
+                                    type="email" required
                                     placeholder="Enter your email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -67,11 +68,11 @@ export default function ForgotPassword() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-3 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:shadow-md hover:shadow-yellow-300/40 active:scale-[0.97] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full py-3 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:bg-yellow-400 active:bg-yellow-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {loading ? 'Sending...' : 'Send Reset Link'}
                             </button>
-                        </form>
+                        </Form>
                     </>
                 ) : (
                     <div className="text-center py-8 flex flex-col items-center gap-4 w-full">

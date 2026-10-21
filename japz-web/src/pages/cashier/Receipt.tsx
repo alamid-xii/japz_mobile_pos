@@ -9,7 +9,7 @@ export default function Receipt() {
         items, method, customerName, orderType, tableNumber, cashier
     } = (location.state as any) || {};
 
-    if (!orderNumber) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><p>No receipt data</p></div>;
+    if (!orderNumber) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><h1 className="text-xl font-semibold text-gray-900">No receipt to display</h1><p>View previous orders in order history.</p><button className="mt-4 px-5 py-3 bg-brand text-brand-dark rounded-md font-semibold" onClick={() => navigate('/cashier/history')}>View order history</button></div>;
 
     const orderDate = new Date();
 

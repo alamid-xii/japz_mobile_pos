@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/Inter-latin.woff') format('woff'); }
+@font-face { font-family: 'Dancing Script'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/DancingScript-latin.woff') format('woff'); }
 
 @layer base {
   * {
@@ -23,17 +24,172 @@
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
+
+  :root {
+    --app-surface: #ffffff;
+    --app-background: #f6f7f5;
+    --app-text: #252525;
+    --app-muted: #656963;
+    --app-border: #e2e3e0;
+    --app-focus: #665512;
+    scrollbar-color: #a6aaa1 #f6f7f5;
+    scrollbar-width: thin;
+  }
+
+  * { scrollbar-color: #a6aaa1 #f6f7f5; scrollbar-width: thin; }
+  :focus-visible { outline: 2px solid var(--app-focus); outline-offset: 3px; }
+  button, input, select, textarea { font: inherit; }
+  button, a, input, select, textarea { touch-action: manipulation; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+  input, select, textarea { max-width: 100%; }
+  input::placeholder, textarea::placeholder { color: #72776d; opacity: 1; }
+  h1, h2, h3, p { overflow-wrap: break-word; }
+  img { max-width: 100%; }
+  main { min-width: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+  @media (forced-colors: active) {
+    * { scrollbar-color: auto; }
+  }
 }
 
 @layer components {
 
   /* Spinner */
   .spinner {
-    @apply flex items-center justify-center h-full;
+    @apply flex items-center justify-center h-full min-h-40;
   }
 
   .spinner::after {
     content: '';
     @apply w-9 h-9 border-[3px] border-gray-200 border-t-brand rounded-full animate-spin;
   }
+
+  .auth-shell {
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    background: var(--app-background);
+  }
+  .auth-panel {
+    width: 100%;
+    max-width: 440px;
+    flex-shrink: 0;
+    margin-block: auto;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid var(--app-border);
+    border-top: 3px solid #ffce1b;
+    border-radius: 8px;
+    background: var(--app-surface);
+  }
+  .auth-logo { width: 72px; height: 72px; object-fit: contain; border-radius: 8px; margin-bottom: 16px; }
+  .auth-panel input { min-height: 44px; background: white; }
+  .auth-panel button[type="submit"] { min-height: 44px; }
+  .auth-panel .relative > button { min-width: 40px; min-height: 40px; justify-content: center; right: 2px; }
+  .auth-panel [class*="text-gray-400"] { color: var(--app-muted); }
+  .auth-panel [class*="rounded-full"]:not([class*="w-"]) { border-radius: 4px; }
+  .app-page { width: 100%; max-width: 1600px; margin-inline: auto; padding: 28px 32px 40px; min-height: 100%; background: var(--app-background); }
+  .app-page > div:first-child { flex-wrap: wrap; gap: 16px; }
+  .app-page > div:first-child > .relative { width: min(100%, 320px); }
+  .app-page h1 { color: var(--app-text); font-size: 26px; font-weight: 650; letter-spacing: -.6px; line-height: 1.25; }
+  .app-page table { text-align: left; font-variant-numeric: tabular-nums; }
+  .app-page thead { background: #fafbf9; }
+  .app-page th { white-space: nowrap; color: var(--app-muted); }
+  .app-page td, .app-page th { padding: 12px 16px; }
+  .app-page td { overflow-wrap: anywhere; }
+  .app-page button { min-height: 40px; }
+  .app-page button:has(> svg:only-child) { min-width: 40px; }
+  .app-page input:not([type="checkbox"]):not([type="radio"]), .app-page select { min-height: 44px; }
+  .app-page [class*="rounded-xl"] { border-radius: 8px; }
+  .app-page [class*="shadow-sm"] { box-shadow: none; }
+  .app-page .text-brand { color: #6e5710; }
+  .app-workspace { height: 100%; }
+  .app-workspace nav button { min-height: 44px; }
+  .app-workspace nav button[aria-current="page"] { font-weight: 600; }
+  .app-workspace nav a { min-height: 44px; }
+  .app-workspace nav a:not([aria-current="page"]) { color: var(--app-muted); }
+  .app-workspace nav a [class*="text-[10px]"] { font-size: 11px; }
+  .app-workspace > aside { min-height: 0; }
+  .app-main { min-height: 0; flex: 1; overflow-y: auto; }
+  .app-main > :not(.pos-page) { overflow-wrap: anywhere; }
+  .app-modal {
+    margin: auto; padding: 24px; width: calc(100% - 32px); max-width: 560px;
+    max-height: calc(100dvh - 32px); overflow-y: auto;
+    color: var(--app-text); background: white; border: 1px solid var(--app-border);
+    border-radius: 8px; box-shadow: 0 16px 48px #0003;
+    font-size: 14px; line-height: 1.5;
+  }
+  .app-modal::backdrop { background: #12160f80; }
+  .app-modal button { min-height: 44px; }
+  .app-modal button:has(> svg:only-child) { min-width: 44px; }
+  .app-modal input:not([type="checkbox"]):not([type="radio"]), .app-modal select { min-height: 44px; }
+  .app-modal form { min-width: 0; }
+  .app-modal .text-brand { color: #6e5710; }
+  .app-confirmation h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+  .app-confirmation p { color: var(--app-muted); white-space: pre-line; }
+  .app-form-error { color: #813b30; background: #fff3ef; border: 1px solid #edc9bf; padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; }
+  .app-form-error ul { list-style: disc; padding-left: 18px; margin-top: 6px; }
+  [aria-invalid="true"] { border-color: #aa4735 !important; }
+  .pos-page button { min-height: 40px; }
+  .pos-page button:has(> svg:only-child) { min-width: 40px; }
+  .pos-page h1 { color: var(--app-text); font-size: 24px; font-weight: 650; letter-spacing: -.5px; }
+  .order-filters { flex-wrap: wrap; }
+  .order-filters button { min-height: 44px; }
+  .app-main button[title] { min-width: 44px; min-height: 44px; }
+  .app-dialog-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+  .app-dialog-actions button { padding: 9px 18px; border: 1px solid #d5d8d0; border-radius: 6px; font-weight: 600; }
+  .app-notification {
+    position: fixed; z-index: 80; right: 24px; bottom: max(88px, env(safe-area-inset-bottom));
+    display: flex; align-items: flex-start; gap: 16px;
+    width: min(420px, calc(100vw - 32px)); padding: 12px 16px;
+    border: 1px solid #d5d8d0; border-left: 3px solid #b18c0b; border-radius: 6px;
+    background: white; color: var(--app-text); box-shadow: 0 4px 20px #0002;
+    font-size: 14px; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere;
+  }
+  .app-notification p { flex: 1; }
+  .app-notification button { flex-shrink: 0; min-width: 44px; min-height: 44px; display: grid; place-items: center; margin: -8px -12px -8px 0; }
+  .skip-link { position: fixed; left: 16px; top: -100px; z-index: 90; background: #ffce1b; color: #030213; padding: 12px 16px; border-radius: 6px; }
+  .skip-link:focus { top: 12px; }
+  @media (max-width: 1100px) { .app-page { padding: 24px; } }
+  @media (max-width: 767px) {
+    .auth-shell { background: white; }
+    .auth-panel { padding: 24px 8px; border: 0; border-top: 3px solid #ffce1b; }
+    .auth-panel h1 { font-size: 22px; }
+    .auth-panel input:not([inputmode="numeric"]) { font-size: 16px; }
+    .auth-panel input[inputmode="numeric"] { min-width: 0; }
+    .app-page { padding: 24px 16px 32px; }
+    .app-page h1 { font-size: 24px; }
+    .app-page > div:first-child > .relative { width: 100%; }
+    .app-page .overflow-x-auto { border-radius: inherit; }
+    .app-page:not(.admin-menu-page) table { min-width: 640px; }
+    .app-page table.app-responsive-table, .app-responsive-table tbody, .app-responsive-table tr, .app-responsive-table td { display: block; width: 100%; min-width: 0; }
+    .app-responsive-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .app-responsive-table tr { padding: 12px 16px; border-bottom: 1px solid var(--app-border); }
+    .app-page .app-responsive-table td { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 6px 0; text-align: right; border: 0; font-size: 13px; }
+    .app-responsive-table td::before { content: attr(data-label); color: var(--app-muted); flex-shrink: 0; text-align: left; font-size: 12px; max-width: 35%; }
+    .app-responsive-table td > * { min-width: 0; overflow-wrap: anywhere; }
+    .app-responsive-table td > .flex { justify-content: flex-end; flex-wrap: wrap; }
+    .app-modal { padding: 20px; max-height: calc(100dvh - 16px); }
+    .app-notification { right: 16px; }
+    .app-workspace nav button { min-width: 48px; }
+    .order-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: 100%; }
+    .order-filters button { justify-content: center; gap: 4px; padding: 10px 4px; font-size: 12px; flex-wrap: wrap; }
+    .order-filters button > svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .kitchen-page > div:first-child > div:last-child { flex-shrink: 0; }
+  }
 }
+
+/* Overlay bounds must win over legacy body utilities on migrated dialogs. */
+dialog.app-modal { max-width: min(680px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); margin: auto; border-radius: 8px; overflow-y: auto; }
+dialog.app-modal:has(> .app-dialog-actions) { max-width: min(460px, calc(100vw - 32px)); }
+dialog.app-form-modal > div:first-of-type { position: sticky; top: -24px; z-index: 3; padding-block: 8px; margin-top: -8px; background: white; }
+dialog.app-form-modal input, dialog.app-form-modal select, dialog.app-form-modal textarea { scroll-margin-top: 72px; scroll-margin-bottom: 16px; }
+@media (max-width: 767px) { dialog.app-modal { width: calc(100% - 24px); max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); } }

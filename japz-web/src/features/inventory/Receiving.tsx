@@ -250,7 +250,7 @@ function Delivery({
       </button>
       <div style={{ marginTop: 18 }}>
         <Field label="Notes">
-          <textarea
+          <textarea className="resize-none min-h-24"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             maxLength={2000}

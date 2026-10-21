@@ -94,7 +94,7 @@ export default function KitchenCompleted() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
-                <div className="spinner" />
+                <div className="spinner" role="status" aria-label="Loading content" />
             </div>
         );
     }
@@ -106,7 +106,7 @@ export default function KitchenCompleted() {
     });
 
     return (
-        <div className="p-4 md:p-6">
+        <div className="app-page kitchen-page">
             {/* Header */}
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Completed Orders</h1>
@@ -138,6 +138,8 @@ export default function KitchenCompleted() {
                         <div
                             key={order.id}
                             className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm cursor-pointer transition-all hover:shadow-md"
+                            role="button" tabIndex={0} aria-expanded={expanded === order.id} aria-label={`Order ${order.orderNumber} details`}
+                            onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setExpanded(expanded === order.id ? null : order.id); } }}
                             onClick={() => setExpanded(expanded === order.id ? null : order.id)}
                         >
                             {/* Order Header */}

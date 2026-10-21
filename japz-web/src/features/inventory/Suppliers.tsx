@@ -64,7 +64,7 @@ function Editor({
           </Field>
         ))}
         <Field wide label="Notes">
-          <textarea
+          <textarea className="resize-none min-h-24"
             maxLength={2000}
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}

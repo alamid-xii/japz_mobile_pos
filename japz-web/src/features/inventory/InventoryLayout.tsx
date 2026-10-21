@@ -45,6 +45,15 @@ function Shell() {
     setOpen = (value: boolean) => setOpenedPath(value ? location.pathname : ""),
     toggle = useRef<HTMLButtonElement>(null),
     sidebar = useRef<HTMLElement>(null);
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (wasOpen.current && !open) {
+      const navigated = openedPath && openedPath !== location.pathname;
+      if (navigated || window.matchMedia('(min-width: 768px)').matches) document.getElementById('main-content')?.focus();
+      else toggle.current?.focus();
+    }
+    wasOpen.current = open;
+  }, [open, openedPath, location.pathname]);
   useEffect(() => {
     if (!open) return;
     sidebar.current?.querySelector<HTMLAnchorElement>("a")?.focus();
@@ -72,8 +81,14 @@ function Shell() {
     document.addEventListener("keydown", key);
     return () => document.removeEventListener("keydown", key);
   }, [open]);
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 768px)');
+    const close = () => { if (desktop.matches) setOpenedPath(''); };
+    desktop.addEventListener('change', close);
+    return () => desktop.removeEventListener('change', close);
+  }, []);
   return (
-    <div className="inv-shell">
+    <div className="inv-shell"><a className="skip-link" href="#main-content">Skip to content</a>
       {open && (
         <div
           className="inv-nav-backdrop"
@@ -87,7 +102,7 @@ function Shell() {
         ref={sidebar}
         id="inventory-navigation"
         className={`inv-sidebar ${open ? "inv-sidebar-open" : ""}`}
-        aria-label="Inventory navigation"
+        role={open ? "dialog" : undefined} aria-modal={open || undefined} aria-label="Inventory navigation"
       >
         <div className="inv-brand">
           <img src="/logo.jpg" alt="JAPZ" />
@@ -95,6 +110,7 @@ function Shell() {
             <strong>JAPZ POS</strong>
             <span>Inventory</span>
           </div>
+          <button className="inv-sidebar-close" aria-label="Close navigation" onClick={() => { setOpen(false); toggle.current?.focus(); }}><X size={20} /></button>
         </div>
         <nav>
           {user?.role === "admin" && (
@@ -122,7 +138,7 @@ function Shell() {
         </div>
       </aside>
       <div className="inv-main">
-        <div className="inv-topbar">
+        <div className="inv-topbar" inert={open} aria-hidden={open || undefined}>
           <button
             ref={toggle}
             className="inv-menu-toggle"
@@ -148,7 +164,7 @@ function Shell() {
             <span>{data.refreshing ? "Refreshing…" : "Refresh"}</span>
           </button>
         </div>
-        <main className="inv-content" inert={open}>
+        <main id="main-content" tabIndex={-1} className="inv-content" inert={open}>
           {data.error && (
             <div className="inv-page" style={{ paddingBottom: 0 }}>
               <Notice error>

@@ -33,6 +33,15 @@ export default function AdminLayout() {
     setOpen = (value: boolean) => setOpenedPath(value ? location.pathname : ""),
     toggle = useRef<HTMLButtonElement>(null),
     aside = useRef<HTMLElement>(null);
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (wasOpen.current && !open) {
+      const navigated = openedPath && openedPath !== location.pathname;
+      if (navigated || window.matchMedia('(min-width: 768px)').matches) document.getElementById('main-content')?.focus();
+      else toggle.current?.focus();
+    }
+    wasOpen.current = open;
+  }, [open, openedPath, location.pathname]);
   useEffect(() => {
     if (!open) return;
     aside.current?.querySelector<HTMLAnchorElement>("a")?.focus();
@@ -60,8 +69,14 @@ export default function AdminLayout() {
     document.addEventListener("keydown", key);
     return () => document.removeEventListener("keydown", key);
   }, [open]);
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 768px)');
+    const close = () => { if (desktop.matches) setOpenedPath(''); };
+    desktop.addEventListener('change', close);
+    return () => desktop.removeEventListener('change', close);
+  }, []);
   return (
-    <div className="inv-shell">
+    <div className="inv-shell"><a className="skip-link" href="#main-content">Skip to content</a>
       {open && (
         <div
           className="inv-nav-backdrop"
@@ -75,7 +90,7 @@ export default function AdminLayout() {
         ref={aside}
         className={`inv-sidebar ${open ? "inv-sidebar-open" : ""}`}
         id="admin-navigation"
-        aria-label="Admin navigation"
+        role={open ? "dialog" : undefined} aria-modal={open || undefined} aria-label="Admin navigation"
       >
         <div className="inv-brand">
           <img src="/logo.jpg" alt="JAPZ" />
@@ -83,6 +98,7 @@ export default function AdminLayout() {
             <strong>JAPZ POS</strong>
             <span>Admin</span>
           </div>
+          <button className="inv-sidebar-close" aria-label="Close navigation" onClick={() => { setOpen(false); toggle.current?.focus(); }}><X size={20} /></button>
         </div>
         <nav>
           {tabs.map(([path, label, Icon]) => (
@@ -102,7 +118,7 @@ export default function AdminLayout() {
         </div>
       </aside>
       <div className="inv-main">
-        <div className="inv-topbar">
+        <div className="inv-topbar" inert={open} aria-hidden={open || undefined}>
           <button
             ref={toggle}
             className="inv-menu-toggle"
@@ -118,7 +134,7 @@ export default function AdminLayout() {
           </span>
           <small>{user?.name}</small>
         </div>
-        <main className="inv-content" inert={open}>
+        <main id="main-content" tabIndex={-1} className="inv-content" inert={open}>
           <Outlet />
         </main>
       </div>

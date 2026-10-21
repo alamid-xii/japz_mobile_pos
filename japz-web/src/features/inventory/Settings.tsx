@@ -1,3 +1,4 @@
+import Form from '../../components/Form';
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -32,7 +33,7 @@ function SettingsForm({ initial }: { initial: InventorySettings }) {
       initial.defaultPreparedReorderLevel ||
     form.countApproval !== initial.countApproval;
   return (
-    <form
+    <Form noValidate
       onSubmit={async (event) => {
         event.preventDefault();
         setBusy(true);
@@ -268,7 +269,7 @@ function SettingsForm({ initial }: { initial: InventorySettings }) {
           {busy ? "Saving…" : "Save settings"}
         </button>
       </div>
-    </form>
+    </Form>
   );
 }
 export default function Settings() {

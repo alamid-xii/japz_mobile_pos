@@ -24,12 +24,14 @@ export default function Dashboard() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [activities, setActivities] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
 
     useEffect(() => { fetchDashboardData(); }, []);
 
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
+            setLoadError('');
             const [ordersRes, usersRes, logsRes] = await Promise.all([
                 ordersAPI.getAll(), usersAPI.getApproved(), logsAPI.getAll({ limit: 10, offset: 0 }),
             ]);
@@ -60,11 +62,11 @@ export default function Dashboard() {
                 monthlyTrend: lastMonthRevenue > 0 ? Math.round(((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100) : 0,
                 ordersTrend: lastMonthOrders.length > 0 ? Math.round(((monthOrders.length - lastMonthOrders.length) / lastMonthOrders.length) * 100) : 0,
             });
-        } catch (error) { console.error('Error fetching dashboard data:', error); }
+        } catch { setLoadError('Dashboard data could not be loaded. Check your connection and try again.'); }
         finally { setLoading(false); }
     };
 
-    if (loading) return <div className="spinner" />;
+    if (loading) return <div className="spinner" role="status" aria-label="Loading content" />;
 
     const statCards = [
         { label: 'Monthly Revenue', value: `₱${stats?.monthlyRevenue.toLocaleString()}`, trend: `${(stats?.monthlyTrend ?? 0) >= 0 ? '+' : ''}${stats?.monthlyTrend}%`, trendUp: (stats?.monthlyTrend ?? 0) >= 0, icon: TrendingUp },
@@ -74,7 +76,8 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="p-4 md:p-8 min-h-full bg-[#f6f7f5]">
+        <div className="app-page">
+            {loadError && <div role="alert" className="app-form-error">{loadError} <button className="underline ml-2" onClick={() => void fetchDashboardData()}>Retry</button></div>}
             <div className="">
                 <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
                 <p className="text-gray-500 text-sm">Sales and staff activity for {user?.name || 'Admin'}.</p>

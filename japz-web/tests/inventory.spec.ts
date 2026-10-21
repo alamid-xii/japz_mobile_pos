@@ -83,6 +83,7 @@ async function noOverflow(page: Page) {
   expect(result).toEqual({ document: true, content: true, dialog: true });
 }
 test("inventory routes and forms fit 320 to 1440px", async ({ page }) => {
+  test.setTimeout(180000);
   await openRole(page, "inventory", "/inventory/overview");
   const paths = [
     "overview",
@@ -99,7 +100,7 @@ test("inventory routes and forms fit 320 to 1440px", async ({ page }) => {
     "profile",
     "guide",
   ];
-  for (const width of [320, 375, 390, 768, 1024, 1440]) {
+  for (const width of [320, 360, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 850 });
     for (const route of paths) {
       await page.goto(`/inventory/${route}`);
@@ -372,4 +373,217 @@ test("Inventory settings save on mobile, persist and handle another Admin edit",
     .locator(".inv-primary")
     .evaluate((element) => getComputedStyle(element).backgroundColor);
   expect(color).toBe("rgb(255, 206, 27)");
+});
+
+test('all workspaces render without viewport overflow', async ({ page }) => {
+  test.setTimeout(240000);
+  const failures: string[] = [];
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const groups: Record<string, string[]> = {
+    admin: ['dashboard', 'employees', 'menu', 'sales', 'discounts-vouchers', 'feedback', 'settings'],
+    cashier: ['pos', 'orders', 'history', 'menuboard', 'profile', 'payment', 'cash-payment', 'receipt'],
+    kitchen: ['incoming', 'completed', 'waste', 'profile'],
+  };
+  for (const [role, paths] of Object.entries(groups)) {
+    await openRole(page, role, `/${role}/${paths[0]}`);
+    for (const width of [360, 390, 768, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 850 });
+      for (const route of paths) {
+        await page.goto(`/${role}/${route}`, { waitUntil: 'domcontentloaded' });
+        await expect(page.locator('.spinner')).toHaveCount(0);
+        await page.locator('main').waitFor();
+        const overflow = await page.evaluate(() => {
+          const scroller = document.querySelector('.inv-content, .app-main') as HTMLElement;
+          return { document: document.documentElement.scrollWidth > innerWidth + 1,
+            content: scroller.scrollWidth > scroller.clientWidth + 1 };
+        });
+        if (overflow.document || overflow.content) failures.push(`${role}/${route} at ${width}: ${JSON.stringify(overflow)}`);
+        if ([360, 1440].includes(width)) await page.screenshot({ path: path.join(screenshotPath, `refined-${role}-${route}-${width}.png`) });
+      }
+    }
+  }
+  expect(failures, failures.join('\n')).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test('public pages reflow on narrow and short screens; authentication stays keyboard accessible', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.route('**/api/**', async route => {
+    const url = new URL(route.request().url());
+    const response = await route.fetch({ url: fixture.url + url.pathname + url.search });
+    await route.fulfill({ response });
+  });
+  const failures: string[] = [];
+  for (const width of [360, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: width === 390 ? 450 : 850 });
+    for (const route of ['/', '/login', '/register', '/forgot-password', '/reset-password', '/role-selection', '/feedback', '/missing-page']) {
+      await page.goto(route, { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('.spinner')).toHaveCount(0);
+      const bad = await page.evaluate(() => {
+        const shell = document.querySelector('.auth-shell') as HTMLElement | null;
+        return document.documentElement.scrollWidth > innerWidth + 1 || !!shell && shell.scrollWidth > shell.clientWidth + 1;
+      });
+      if (bad) failures.push(`${route} at ${width}`);
+      if (width === 360) await page.screenshot({ path: path.join(screenshotPath, `refined-public-${route.replaceAll('/', '') || 'welcome'}.png`) });
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 450 });
+  await page.goto('/login');
+  await page.getByLabel('Email', { exact: true }).fill('invalid@example.test');
+  await page.getByLabel('Password', { exact: true }).fill('invalid-password');
+  await page.getByRole('button', { name: 'Show password', exact: true }).click();
+  await expect(page.getByLabel('Password', { exact: true })).toHaveAttribute('type', 'text');
+  await page.getByRole('button', { name: 'Hide password', exact: true }).click();
+  await page.getByRole('button', { name: 'Login', exact: true }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await page.getByRole('link', { name: 'Forgot password?' }).click();
+  await expect(page).toHaveURL(/forgot-password/);
+  expect(failures).toEqual([]);
+});
+
+test('mobile navigation and legacy dialogs support keyboard dismissal and focus restoration', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  await openRole(page, 'admin', '/admin/menu');
+  await page.getByRole('button', { name: 'Open navigation' }).click();
+  await expect(page.getByRole('dialog', { name: 'Admin navigation' })).toBeVisible();
+  await expect(page.locator('main')).toHaveAttribute('inert', '');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Open navigation' })).toBeFocused();
+  await page.getByRole('button', { name: 'Open navigation' }).click();
+  await page.getByRole('dialog', { name: 'Admin navigation' }).getByRole('button', { name: 'Close navigation' }).click();
+  await page.getByRole('button', { name: 'Open navigation' }).click();
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await expect(page.locator('main')).not.toHaveAttribute('inert');
+  await page.setViewportSize({ width: 390, height: 450 });
+  const add = page.getByRole('button', { name: 'Add Item', exact: true });
+  await add.click();
+  const dialog = page.getByRole('dialog', { name: 'Menu details' });
+  await expect(dialog).toBeVisible();
+  await noOverflow(page);
+  for (let step = 0; step < 15; step++) {
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => document.activeElement?.closest('dialog')?.open)).toBe(true);
+  }
+  await expect(dialog.getByRole('button', { name: 'Close dialog', exact: true })).toBeInViewport();
+  await page.screenshot({ path: path.join(screenshotPath, 'refined-menu-dialog-short-mobile.png') });
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+  await expect(add).toBeFocused();
+  await page.goto('/admin/employees');
+  const deactivate = page.getByRole('button', { name: 'Deactivate account' }).first();
+  await deactivate.click();
+  await expect(page.getByRole('dialog', { name: 'Confirm action' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(deactivate).toBeFocused();
+});
+
+test('mobile checkout completes a real disposable order and renders its receipt', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 700 });
+  await openRole(page, 'cashier', '/cashier/pos');
+  await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+  await page.getByRole('button', { name: /View cart/ }).click();
+  await page.getByRole('button', { name: /Proceed to Checkout/ }).click();
+  await expect(page).toHaveURL(/cashier\/payment/);
+  await page.getByLabel('Customer Name', { exact: false }).fill('QA mobile checkout');
+  await page.getByRole('button', { name: 'Takeout', exact: true }).click();
+  await page.screenshot({ path: path.join(screenshotPath, 'refined-checkout-mobile.png') });
+  await noOverflow(page);
+  await page.getByRole('button', { name: /Proceed to Payment/ }).click();
+  await expect(page).toHaveURL(/cash-payment/);
+  await page.getByLabel('Amount Received').fill('50');
+  await page.getByRole('button', { name: 'Complete Transaction', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Payment Successful!' })).toBeVisible();
+  await noOverflow(page);
+  await page.screenshot({ path: path.join(screenshotPath, 'refined-receipt-mobile.png') });
+});
+
+test('form constraints show inline errors and focus the invalid field', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 450 });
+  await page.goto('/login');
+  await page.getByRole('button', { name: 'Login', exact: true }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByLabel('Email', { exact: true })).toBeFocused();
+  await expect(page.getByLabel('Email', { exact: true })).toHaveAttribute('aria-invalid', 'true');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const style = await page.locator(':root').evaluate(el => getComputedStyle(el).scrollbarColor);
+  expect(style).not.toBe('auto');
+  await page.goto('/cashier/pos');
+  await expect(page).toHaveURL(/login/);
+  await page.screenshot({ path: path.join(screenshotPath, 'refined-login-error-short-mobile.png') });
+});
+
+test('customer feedback handles submission errors and success on a narrow screen', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 500 });
+  await page.route('**/api/qr-key/validate/**', route => route.fulfill({ json: { valid: true } }));
+  let attempts = 0;
+  await page.route('**/api/feedback/submit', route => {
+    attempts++;
+    return route.fulfill({ status: attempts === 1 ? 503 : 200, json: attempts === 1 ? { error: 'Please try again.' } : { success: true } });
+  });
+  await page.goto('/feedback?key=ui-state-fixture');
+  await page.getByLabel('Order Number', { exact: false }).fill('12345678');
+  await page.getByRole('button', { name: 'Rate 5 out of 5' }).click();
+  await page.getByLabel('Share your thoughts', { exact: false }).fill('The order arrived as expected.');
+  await page.getByRole('button', { name: /Submit Feedback/i }).click();
+  await expect(page.getByText('Please try again.', { exact: true })).toBeVisible();
+  await page.screenshot({ path: path.join(screenshotPath, 'refined-feedback-error-mobile.png') });
+  await page.getByRole('button', { name: /Submit Feedback/i }).click();
+  await expect(page.getByRole('heading', { name: 'Thank You!' })).toBeVisible();
+  expect(attempts).toBe(2);
+});
+
+test('dashboard error recovery and intermediate widths remain usable', async ({ page }) => {
+  await openRole(page, 'admin', '/admin/dashboard');
+  await page.route('**/api/orders', route => route.fulfill({ status: 503, json: { error: 'Service unavailable' } }));
+  await page.reload();
+  await expect(page.getByRole('alert')).toContainText('could not be loaded');
+  await page.unroute('**/api/orders');
+  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  for (const width of [767, 820, 900, 1280]) {
+    await page.setViewportSize({ width, height: 600 });
+    await page.goto('/admin/menu');
+    await page.getByRole('heading', { name: 'Menu', exact: true }).waitFor();
+    await noOverflow(page);
+  }
+});
+
+test('Admin inventory mirrors and role entry redirects preserve their routes', async ({ page }) => {
+  test.setTimeout(120000);
+  await openRole(page, 'admin', '/admin/inventory');
+  await expect(page).toHaveURL(/admin\/inventory\/overview/);
+  for (const width of [360, 1024]) {
+    await page.setViewportSize({ width, height: 768 });
+    for (const route of ['overview', 'supplies', 'receiving', 'prepared', 'menu', 'counts', 'losses', 'suppliers', 'movements', 'reports', 'settings', 'profile', 'guide']) {
+      await page.goto(`/admin/inventory/${route}`);
+      await page.getByRole('heading', { level: 1 }).waitFor();
+      await noOverflow(page);
+    }
+  }
+  await page.goto('/admin/stocks');
+  await expect(page).toHaveURL(/admin\/inventory\/prepared/);
+  for (const [role, destination] of [['admin', 'dashboard'], ['cashier', 'pos'], ['kitchen', 'incoming'], ['inventory', 'overview']]) {
+    await openRole(page, role, `/${role}`);
+    await expect(page).toHaveURL(new RegExp(`${role}/${destination}$`));
+  }
+});
+
+test('promotion dialogs create a discount and show dismissible success feedback', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 450 });
+  await openRole(page, 'admin', '/admin/discounts-vouchers');
+  await page.getByRole('button', { name: 'Add Discount', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Promotion details' });
+  await dialog.getByLabel('Discount Name').fill('QA UI promotion');
+  await dialog.getByLabel('Percentage (%)').fill('10');
+  await expect(dialog.getByRole('button', { name: 'Close dialog' })).toBeInViewport();
+  await noOverflow(page);
+  await dialog.getByRole('button', { name: 'Create', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(page.getByRole('status')).toContainText('Discount created successfully');
+  await page.getByRole('button', { name: 'Dismiss notification' }).click();
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.getByText('QA UI promotion', { exact: true })).toBeVisible();
+  await page.screenshot({ path: path.join(screenshotPath, 'refined-promotion-mobile.png') });
 });

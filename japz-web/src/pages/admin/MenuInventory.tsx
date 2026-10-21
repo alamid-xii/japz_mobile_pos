@@ -1,5 +1,7 @@
+import AlertModal from '../../components/ActionNotice';
+import Modal from '../../components/Modal';
 import { useState, useEffect } from 'react';
-import { Plus, X, Search, Edit2, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Power, Archive, RotateCcw } from 'lucide-react';
+import { Plus, X, Search, Edit2, ChevronLeft, ChevronRight, Power, Archive, RotateCcw } from 'lucide-react';
 import api, { menuCategoryAPI, menuItemAPI } from '../../services/api';
 
 interface Category { id: number; name: string; description?: string; icon?: string; status?: 'active' | 'inactive'; }
@@ -14,118 +16,15 @@ interface MenuItem {
 }
 
 // Alert Modal Component - Toast style for success, modal for errors/confirms
-interface AlertModalProps {
-    isOpen: boolean;
-    type: 'success' | 'error' | 'confirm';
-    title: string;
-    message: string;
-    onClose: () => void;
-    onConfirm?: () => void;
-    confirmButtonLabel?: string;
-    confirmButtonColor?: 'red' | 'amber' | 'blue';
-}
 
-function AlertModal({ isOpen, type, title, message, onClose, onConfirm, confirmButtonLabel = 'Delete', confirmButtonColor = 'red' }: AlertModalProps) {
-    useEffect(() => {
-        if (isOpen && type === 'success') {
-            const timer = setTimeout(() => {
-                onClose();
-            }, 800); // Auto-dismiss after 800ms - quick check animation
-            return () => clearTimeout(timer);
-        }
-    }, [isOpen, type, onClose]);
 
-    if (!isOpen) return null;
 
-    const icons = {
-        success: <CheckCircle size={type === 'success' ? 28 : 48} className="text-emerald-500" />,
-        error: <XCircle size={48} className="text-red-500" />,
-        confirm: <AlertTriangle size={48} className="text-amber-500" />
-    };
-
-    const bgColors = {
-        success: 'bg-emerald-50',
-        error: 'bg-red-50',
-        confirm: 'bg-amber-50'
-    };
-
-    // Toast style for success - centered on screen
-    if (type === 'success') {
-        return (
-            <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
-                <div className="bg-white rounded-xl px-6 py-5 shadow-2xl border border-emerald-200 flex flex-col items-center gap-3 min-w-[280px] animate-[popIn_0.1s_ease-out] pointer-events-auto">
-                    <div className={`w-16 h-16 rounded-full ${bgColors.success} flex items-center justify-center`}>
-                        <CheckCircle size={36} className="text-emerald-500" />
-                    </div>
-                    <div className="text-center">
-                        <h3 className="font-bold text-base text-gray-900">{title}</h3>
-                        <p className="text-sm text-gray-500 mt-1">{message}</p>
-                    </div>
-                    {/* Progress bar */}
-                    <div className="w-full h-1 bg-emerald-100 rounded-full overflow-hidden mt-1">
-                        <div className="h-full bg-emerald-500 animate-[shrink_0.8s_linear_forwards]" />
-                    </div>
-                </div>
-                <style>{`
-                    @keyframes popIn {
-                        from { opacity: 0; transform: scale(0.5); }
-                        to { opacity: 1; transform: scale(0.7); }
-                    }
-                    @keyframes shrink {
-                        from { width: 100%; }
-                        to { width: 0%; }
-                    }
-                `}</style>
-            </div>
-        );
-    }
-
-    // Modal style for error and confirm
-    return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4 animate-[fadeIn_0.2s]" onClick={onClose}>
-            <div className={`bg-white rounded-xl p-6 w-full max-w-[380px] text-center`} onClick={e => e.stopPropagation()}>
-                <div className={`w-20 h-20 rounded-full ${bgColors[type]} flex items-center justify-center mx-auto mb-4`}>
-                    {icons[type]}
-                </div>
-                <h2 className="text-lg font-bold mb-2">{title}</h2>
-                <p className="text-sm text-gray-600 mb-6">{message}</p>
-                <div className="flex gap-3">
-                    {type === 'confirm' ? (
-                        <>
-                            <button
-                                className="flex-1 py-2.5 rounded-lg border border-gray-200 bg-white font-medium cursor-pointer hover:bg-gray-50 transition"
-                                onClick={onClose}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className={`flex-1 py-2.5 rounded-lg border-none text-white font-semibold cursor-pointer transition ${confirmButtonColor === 'red' ? 'bg-red-500 hover:bg-red-600' :
-                                    confirmButtonColor === 'amber' ? 'bg-amber-500 hover:bg-amber-600' :
-                                        'bg-blue-500 hover:bg-blue-600'
-                                    }`}
-                                onClick={() => { onConfirm?.(); onClose(); }}
-                            >
-                                {confirmButtonLabel}
-                            </button>
-                        </>
-                    ) : (
-                        <button
-                            className="flex-1 py-2.5 rounded-lg border-none bg-brand text-brand-dark font-semibold cursor-pointer hover:shadow-md transition"
-                            onClick={onClose}
-                        >
-                            OK
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-}
 
 export default function MenuInventory() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [items, setItems] = useState<MenuItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [showCatModal, setShowCatModal] = useState(false);
     const [showItemModal, setShowItemModal] = useState(false);
     const [editingCat, setEditingCat] = useState<Category | null>(null);
@@ -175,6 +74,7 @@ export default function MenuInventory() {
     const closeAlert = () => setAlertModal(prev => ({ ...prev, isOpen: false }));
 
     const fetchData = async () => {
+        setLoadError('');
         try {
             const [catRes, itemRes] = await Promise.all([api.get('/api/inventory/categories'), menuItemAPI.getAllAdmin()]);
             setCategories(catRes.data?.data || catRes.data || []);
@@ -190,7 +90,7 @@ export default function MenuInventory() {
                 stock: i.stock != null ? Number(i.stock) : null,
                 archived: Boolean(i.archived),
             })));
-        } catch (e) { console.error(e); }
+        } catch { setLoadError('Menu data could not be loaded. Check your connection and try again.'); }
         finally { setLoading(false); }
     };
 
@@ -403,7 +303,7 @@ export default function MenuInventory() {
         );
     };
 
-    if (loading) return <div className="spinner" />;
+    if (loading) return <div className="spinner" role="status" aria-label="Loading content" />;
 
     const inputCls = "w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition font-[inherit]";
 
@@ -434,7 +334,8 @@ export default function MenuInventory() {
     const handleNextPage = () => setCurrentPage(prev => Math.min(viewMode === 'items' ? totalPages : categoryTotalPages, prev + 1));
 
     return (
-        <div className="admin-menu-page p-4 md:p-8 min-h-full bg-[#f6f7f5]">
+        <div className="admin-menu-page app-page">
+            {loadError && <div role="alert" className="app-form-error">{loadError} <button className="underline ml-2" onClick={() => void fetchData()}>Retry</button></div>}
             {/* Header */}
             <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -455,7 +356,7 @@ export default function MenuInventory() {
             </div>
 
             {/* Controls - Search and Filters */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-4">
                 <div className="flex gap-2">
                     <button onClick={() => { setViewMode('categories'); setCurrentPage(1); }}
                         className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition ${viewMode === 'categories'
@@ -794,19 +695,18 @@ export default function MenuInventory() {
 
             {/* Category Modal */}
             {showCatModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9990] p-4 animate-[fadeIn_0.2s]" onClick={() => setShowCatModal(false)}>
-                    <div className="bg-white rounded-xl p-6 w-full max-w-[420px]" onClick={e => e.stopPropagation()}>
+                <Modal label="Menu details" onClose={() => setShowCatModal(false)} className="app-form-modal bg-white rounded-xl p-6 w-full max-w-[420px]">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold">{editingCat ? 'Edit Category' : 'Add Category'}</h2>
-                            <button onClick={() => setShowCatModal(false)} className="border-none bg-transparent cursor-pointer"><X size={20} /></button>
+                            <button aria-label="Close dialog" onClick={() => setShowCatModal(false)} className="border-none bg-transparent cursor-pointer"><X size={20} /></button>
                         </div>
                         <div className="flex flex-col gap-1 mb-3">
-                            <label className="text-[13px] font-medium">Category Name *</label>
-                            <input type="text" value={catName} onChange={e => setCatName(e.target.value)} placeholder="e.g. Main Dishes" autoFocus className={inputCls} />
+                            <label htmlFor="menuinventory-field-1" className="text-[13px] font-medium">Category Name *</label>
+                            <input id="menuinventory-field-1" type="text" value={catName} onChange={e => setCatName(e.target.value)} placeholder="e.g. Main Dishes" autoFocus className={inputCls} />
                         </div>
                         <div className="flex flex-col gap-1 mb-4">
-                            <label className="text-[13px] font-medium">Description</label>
-                            <input type="text" value={catDesc} onChange={e => setCatDesc(e.target.value)} placeholder="Optional description" className={inputCls} />
+                            <label htmlFor="menuinventory-field-2" className="text-[13px] font-medium">Description</label>
+                            <input id="menuinventory-field-2" type="text" value={catDesc} onChange={e => setCatDesc(e.target.value)} placeholder="Optional description" className={inputCls} />
                         </div>
                         <div className="flex gap-3">
                             <button className="flex-1 py-3 rounded-lg border border-gray-200 bg-transparent font-medium cursor-pointer" onClick={() => setShowCatModal(false)}>Cancel</button>
@@ -814,25 +714,23 @@ export default function MenuInventory() {
                                 {saving ? 'Saving...' : (editingCat ? 'Update' : 'Create')}
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Modal>
             )}
 
             {/* Item Modal */}
             {showItemModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9990] p-4 animate-[fadeIn_0.2s]" onClick={() => setShowItemModal(false)}>
-                    <div className="bg-white rounded-xl p-6 w-full max-w-[480px] max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <Modal label="Menu details" onClose={() => setShowItemModal(false)} className="app-form-modal bg-white rounded-xl p-6 w-full max-w-[480px] max-h-[85vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold">{editingItem ? 'Edit Menu Item' : 'Add Menu Item'}</h2>
-                            <button onClick={() => setShowItemModal(false)} className="border-none bg-transparent cursor-pointer"><X size={20} /></button>
+                            <button aria-label="Close dialog" onClick={() => setShowItemModal(false)} className="border-none bg-transparent cursor-pointer"><X size={20} /></button>
                         </div>
                         <div className="flex flex-col gap-1 mb-3">
-                            <label className="text-[13px] font-medium">Item Name *</label>
-                            <input type="text" value={itemName} onChange={e => setItemName(e.target.value)} placeholder="e.g. Adobo" autoFocus className={inputCls} />
+                            <label htmlFor="menuinventory-field-3" className="text-[13px] font-medium">Item Name *</label>
+                            <input id="menuinventory-field-3" type="text" value={itemName} onChange={e => setItemName(e.target.value)} placeholder="e.g. Adobo" autoFocus className={inputCls} />
                         </div>
                         <div className="flex flex-col gap-1 mb-3">
-                            <label className="text-[13px] font-medium">Category *</label>
-                            <select value={itemCatId} onChange={e => setItemCatId(Number(e.target.value) || '')}
+                            <label htmlFor="menuinventory-field-4" className="text-[13px] font-medium">Category *</label>
+                            <select id="menuinventory-field-4" value={itemCatId} onChange={e => setItemCatId(Number(e.target.value) || '')}
                                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-[inherit] bg-white">
                                 <option value="">Select category</option>
                                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -844,8 +742,8 @@ export default function MenuInventory() {
                         </div>
                         {itemHasFlavor && (
                             <div className="flex flex-col gap-1 mb-3">
-                                <label className="text-[13px] font-medium">Flavors (comma-separated)</label>
-                                <input type="text" value={itemFlavors} onChange={e => setItemFlavors(e.target.value)} placeholder="Vanilla, Chocolate, Strawberry" className={inputCls} />
+                                <label htmlFor="menuinventory-field-5" className="text-[13px] font-medium">Flavors (comma-separated)</label>
+                                <input id="menuinventory-field-5" type="text" value={itemFlavors} onChange={e => setItemFlavors(e.target.value)} placeholder="Vanilla, Chocolate, Strawberry" className={inputCls} />
                             </div>
                         )}
                         <div className="flex items-center gap-2 mb-2">
@@ -856,8 +754,8 @@ export default function MenuInventory() {
                             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
                                 <label className="text-[13px] font-medium mb-2 block">Available Temperatures</label>
                                 <div className="flex gap-4">
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input
+                                    <label htmlFor="menuinventory-field-6" className="flex items-center gap-2 cursor-pointer">
+                                        <input id="menuinventory-field-7"
                                             type="checkbox"
                                             checked={itemTemperatures.hot}
                                             onChange={e => setItemTemperatures({ ...itemTemperatures, hot: e.target.checked })}
@@ -867,8 +765,8 @@ export default function MenuInventory() {
                                             <span className="text-red-500">🔥</span> Hot
                                         </span>
                                     </label>
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input
+                                    <label htmlFor="menuinventory-field-7" className="flex items-center gap-2 cursor-pointer">
+                                        <input id="menuinventory-field-6"
                                             type="checkbox"
                                             checked={itemTemperatures.cold}
                                             onChange={e => setItemTemperatures({ ...itemTemperatures, cold: e.target.checked })}
@@ -928,7 +826,7 @@ export default function MenuInventory() {
                                                 />
                                             </div>
                                             {itemSizesData.length > 1 && (
-                                                <button
+                                                <button aria-label="Close dialog"
                                                     type="button"
                                                     onClick={() => setItemSizesData(itemSizesData.filter((_, i) => i !== index))}
                                                     className="text-red-500 hover:text-red-700 p-1"
@@ -943,8 +841,8 @@ export default function MenuInventory() {
                         )}
                         {!itemHasSize && (
                             <div className="flex flex-col gap-1 mb-3">
-                                <label className="text-[13px] font-medium">Base Price (₱) *</label>
-                                <input type="number" value={itemPrice} onChange={e => setItemPrice(e.target.value)} placeholder="0.00" min="0" step="0.01" className={inputCls} />
+                                <label htmlFor="menuinventory-field-8" className="text-[13px] font-medium">Base Price (₱) *</label>
+                                <input id="menuinventory-field-8" type="number" value={itemPrice} onChange={e => setItemPrice(e.target.value)} placeholder="0.00" min="0" step="0.01" className={inputCls} />
                             </div>
                         )}
                         {!editingItem && (
@@ -958,13 +856,13 @@ export default function MenuInventory() {
                                         <p className="text-xs text-amber-700 mb-2">Combo version will be created with a different name and price</p>
                                         <div className="flex gap-3">
                                             <div className="flex-1 flex flex-col gap-1">
-                                                <label className="text-[12px] font-medium">Name Suffix</label>
-                                                <input type="text" value={comboSuffix} onChange={e => setComboSuffix(e.target.value)} placeholder="Combo" className={inputCls} />
+                                                <label htmlFor="menuinventory-field-9" className="text-[12px] font-medium">Name Suffix</label>
+                                                <input id="menuinventory-field-9" type="text" value={comboSuffix} onChange={e => setComboSuffix(e.target.value)} placeholder="Combo" className={inputCls} />
                                                 <span className="text-[11px] text-gray-500">Result: {itemName.trim() || 'Item'} {comboSuffix.trim()}</span>
                                             </div>
                                             <div className="flex-1 flex flex-col gap-1">
-                                                <label className="text-[12px] font-medium">Combo Price (₱)</label>
-                                                <input type="number" value={comboPrice} onChange={e => setComboPrice(e.target.value)} placeholder="0.00" min="0" step="0.01" className={inputCls} />
+                                                <label htmlFor="menuinventory-field-10" className="text-[12px] font-medium">Combo Price (₱)</label>
+                                                <input id="menuinventory-field-10" type="number" value={comboPrice} onChange={e => setComboPrice(e.target.value)} placeholder="0.00" min="0" step="0.01" className={inputCls} />
                                             </div>
                                         </div>
                                     </div>
@@ -980,8 +878,7 @@ export default function MenuInventory() {
                                 {saving ? 'Saving...' : (editingItem ? 'Update' : 'Create')}
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Modal>
             )}
 
             {/* Alert Modal */}

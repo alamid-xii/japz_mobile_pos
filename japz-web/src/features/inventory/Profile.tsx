@@ -1,3 +1,4 @@
+import Form from '../../components/Form';
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { authAPI } from "../../services/api";
@@ -19,7 +20,7 @@ export default function InventoryProfile() {
         description="Update your profile or change your password."
       />
       <section className="inv-panel inv-reading">
-        <form
+        <Form noValidate
           className="inv-panel-body"
           onSubmit={async (e) => {
             e.preventDefault();
@@ -98,7 +99,7 @@ export default function InventoryProfile() {
           >
             {busy ? "Saving…" : "Save profile"}
           </button>
-        </form>
+        </Form>
       </section>
     </div>
   );

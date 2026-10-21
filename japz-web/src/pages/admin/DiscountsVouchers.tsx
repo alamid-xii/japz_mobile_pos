@@ -1,5 +1,7 @@
+import AlertModal from '../../components/ActionNotice';
+import Modal from '../../components/Modal';
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Edit2, Power, X, Copy, Check, Search, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Edit2, Power, X, Copy, Check, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { discountsVouchersAPI } from '../../services/api';
 
 interface Discount {
@@ -23,113 +25,9 @@ interface Voucher {
 }
 
 // Alert Modal Component - Toast style for success, modal for errors/confirms
-interface AlertModalProps {
-    isOpen: boolean;
-    type: 'success' | 'error' | 'confirm';
-    title: string;
-    message: string;
-    onClose: () => void;
-    onConfirm?: () => void;
-    confirmButtonLabel?: string;
-    confirmButtonColor?: 'red' | 'amber' | 'blue';
-}
 
-function AlertModal({ isOpen, type, title, message, onClose, onConfirm, confirmButtonLabel = 'Delete', confirmButtonColor = 'red' }: AlertModalProps) {
-    useEffect(() => {
-        if (isOpen && type === 'success') {
-            const timer = setTimeout(() => {
-                onClose();
-            }, 800); // Auto-dismiss after 800ms - quick check animation
-            return () => clearTimeout(timer);
-        }
-    }, [isOpen, type, onClose]);
 
-    if (!isOpen) return null;
 
-    const icons = {
-        success: <CheckCircle size={type === 'success' ? 28 : 48} className="text-emerald-500" />,
-        error: <XCircle size={48} className="text-red-500" />,
-        confirm: <AlertTriangle size={48} className="text-amber-500" />
-    };
-
-    const bgColors = {
-        success: 'bg-emerald-50',
-        error: 'bg-red-50',
-        confirm: 'bg-amber-50'
-    };
-
-    // Toast style for success - centered on screen
-    if (type === 'success') {
-        return (
-            <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
-                <div className="bg-white rounded-xl px-6 py-5 shadow-2xl border border-emerald-200 flex flex-col items-center gap-3 min-w-[280px] animate-[popIn_0.1s_ease-out] pointer-events-auto">
-                    <div className={`w-16 h-16 rounded-full ${bgColors.success} flex items-center justify-center`}>
-                        <CheckCircle size={36} className="text-emerald-500" />
-                    </div>
-                    <div className="text-center">
-                        <h3 className="font-bold text-base text-gray-900">{title}</h3>
-                        <p className="text-sm text-gray-500 mt-1">{message}</p>
-                    </div>
-                    {/* Progress bar */}
-                    <div className="w-full h-1 bg-emerald-100 rounded-full overflow-hidden mt-1">
-                        <div className="h-full bg-emerald-500 animate-[shrink_0.8s_linear_forwards]" />
-                    </div>
-                </div>
-                <style>{`
-                    @keyframes popIn {
-                        from { opacity: 0; transform: scale(0.5); }
-                        to { opacity: 1; transform: scale(0.7); }
-                    }
-                    @keyframes shrink {
-                        from { width: 100%; }
-                        to { width: 0%; }
-                    }
-                `}</style>
-            </div>
-        );
-    }
-
-    // Modal style for error and confirm
-    return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4 animate-[fadeIn_0.2s]" onClick={onClose}>
-            <div className={`bg-white rounded-xl p-6 w-full max-w-[380px] text-center`} onClick={e => e.stopPropagation()}>
-                <div className={`w-20 h-20 rounded-full ${bgColors[type]} flex items-center justify-center mx-auto mb-4`}>
-                    {icons[type]}
-                </div>
-                <h2 className="text-lg font-bold mb-2">{title}</h2>
-                <p className="text-sm text-gray-600 mb-6">{message}</p>
-                <div className="flex gap-3">
-                    {type === 'confirm' ? (
-                        <>
-                            <button
-                                className="flex-1 py-2.5 rounded-lg border border-gray-200 bg-white font-medium cursor-pointer hover:bg-gray-50 transition"
-                                onClick={onClose}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className={`flex-1 py-2.5 rounded-lg border-none text-white font-semibold cursor-pointer transition ${confirmButtonColor === 'red' ? 'bg-red-500 hover:bg-red-600' :
-                                    confirmButtonColor === 'amber' ? 'bg-amber-500 hover:bg-amber-600' :
-                                        'bg-blue-500 hover:bg-blue-600'
-                                    }`}
-                                onClick={() => { onConfirm?.(); onClose(); }}
-                            >
-                                {confirmButtonLabel}
-                            </button>
-                        </>
-                    ) : (
-                        <button
-                            className="flex-1 py-2.5 rounded-lg border-none bg-brand text-brand-dark font-semibold cursor-pointer hover:shadow-md transition"
-                            onClick={onClose}
-                        >
-                            OK
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-}
 
 const ITEMS_PER_PAGE = 10;
 
@@ -386,10 +284,10 @@ export default function DiscountsVouchers() {
     const discountTotalPages = Math.ceil(filteredDiscounts.length / ITEMS_PER_PAGE);
     const voucherTotalPages = Math.ceil(filteredVouchers.length / ITEMS_PER_PAGE);
 
-    if (loading) return <div className="spinner" />;
+    if (loading) return <div className="spinner" role="status" aria-label="Loading content" />;
 
     return (
-        <div className="p-2 md:p-4 h-full overflow-y-auto bg-gradient-to-b from-white to-slate-100">
+        <div className="app-page">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div>
@@ -465,26 +363,26 @@ export default function DiscountsVouchers() {
 
                             {/* Table */}
                             <div className="overflow-x-auto">
-                                <table className="w-full">
+                                <table className="app-responsive-table w-full">
                                     <thead className="bg-yellow-100 border-b border-gray-200">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Name</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Percentage</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Created</th>
-                                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700">Actions</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Name</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Percentage</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Created</th>
+                                            <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-700">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
                                         {filteredDiscountsPaginated.map(discount => (
                                             <tr key={discount.id} className="hover:bg-yellow-50 transition">
-                                                <td className="px-6 py-3">
+                                                <td data-label="Name" className="px-6 py-3">
                                                     <div className="font-medium text-sm text-gray-800">{discount.name}</div>
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td data-label="Percentage" className="px-6 py-3">
                                                     <div className="text-sm text-gray-600 font-medium">{Math.round(discount.percentage)}%</div>
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td data-label="Status" className="px-6 py-3">
                                                     <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                                                         discount.enabled
                                                             ? 'bg-emerald-100 text-emerald-600'
@@ -493,12 +391,12 @@ export default function DiscountsVouchers() {
                                                         {discount.enabled ? 'Enabled' : 'Disabled'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-3 text-sm text-gray-600">
+                                                <td data-label="Created" className="px-6 py-3 text-sm text-gray-600">
                                                     {new Date(discount.createdAt).toLocaleDateString()}
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td data-label="Actions" className="px-6 py-3">
                                                     <div className="flex items-center justify-end gap-1.5">
-                                                        <button
+                                                        <button aria-label="Edit"
                                                             onClick={() => openDiscountModal(discount)}
                                                             className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-100 transition cursor-pointer border-none bg-transparent"
                                                             disabled={processing}
@@ -600,32 +498,32 @@ export default function DiscountsVouchers() {
 
                             {/* Table */}
                             <div className="overflow-x-auto">
-                                <table className="w-full">
+                                <table className="app-responsive-table w-full">
                                     <thead className="bg-yellow-100 border-b border-gray-200">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Name</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Code</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Amount (₱)</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Used</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Effective Period</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Created</th>
-                                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700">Actions</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Name</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Code</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Amount (₱)</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Used</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Effective Period</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Created</th>
+                                            <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-700">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
                                         {filteredVouchersPaginated.map(voucher => (
                                             <tr key={voucher.id} className="hover:bg-yellow-50 transition">
-                                                <td className="px-6 py-3">
+                                                <td data-label="Name" className="px-6 py-3">
                                                     <div className="font-medium text-sm text-gray-800">{voucher.name}</div>
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td data-label="Code" className="px-6 py-3">
                                                     <div className="text-sm text-gray-600 font-mono">{voucher.code}</div>
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td data-label="Amount (₱)" className="px-6 py-3">
                                                     <div className="text-sm text-gray-900 font-medium">{Number(voucher.amount).toFixed(2)}</div>
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td data-label="Used" className="px-6 py-3">
                                                     <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                                                         voucher.used
                                                             ? 'bg-red-100 text-red-600'
@@ -634,12 +532,12 @@ export default function DiscountsVouchers() {
                                                         {voucher.used ? 'Used' : 'Available'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td data-label="Effective Period" className="px-6 py-3">
                                                     <div className="text-sm text-gray-600">
                                                         {new Date(voucher.startDate).toLocaleDateString()} - {new Date(voucher.endDate).toLocaleDateString()}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td data-label="Status" className="px-6 py-3">
                                                     <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                                                         voucher.enabled
                                                             ? 'bg-emerald-100 text-emerald-600'
@@ -648,10 +546,10 @@ export default function DiscountsVouchers() {
                                                         {voucher.enabled ? 'Enabled' : 'Disabled'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-3 text-sm text-gray-600">
+                                                <td data-label="Created" className="px-6 py-3 text-sm text-gray-600">
                                                     {new Date(voucher.createdAt).toLocaleDateString()}
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td data-label="Actions" className="px-6 py-3">
                                                     <div className="flex items-center justify-end gap-1.5">
                                                         <button
                                                             onClick={() => copyToClipboard(voucher.code)}
@@ -664,7 +562,7 @@ export default function DiscountsVouchers() {
                                                                 <Copy size={16} />
                                                             )}
                                                         </button>
-                                                        <button
+                                                        <button aria-label="Edit"
                                                             onClick={() => openVoucherModal(voucher)}
                                                             className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-100 transition cursor-pointer border-none bg-transparent"
                                                             disabled={processing}
@@ -739,13 +637,12 @@ export default function DiscountsVouchers() {
 
             {/* Discount Modal */}
             {showDiscountModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+                <Modal label="Promotion details" onClose={() => setShowDiscountModal(false)} className="app-form-modal bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-xl font-bold text-gray-900">
                                 {editingDiscount ? 'Edit Discount' : 'Add Discount'}
                             </h2>
-                            <button
+                            <button aria-label="Close dialog"
                                 onClick={() => setShowDiscountModal(false)}
                                 className="text-gray-400 hover:text-gray-600"
                             >
@@ -755,10 +652,10 @@ export default function DiscountsVouchers() {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm font-semibold text-gray-700 block mb-1">
+                                <label htmlFor="discountsvouchers-field-1" className="text-sm font-semibold text-gray-700 block mb-1">
                                     Discount Name
                                 </label>
-                                <input
+                                <input id="discountsvouchers-field-1"
                                     type="text"
                                     value={discountForm.name}
                                     onChange={(e) => setDiscountForm(prev => ({ ...prev, name: e.target.value }))}
@@ -768,10 +665,10 @@ export default function DiscountsVouchers() {
                             </div>
 
                             <div>
-                                <label className="text-sm font-semibold text-gray-700 block mb-1">
+                                <label htmlFor="discountsvouchers-field-2" className="text-sm font-semibold text-gray-700 block mb-1">
                                     Percentage (%)
                                 </label>
-                                <input
+                                <input id="discountsvouchers-field-2"
                                     type="number"
                                     value={discountForm.percentage}
                                     onChange={(e) => setDiscountForm(prev => ({ ...prev, percentage: e.target.value }))}
@@ -798,19 +695,17 @@ export default function DiscountsVouchers() {
                                 {editingDiscount ? 'Update' : 'Create'}
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Modal>
             )}
 
             {/* Voucher Modal */}
             {showVoucherModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+                <Modal label="Promotion details" onClose={() => setShowVoucherModal(false)} className="app-form-modal bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-xl font-bold text-gray-900">
                                 {editingVoucher ? 'Edit Voucher' : 'Add Voucher'}
                             </h2>
-                            <button
+                            <button aria-label="Close dialog"
                                 onClick={() => setShowVoucherModal(false)}
                                 className="text-gray-400 hover:text-gray-600"
                             >
@@ -820,10 +715,10 @@ export default function DiscountsVouchers() {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm font-semibold text-gray-700 block mb-1">
+                                <label htmlFor="discountsvouchers-field-3" className="text-sm font-semibold text-gray-700 block mb-1">
                                     Voucher Name
                                 </label>
-                                <input
+                                <input id="discountsvouchers-field-3"
                                     type="text"
                                     value={voucherForm.name}
                                     onChange={(e) => setVoucherForm(prev => ({ ...prev, name: e.target.value }))}
@@ -833,11 +728,11 @@ export default function DiscountsVouchers() {
                             </div>
 
                             <div>
-                                <label className="text-sm font-semibold text-gray-700 block mb-1">
+                                <label htmlFor="discountsvouchers-field-4" className="text-sm font-semibold text-gray-700 block mb-1">
                                     Code
                                 </label>
                                 {editingVoucher ? (
-                                    <input
+                                    <input id="discountsvouchers-field-4"
                                         type="text"
                                         value={voucherForm.code}
                                         onChange={(e) => setVoucherForm(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
@@ -852,10 +747,10 @@ export default function DiscountsVouchers() {
                             </div>
 
                             <div>
-                                <label className="text-sm font-semibold text-gray-700 block mb-1">
+                                <label htmlFor="discountsvouchers-field-5" className="text-sm font-semibold text-gray-700 block mb-1">
                                     Amount (₱)
                                 </label>
-                                <input
+                                <input id="discountsvouchers-field-5"
                                     type="number"
                                     value={voucherForm.amount}
                                     onChange={(e) => setVoucherForm(prev => ({ ...prev, amount: e.target.value }))}
@@ -868,10 +763,10 @@ export default function DiscountsVouchers() {
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-sm font-semibold text-gray-700 block mb-1">
+                                    <label htmlFor="discountsvouchers-field-6" className="text-sm font-semibold text-gray-700 block mb-1">
                                         Start Date
                                     </label>
-                                    <input
+                                    <input id="discountsvouchers-field-6"
                                         type="date"
                                         value={voucherForm.startDate}
                                         onChange={(e) => setVoucherForm(prev => ({ ...prev, startDate: e.target.value }))}
@@ -879,10 +774,10 @@ export default function DiscountsVouchers() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-semibold text-gray-700 block mb-1">
+                                    <label htmlFor="discountsvouchers-field-7" className="text-sm font-semibold text-gray-700 block mb-1">
                                         End Date
                                     </label>
-                                    <input
+                                    <input id="discountsvouchers-field-7"
                                         type="date"
                                         value={voucherForm.endDate}
                                         onChange={(e) => setVoucherForm(prev => ({ ...prev, endDate: e.target.value }))}
@@ -893,10 +788,10 @@ export default function DiscountsVouchers() {
 
                             {!editingVoucher && (
                                 <div>
-                                    <label className="text-sm font-semibold text-gray-700 block mb-1">
+                                    <label htmlFor="discountsvouchers-field-8" className="text-sm font-semibold text-gray-700 block mb-1">
                                         Quantity (Number of copies)
                                     </label>
-                                    <input
+                                    <input id="discountsvouchers-field-8"
                                         type="number"
                                         value={voucherForm.quantity}
                                         onChange={(e) => setVoucherForm(prev => ({ ...prev, quantity: e.target.value }))}
@@ -925,8 +820,7 @@ export default function DiscountsVouchers() {
                                 {editingVoucher ? 'Update' : 'Create'}
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Modal>
             )}
 
             {/* Alert Modal */}

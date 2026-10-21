@@ -324,7 +324,7 @@ export function Movements() {
             {reverse.unit}
           </p>
           <Field label="Correction reason">
-            <textarea
+            <textarea className="resize-none min-h-24"
               required
               value={reason}
               onChange={(e) => setReason(e.target.value)}

@@ -194,7 +194,7 @@ function Batches({ item, close }: { item: Supply; close: () => void }) {
         availability.
       </p>
       <Field label="Reason">
-        <textarea
+        <textarea className="resize-none min-h-24"
           required
           value={reason}
           onChange={(e) => setReason(e.target.value)}

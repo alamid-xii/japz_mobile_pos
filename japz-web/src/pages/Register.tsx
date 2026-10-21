@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import Form from '../components/Form';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Clock, ArrowLeft, RefreshCw } from 'lucide-react';
@@ -139,8 +141,8 @@ export default function Register() {
     // Phase 3: Pending approval screen
     if (phase === 'pending') {
         return (
-            <div className="flex flex-col items-center justify-center h-full px-4 py-6 bg-gradient-to-br from-yellow-50 via-yellow-100/50 to-white overflow-hidden">
-                <div className="w-full max-w-[420px] flex flex-col items-center md:bg-white md:rounded-2xl md:shadow-lg md:px-10 md:py-10">
+            <div className="auth-shell">
+                <div className="auth-panel">
                     <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mb-4">
                         <Clock size={40} className="text-amber-600" />
                     </div>
@@ -167,7 +169,7 @@ export default function Register() {
                         </p>
                     </div>
                     <button
-                        className="w-full py-3 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:shadow-md hover:shadow-yellow-300/40 active:scale-[0.97] transition-all"
+                        className="w-full py-3 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:bg-yellow-400 active:bg-yellow-500 transition-all"
                         onClick={() => navigate('/login')}
                     >
                         Go to Login
@@ -183,8 +185,8 @@ export default function Register() {
     // Phase 2: Email verification
     if (phase === 'verification') {
         return (
-            <div className="flex flex-col items-center justify-center h-full px-4 py-6 bg-gradient-to-br from-yellow-50 via-yellow-100/50 to-white overflow-hidden">
-                <div className="w-full max-w-[420px] flex flex-col items-center md:bg-white md:rounded-2xl md:shadow-lg md:px-10 md:py-10">
+            <div className="auth-shell">
+                <div className="auth-panel">
                     <button
                         onClick={() => setPhase('credentials')}
                         className="self-start flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4 transition"
@@ -210,11 +212,12 @@ export default function Register() {
                         </div>
                     )}
 
-                    <form onSubmit={handleVerifyCode} className="w-full">
+                    <Form noValidate onSubmit={handleVerifyCode} className="w-full">
                         <div className="flex justify-center gap-2 mb-6">
                             {verificationCode.map((digit, index) => (
                                 <input
                                     key={index}
+                                    aria-label={`Verification digit ${index + 1}`} autoComplete={index === 0 ? "one-time-code" : "off"}
                                     ref={(el) => { inputRefs.current[index] = el; }}
                                     type="text"
                                     inputMode="numeric"
@@ -230,11 +233,11 @@ export default function Register() {
                         <button
                             type="submit"
                             disabled={loading || verificationCode.join('').length !== 6}
-                            className="w-full py-3 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:shadow-md hover:shadow-yellow-300/40 active:scale-[0.97] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="w-full py-3 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:bg-yellow-400 active:bg-yellow-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {loading ? 'Verifying...' : 'Verify Email'}
                         </button>
-                    </form>
+                    </Form>
 
                     <div className="flex items-center justify-center gap-2 mt-4">
                         <span className="text-sm text-gray-500">Didn't receive the code?</span>
@@ -258,9 +261,9 @@ export default function Register() {
 
     // Phase 1: Credentials form
     return (
-        <div className="flex flex-col items-center justify-center h-full px-4 py-6 bg-gradient-to-br from-yellow-50 via-yellow-100/50 to-white overflow-hidden">
-            <div className="w-full max-w-[420px] flex flex-col items-center md:bg-white md:rounded-2xl md:shadow-lg md:px-10 md:py-10">
-                <img src="/logo.jpg" alt="JAPZ POS" className="w-[72px] h-[72px] rounded-lg object-contain mb-2 md:w-[120px] md:h-[120px] md:mb-5" />
+        <div className="auth-shell">
+            <div className="auth-panel">
+                <img src="/logo.jpg" alt="JAPZ POS" className="auth-logo" />
                 <h1 className="text-lg font-bold text-center mb-1 text-gray-900 md:text-2xl">Create Your Account</h1>
                 <p className="text-xs text-center text-gray-500 mb-3 md:text-sm md:mb-6">Get started with JAPZ POS</p>
 
@@ -288,30 +291,30 @@ export default function Register() {
                     </div>
                 )}
 
-                <form className="w-full flex flex-col gap-2.5" onSubmit={handleCredentialsSubmit}>
+                <Form noValidate className="w-full flex flex-col gap-2.5" onSubmit={handleCredentialsSubmit}>
                     <div className="flex flex-col gap-1">
-                        <label className="text-[13px] font-medium text-gray-900">Full Name</label>
-                        <input type="text" placeholder="Enter your full name" value={formData.name}
+                        <label htmlFor="register-field-1" className="text-[13px] font-medium text-gray-900">Full Name</label>
+                        <input id="register-field-1" type="text" autoComplete="name" placeholder="Enter your full name" value={formData.name}
                             onChange={(e) => update('name', e.target.value)}
                             className={`${inputCls} ${errors.name ? 'border-red-500' : ''}`} />
                         {errors.name && <span className="text-xs text-red-500">{errors.name}</span>}
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <label className="text-[13px] font-medium text-gray-900">Email Address</label>
-                        <input type="email" placeholder="Enter your email" value={formData.email}
-                            onChange={(e) => update('email', e.target.value)} autoComplete="email"
+                        <label htmlFor="register-field-2" className="text-[13px] font-medium text-gray-900">Email Address</label>
+                        <input id="register-field-2" type="email" placeholder="Enter your email" value={formData.email}
+                            onChange={(e) => update('email', e.target.value)} autoComplete="email" required
                             className={`${inputCls} ${errors.email ? 'border-red-500' : ''}`} />
                         {errors.email && <span className="text-xs text-red-500">{errors.email}</span>}
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <label className="text-[13px] font-medium text-gray-900">Password</label>
+                        <label htmlFor="register-field-3" className="text-[13px] font-medium text-gray-900">Password</label>
                         <div className="relative flex items-center">
-                            <input type={showPassword ? 'text' : 'password'} placeholder="Enter password" value={formData.password}
+                            <input id="register-field-3" type={showPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Enter password" value={formData.password}
                                 onChange={(e) => update('password', e.target.value)}
                                 className={`${inputCls} pr-10 ${errors.password ? 'border-red-500' : ''}`} />
-                            <button type="button" onClick={() => setShowPassword(!showPassword)}
+                            <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword(!showPassword)}
                                 className="absolute right-3 bg-transparent border-none cursor-pointer text-gray-400 flex items-center p-1">
                                 {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                             </button>
@@ -332,12 +335,12 @@ export default function Register() {
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <label className="text-[13px] font-medium text-gray-900">Confirm Password</label>
+                        <label htmlFor="register-field-4" className="text-[13px] font-medium text-gray-900">Confirm Password</label>
                         <div className="relative flex items-center">
-                            <input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" value={formData.confirmPassword}
+                            <input id="register-field-4" type={showConfirm ? 'text' : 'password'} autoComplete="new-password" placeholder="Confirm password" value={formData.confirmPassword}
                                 onChange={(e) => update('confirmPassword', e.target.value)}
                                 className={`${inputCls} pr-10 ${errors.confirmPassword ? 'border-red-500' : ''}`} />
-                            <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                            <button type="button" aria-label={showConfirm ? 'Hide confirmation password' : 'Show confirmation password'} aria-pressed={showConfirm} onClick={() => setShowConfirm(!showConfirm)}
                                 className="absolute right-3 bg-transparent border-none cursor-pointer text-gray-400 flex items-center p-1">
                                 {showConfirm ? <Eye size={18} /> : <EyeOff size={18} />}
                             </button>
@@ -346,13 +349,13 @@ export default function Register() {
                     </div>
 
                     <button type="submit" disabled={loading}
-                        className="w-full py-3 mt-1 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:shadow-md hover:shadow-yellow-300/40 active:scale-[0.97] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                        className="w-full py-3 mt-1 rounded-lg bg-brand font-semibold text-brand-dark text-[15px] hover:bg-yellow-400 active:bg-yellow-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
                         {loading ? 'Sending Verification Code...' : 'Continue'}
                     </button>
-                </form>
+                </Form>
 
                 <p className="text-sm text-center text-gray-500 mt-3">
-                    Already have an account? <span className="text-yellow-700 underline cursor-pointer" onClick={() => navigate('/login')}>Login</span>
+                    Already have an account? <Link className="text-yellow-700 underline cursor-pointer" to="/login">Login</Link>
                 </p>
             </div>
         </div>

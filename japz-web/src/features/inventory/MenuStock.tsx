@@ -95,7 +95,7 @@ function PreparedOperation({
           />
         </Field>
         <Field wide label="Reason">
-          <textarea
+          <textarea className="resize-none min-h-24"
             required
             maxLength={2000}
             value={reason}

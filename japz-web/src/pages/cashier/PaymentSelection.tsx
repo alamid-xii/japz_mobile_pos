@@ -53,7 +53,7 @@ export default function PaymentSelection() {
     const voucherAmount = appliedVoucher ? Number(appliedVoucher.amount) || 0 : 0;
     const finalTotal = Math.max(0, subtotal - discountAmount - voucherAmount);
 
-    if (!total) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><p>No order data</p></div>;
+    if (!total) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><h1 className="text-xl font-semibold text-gray-900">No order to check out</h1><p>Add items from the menu to start an order.</p><button className="mt-4 px-5 py-3 bg-brand text-brand-dark rounded-md font-semibold" onClick={() => navigate('/cashier/pos')}>Back to POS</button></div>;
 
     const validateVoucher = async () => {
         if (!voucherCode.trim()) {
@@ -96,7 +96,7 @@ export default function PaymentSelection() {
 
             setAppliedVoucher(voucher);
             setVoucherError('');
-        } catch (error) {
+        } catch {
             setVoucherError('Error validating voucher');
             setAppliedVoucher(null);
         }
@@ -180,12 +180,12 @@ export default function PaymentSelection() {
                         </div>
                         {/* Customer Name */}
                         <div>
-                            <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                            <label htmlFor="paymentselection-field-1" className="text-sm font-semibold text-gray-700 mb-2 block">
                                 Customer Name <span className="text-red-500">*</span>
                             </label>
                             <div className="relative">
                                 <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                <input
+                                <input id="paymentselection-field-1"
                                     type="text"
                                     placeholder="Enter customer name"
                                     value={customerName}
@@ -222,10 +222,10 @@ export default function PaymentSelection() {
                         {/* Table Number (for dine-in) */}
                         {orderType === 'dine-in' && (
                             <div>
-                                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                                <label htmlFor="paymentselection-field-2" className="text-sm font-semibold text-gray-700 mb-2 block">
                                     Table Number <span className="text-red-500">*</span>
                                 </label>
-                                <input
+                                <input id="paymentselection-field-2"
                                     type="text"
                                     placeholder="Enter table number"
                                     value={tableNumber}
@@ -238,10 +238,10 @@ export default function PaymentSelection() {
                         {/* Delivery Address (for delivery) */}
                         {orderType === 'delivery' && (
                             <div>
-                                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                                <label htmlFor="paymentselection-field-3" className="text-sm font-semibold text-gray-700 mb-2 block">
                                     Delivery Address <span className="text-red-500">*</span>
                                 </label>
-                                <textarea
+                                <textarea id="paymentselection-field-3"
                                     placeholder="Enter delivery address"
                                     value={deliveryAddress}
                                     onChange={(e) => { setDeliveryAddress(e.target.value); setErrors(prev => ({ ...prev, deliveryAddress: '' })); }}
@@ -253,15 +253,15 @@ export default function PaymentSelection() {
 
                         {/* Notes (optional) */}
                         <div>
-                            <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                            <label htmlFor="paymentselection-field-4" className="text-sm font-semibold text-gray-700 mb-2 block">
                                 Notes <span className="text-gray-400 font-normal">(optional)</span>
                             </label>
-                            <textarea
+                            <textarea id="paymentselection-field-4"
                                 placeholder="Any special instructions..."
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 rows={2}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition font-[inherit] resize-none"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition font-[inherit] resize-none min-h-24"
                             />
                         </div>
                     </div>
@@ -399,7 +399,7 @@ export default function PaymentSelection() {
 
                         <button
                             onClick={handleProceed}
-                            className="w-full py-3 bg-gradient-to-r from-brand to-brand/80 text-brand-dark rounded-xl font-bold cursor-pointer hover:shadow-xl hover:shadow-brand/30 transition-all active:scale-95 text-base"
+                            className="w-full py-3 bg-brand text-brand-dark rounded-lg font-semibold cursor-pointer hover:bg-yellow-400 transition-colors text-base"
                         >
                             ✓ Proceed to Payment
                         </button>

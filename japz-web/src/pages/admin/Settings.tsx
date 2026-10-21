@@ -1,3 +1,4 @@
+import { useFeedback } from '../../components/FeedbackProvider';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -5,6 +6,7 @@ import { LogOut, ChevronDown, Eye, EyeOff, Download, QrCode, RefreshCw, Clock } 
 import { authAPI, logsAPI, qrKeyAPI, businessHoursAPI } from '../../services/api';
 
 export default function Settings() {
+    const { notify, confirmAction } = useFeedback();
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const qrPreviewRef = useRef<HTMLDivElement>(null);
@@ -78,7 +80,7 @@ export default function Settings() {
     }, [expandedSections.businessHours]);
 
     const handleLogout = async () => {
-        if (window.confirm('Are you sure you want to logout?')) {
+        if (await confirmAction('Are you sure you want to logout?')) {
             try {
                 await logout();
             } catch (error) {
@@ -91,22 +93,22 @@ export default function Settings() {
 
     const handleUpdateProfile = async () => {
         if (!formData.name || !formData.email) {
-            alert('Name and email are required');
+            notify('Name and email are required');
             return;
         }
 
         // Validate password requirements if updating password
         if (formData.newPassword) {
             if (!formData.currentPassword) {
-                alert('Current password is required to change password');
+                notify('Current password is required to change password');
                 return;
             }
             if (formData.newPassword.length < 6) {
-                alert('New password must be at least 6 characters');
+                notify('New password must be at least 6 characters');
                 return;
             }
             if (formData.newPassword !== formData.confirmPassword) {
-                alert('Passwords do not match');
+                notify('Passwords do not match');
                 return;
             }
         }
@@ -125,7 +127,7 @@ export default function Settings() {
 
             await authAPI.updateProfile(updatePayload);
 
-            alert('Profile updated successfully');
+            notify('Profile updated successfully');
             setIsEditing(false);
             setFormData({
                 ...formData,
@@ -134,7 +136,7 @@ export default function Settings() {
                 confirmPassword: ''
             });
         } catch (error: any) {
-            alert(error.response?.data?.error || 'Failed to update profile');
+            notify(error.response?.data?.error || 'Failed to update profile');
         } finally {
             setLoading(false);
         }
@@ -169,9 +171,9 @@ export default function Settings() {
                 });
             }
             
-            alert(`✅ Business hours updated successfully!\n\nNew hours: ${businessHoursData.openTime} - ${businessHoursData.closeTime}`);
+            notify(`✅ Business hours updated successfully!\n\nNew hours: ${businessHoursData.openTime} - ${businessHoursData.closeTime}`);
         } catch (error: any) {
-            alert(error.response?.data?.error || 'Failed to update business hours');
+            notify(error.response?.data?.error || 'Failed to update business hours');
         } finally {
             setSavingBusinessHours(false);
         }
@@ -179,12 +181,12 @@ export default function Settings() {
 
     const handleDownloadLogs = async () => {
         if (!startDate || !endDate) {
-            alert('Please select both start and end dates');
+            notify('Please select both start and end dates');
             return;
         }
 
         if (new Date(startDate) > new Date(endDate)) {
-            alert('Start date must be before end date');
+            notify('Start date must be before end date');
             return;
         }
 
@@ -208,7 +210,7 @@ export default function Settings() {
             });
 
             if (filteredLogs.length === 0) {
-                alert('No activity logs found for the selected date range');
+                notify('No activity logs found for the selected date range');
                 return;
             }
 
@@ -236,17 +238,17 @@ export default function Settings() {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
 
-            alert('Logs downloaded successfully');
+            notify('Logs downloaded successfully');
         } catch (error) {
             console.error('Error downloading logs:', error);
-            alert('Failed to download logs');
+            notify('Failed to download logs');
         } finally {
             setDownloadingLogs(false);
         }
     };
 
     return (
-        <div className="p-2 md:p-4 h-full overflow-y-auto bg-gradient-to-b from-white to-slate-100">
+        <div className="app-page">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div>
@@ -275,8 +277,8 @@ export default function Settings() {
                 <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 space-y-4">
                     {/* Name Field */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                        <input
+                        <label htmlFor="settings-field-1" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input id="settings-field-1"
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -290,8 +292,8 @@ export default function Settings() {
 
                     {/* Email Field */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input
+                        <label htmlFor="settings-field-2" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input id="settings-field-2"
                             type="email"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -308,16 +310,16 @@ export default function Settings() {
                     {/* Current Password Field (Only when editing) */}
                     {isEditing && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                            <label htmlFor="settings-field-3" className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
                             <div className="relative">
-                                <input
+                                <input id="settings-field-3"
                                     type={showPassword ? 'text' : 'password'}
                                     value={formData.currentPassword}
                                     onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
                                     placeholder="Enter current password"
                                     className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
                                 />
-                                <button
+                                <button aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword}
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -331,16 +333,16 @@ export default function Settings() {
                     {/* New Password Field (Only when editing) */}
                     {isEditing && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">New Password (Optional)</label>
+                            <label htmlFor="settings-field-4" className="block text-sm font-medium text-gray-700 mb-1">New Password (Optional)</label>
                             <div className="relative">
-                                <input
+                                <input id="settings-field-4"
                                     type={showNewPassword ? 'text' : 'password'}
                                     value={formData.newPassword}
                                     onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                                     placeholder="Enter new password"
                                     className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
                                 />
-                                <button
+                                <button aria-label={showNewPassword ? 'Hide new password' : 'Show new password'} aria-pressed={showNewPassword}
                                     type="button"
                                     onClick={() => setShowNewPassword(!showNewPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -354,8 +356,8 @@ export default function Settings() {
                     {/* Confirm Password Field (Only when editing and new password entered) */}
                     {isEditing && formData.newPassword && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                            <input
+                            <label htmlFor="settings-field-5" className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                            <input id="settings-field-5"
                                 type="password"
                                 value={formData.confirmPassword}
                                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
@@ -417,8 +419,8 @@ export default function Settings() {
             {expandedSections.logs && (
                 <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                        <input
+                        <label htmlFor="settings-field-6" className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input id="settings-field-6"
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
@@ -427,8 +429,8 @@ export default function Settings() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                        <input
+                        <label htmlFor="settings-field-7" className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input id="settings-field-7"
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
@@ -468,8 +470,8 @@ export default function Settings() {
 
                     {/* Opening Time */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Opening Time</label>
-                        <input
+                        <label htmlFor="settings-field-8" className="block text-sm font-medium text-gray-700 mb-1">Opening Time</label>
+                        <input id="settings-field-8"
                             type="time"
                             value={businessHoursData.openTime}
                             onChange={(e) => setBusinessHoursData({ ...businessHoursData, openTime: e.target.value })}
@@ -479,8 +481,8 @@ export default function Settings() {
 
                     {/* Closing Time */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Closing Time</label>
-                        <input
+                        <label htmlFor="settings-field-9" className="block text-sm font-medium text-gray-700 mb-1">Closing Time</label>
+                        <input id="settings-field-9"
                             type="time"
                             value={businessHoursData.closeTime}
                             onChange={(e) => setBusinessHoursData({ ...businessHoursData, closeTime: e.target.value })}
@@ -492,8 +494,8 @@ export default function Settings() {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">Apply to Roles</label>
                         <div className="space-y-2">
-                            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                <input
+                            <label htmlFor="settings-field-10" className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                                <input id="settings-field-11"
                                     type="checkbox"
                                     checked={businessHoursData.applyCashier}
                                     onChange={(e) => setBusinessHoursData({ ...businessHoursData, applyCashier: e.target.checked })}
@@ -501,8 +503,8 @@ export default function Settings() {
                                 />
                                 <span className="font-medium text-gray-700">Apply to Cashier Staff</span>
                             </label>
-                            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                <input
+                            <label htmlFor="settings-field-11" className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                                <input id="settings-field-10"
                                     type="checkbox"
                                     checked={businessHoursData.applyKitchen}
                                     onChange={(e) => setBusinessHoursData({ ...businessHoursData, applyKitchen: e.target.checked })}
@@ -636,7 +638,7 @@ export default function Settings() {
                                         const [logoImg, qrImg] = await Promise.all([loadImg(logoDataUrl), loadImg(qrDataUrl)]);
 
                                         // Ensure Dancing Script font is loaded
-                                        try { await document.fonts.load('bold 48px "Dancing Script"'); } catch { }
+                                        try { await document.fonts.load('bold 48px "Dancing Script"'); } catch { /* Use the font fallback if loading fails. */ }
 
                                         // 2x scale of the preview (w-72 = 288px)
                                         const S = 2;

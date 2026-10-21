@@ -1,3 +1,5 @@
+import Form from '../../components/Form';
+import { containDialogFocus } from '../../components/dialogFocus';
 import {
   cloneElement,
   Children,
@@ -130,16 +132,19 @@ export function SearchField({
   onChange: (value: string) => void;
   placeholder?: string;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <label className="inv-search">
       <Search size={18} />
       <span className="sr-only">{placeholder}</span>
       <input
+        ref={inputRef}
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
       />
+      {value && <button type="button" className="inv-search-clear" aria-label={`Clear ${placeholder.toLowerCase()}`} onClick={() => { onChange(''); inputRef.current?.focus(); }}><X size={16} /></button>}
     </label>
   );
 }
@@ -165,7 +170,7 @@ export function Table<T>({
         <thead>
           <tr>
             {columns.map((column) => (
-              <th key={column.title}>{column.title}</th>
+              <th scope="col" key={column.title}>{column.title}</th>
             ))}
           </tr>
         </thead>
@@ -204,7 +209,7 @@ export function Pagination({
   return (
     <div className="inv-pagination">
       <span>
-        {total ? (current - 1) * size + 1 : 0}–{Math.min(current * size, total)}{" "}
+        {total ? (current - 1) * size + 1 : 0}â€“{Math.min(current * size, total)}{" "}
         of {total}
       </span>
       <div>
@@ -266,8 +271,10 @@ export function Dialog({
       if (!busyRef.current) closeRef.current();
     };
     dialog.addEventListener("cancel", cancel);
+    dialog.addEventListener("keydown", containDialogFocus);
     return () => {
       dialog.removeEventListener("cancel", cancel);
+      dialog.removeEventListener("keydown", containDialogFocus);
       dialog.close();
       previous?.focus();
     };
@@ -292,7 +299,7 @@ export function Dialog({
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
     >
-      <form onSubmit={submit}>
+      <Form noValidate onSubmit={submit}>
         <header>
           <div>
             <h2 id={titleId}>{title}</h2>
@@ -317,11 +324,11 @@ export function Dialog({
           </button>
           {onSubmit && (
             <button type="submit" className="inv-primary" disabled={busy}>
-              {busy ? "Saving…" : submitLabel}
+              {busy ? "Savingâ€¦" : submitLabel}
             </button>
           )}
         </footer>
-      </form>
+      </Form>
     </dialog>
   );
 }

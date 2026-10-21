@@ -29,7 +29,7 @@ export default function CashPayment() {
 
     const quickAmounts = [50, 100, 200, 500, 1000];
 
-    if (total === undefined || total === null) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><p>No order data</p></div>;
+    if (total === undefined || total === null) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><h1 className="text-xl font-semibold text-gray-900">No order to check out</h1><p>Add items from the menu to start an order.</p><button className="mt-4 px-5 py-3 bg-brand text-brand-dark rounded-md font-semibold" onClick={() => navigate('/cashier/pos')}>Back to POS</button></div>;
 
     const handlePay = async () => {
         if (!isValidPayment || processing) return;
@@ -142,8 +142,8 @@ export default function CashPayment() {
                 {isCash && !isFree && (
                     <>
                         <div className="mb-4">
-                            <label className="text-sm font-semibold text-gray-700 mb-2 block">Amount Received</label>
-                            <input
+                            <label htmlFor="cashpayment-field-1" className="text-sm font-semibold text-gray-700 mb-2 block">Amount Received</label>
+                            <input id="cashpayment-field-1"
                                 type="number"
                                 placeholder="0.00"
                                 value={amountReceived}
