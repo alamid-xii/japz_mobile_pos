@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1130" viewBox="0 0 1000 1130"><title>System Architecture Diagram</title><desc>Figure 1 presents the Inventory module architecture verified from the supplied GitDiagram model and the implementation. App.tsx and InventoryLayout organize the Inventory routes inside the browser. Login and useAuth provide shared sign-in state, while ProtectedRoute checks frontend access. Inventory screens use InventoryData.tsx and data.ts for shared records and refresh helpers, then call the Axios client in api.ts. CSV downloads, visible stock alerts and refresh timers are browser responsibilities.
+
+The Express runtime mounts shared routes and /api/inventory. Server middleware verifies the JWT, reloads an approved User and enforces the requested role. Stock, availability, settings and order-inventory services use Sequelize models and transactions to access MySQL. Cashier order creation and Kitchen status/waste requests are direct module boundaries, not independent services added to Inventory. Shared user, menu, order and payment records remain necessary because the original system is a modular monolith.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="230" y="10" width="540" height="52" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="36">Inventory Staff / Admin</tspan></text>
+<polyline points="500,62 500,105" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="495,94 500,105 505,94" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="630" y="83">uses web UI</tspan></text>
+<rect x="20" y="105" width="960" height="305" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="131">Browser: Inventory Web (React / TypeScript / Vite)</tspan></text>
+<rect x="50" y="166" width="260" height="70" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="180" y="187.8">App.tsx: routes</tspan><tspan x="180" y="214.20000000000002">InventoryLayout</tspan></text>
+<rect x="370" y="166" width="260" height="70" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="187.8">Login / useAuth.tsx</tspan><tspan x="500" y="214.20000000000002">Sign-in context</tspan></text>
+<rect x="690" y="166" width="260" height="70" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="820" y="187.8">ProtectedRoute.tsx</tspan><tspan x="820" y="214.20000000000002">UI guard</tspan></text>
+<rect x="50" y="275" width="260" height="74" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="180" y="298.8">Inventory screens</tspan><tspan x="180" y="325.2">MenuStock / controls</tspan></text>
+<rect x="370" y="275" width="260" height="74" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="298.8">InventoryData.tsx</tspan><tspan x="500" y="325.2">data.ts / refresh</tspan></text>
+<rect x="690" y="275" width="260" height="74" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="820" y="298.8">api.ts / Axios</tspan><tspan x="820" y="325.2">JWT / HTTP JSON</tspan></text>
+<polyline points="180,236 180,275" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="175,264 180,275 185,264" fill="black"/>
+<polyline points="310,305 370,305" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="359,310 370,305 359,300" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="342" y="282">uses</tspan></text>
+<polyline points="630,305 690,305" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="679,310 690,305 679,300" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="660.5" y="282">calls</tspan></text>
+<polyline points="690,205 630,205" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="641,200 630,205 641,210" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="500,226 500,245 820,245 820,275" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="815,264 820,275 825,264" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="592.5" y="261">auth API</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="374.5">CSV export, display alerts and automatic refresh run in the browser.</tspan></text>
+<polyline points="820,410 820,465" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="815,454 820,465 825,454" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="680" y="435">HTTP / JSON + JWT</tspan></text>
+<rect x="20" y="465" width="960" height="227" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="491">Node.js / Express: API and Identity</tspan></text>
+<rect x="50" y="527" width="260" height="74" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="180" y="537.6">index.js / shared</tspan><tspan x="180" y="564">routes</tspan><tspan x="180" y="590.4">Express runtime</tspan></text>
+<rect x="370" y="527" width="260" height="74" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="550.8">inventory.js</tspan><tspan x="500" y="577.1999999999999">/api/inventory</tspan></text>
+<rect x="690" y="527" width="260" height="74" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="820" y="550.8">access.js</tspan><tspan x="820" y="577.1999999999999">JWT / status / roles</tspan></text>
+<polyline points="310,557 370,557" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="359,562 370,557 359,552" fill="black"/>
+<polyline points="630,557 690,557" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="679,562 690,557 679,552" fill="black"/>
+<rect x="370" y="625" width="260" height="45" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="647.5">User: shared identity</tspan></text>
+<polyline points="820,601 820,647 630,647" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="641,642 630,647 641,652" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="738" y="620">reloads user</tspan></text>
+<rect x="20" y="740" width="960" height="165" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="766">Inventory Domain: existing service modules</tspan></text>
+<rect x="40" y="802" width="220" height="78" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="150" y="828.4">inventoryService.js</tspan><tspan x="150" y="853.6">Stock operations</tspan></text>
+<rect x="280" y="802" width="220" height="78" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="390" y="815.8">menuAvailability.js</tspan><tspan x="390" y="841">Recipes / cart</tspan><tspan x="390" y="866.1999999999999">checks</tspan></text>
+<rect x="520" y="802" width="220" height="78" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="630" y="828.4">inventorySettings.js</tspan><tspan x="630" y="853.6">Policies / versions</tspan></text>
+<rect x="760" y="802" width="220" height="78" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="870" y="815.8">inventoryOrders.js</tspan><tspan x="870" y="841">Order stock</tspan><tspan x="870" y="866.1999999999999">lifecycle</tspan></text>
+<polyline points="500,692 500,740" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="495,729 500,740 505,729" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="714">dispatches Inventory work</tspan></text>
+<rect x="40" y="420" width="400" height="40" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="19" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="240" y="440">Cashier / Kitchen: direct boundaries</tspan></text>
+<polyline points="180,460 180,527" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="175,516 180,527 185,516" fill="black"/>
+<polyline points="180,692 180,724 875,724 875,802" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="870,791 875,802 880,791" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="350" y="713">order lifecycle</tspan></text>
+<rect x="20" y="955" width="960" height="157" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="981">Persistence: Sequelize ORM and MySQL</tspan></text>
+<rect x="40" y="1013" width="300" height="73" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="190" y="1036.3">inventoryModels.js</tspan><tspan x="190" y="1062.7">12 Inventory record types</tspan></text>
+<rect x="365" y="1013" width="300" height="73" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="515" y="1036.3">Shared models</tspan><tspan x="515" y="1062.7">Menu / order / payment</tspan></text>
+<rect x="690" y="1013" width="260" height="73" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="820" y="1036.3">db.js (Sequelize)</tspan><tspan x="820" y="1062.7">Models / associations</tspan></text>
+<polyline points="500,905 500,955" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="495,944 500,955 505,944" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="680" y="926">models / transactions</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="500" y="1102.5">MySQL: japz_pos in the main project; schema-only extraction uses its own database.</tspan></text>
+</svg>

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1110" viewBox="0 0 900 1110"><title>Requirement Diagram (SysML)</title><desc>Figure 17 derives five requirements from Inventory's overall purpose and expresses each with an Id and Text property. They cover direct-write access control, atomic/idempotent receiving, safe availability and reservation handling, versioned count approval, and traceable movement history. The access wording distinguishes direct Inventory/Admin adjustments from stock changes legitimately initiated through Cashier/Kitchen order transitions.
+
+The deriveReqt dependencies point toward the overall requirement, while satisfy dependencies point from named implementation artifacts to the rule they implement. These artifacts are the existing middleware, routes, domain services and model definitions. The requirements are reconstructed from code behavior for academic traceability, not evidence of a separately approved product specification. Source and existing-test mappings are provided in the review notes; the diagram does not claim a new test run or production acceptance.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="185" y="30" width="530" height="124" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="54">«requirement» Inventory Management</tspan></text>
+<polyline points="185,80 715,80" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="195" y="104.4">id = &quot;INV-00&quot;</tspan><tspan x="195" y="129.6">text = &quot;Accurate, controlled stock operations.&quot;</tspan></text>
+<rect x="30" y="285" width="520" height="132" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="290" y="306.5">«requirement» Access Control</tspan></text>
+<polyline points="30,327 550,327" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="43" y="349">id = &quot;INV-01&quot;</tspan><tspan x="43" y="373">text = &quot;Direct stock writes require an approved</tspan><tspan x="43" y="397">Inventory/Admin role; count review is Admin-only.&quot;</tspan></text>
+<rect x="675" y="294" width="200" height="113" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="19" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="775" y="327.7">«artifact»</tspan><tspan x="775" y="350.5">middleware/access.js</tspan><tspan x="775" y="373.3">routes/inventory.js</tspan></text>
+<polyline points="675,351 550,351" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="561,346 550,351 561,356" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="613" y="313">«satisfy»</tspan></text>
+<polyline points="30,351 12,351 12,228 450,228 450,173" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="455,184 450,173 445,184" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="30" y="441" width="520" height="132" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="290" y="462.5">«requirement» Reliable Receiving</tspan></text>
+<polyline points="30,483 550,483" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="43" y="493">id = &quot;INV-02&quot;</tspan><tspan x="43" y="517">text = &quot;Commit receipt and balance records</tspan><tspan x="43" y="541">atomically;</tspan><tspan x="43" y="565">matching retries return the saved result.&quot;</tspan></text>
+<rect x="675" y="450" width="200" height="113" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="19" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="775" y="472.3">«artifact»</tspan><tspan x="775" y="495.1">inventoryService.js</tspan><tspan x="775" y="517.9">receiveStock /</tspan><tspan x="775" y="540.7">inventoryOperation</tspan></text>
+<polyline points="675,507 550,507" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="561,502 550,507 561,512" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="613" y="469">«satisfy»</tspan></text>
+<polyline points="30,507 12,507 12,228 450,228 450,173" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="455,184 450,173 445,184" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="30" y="597" width="520" height="132" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="290" y="618.5">«requirement» Safe Availability</tspan></text>
+<polyline points="30,639 550,639" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="43" y="661">id = &quot;INV-03&quot;</tspan><tspan x="43" y="685">text = &quot;Exclude expired/held stock for allocation;</tspan><tspan x="43" y="709">protect reserved quantities.&quot;</tspan></text>
+<rect x="675" y="606" width="200" height="113" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="19" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="775" y="639.7">«artifact»</tspan><tspan x="775" y="662.5">menuAvailability.js</tspan><tspan x="775" y="685.3000000000001">inventoryOrders.js</tspan></text>
+<polyline points="675,663 550,663" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="561,658 550,663 561,668" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="613" y="625">«satisfy»</tspan></text>
+<polyline points="30,663 12,663 12,228 450,228 450,173" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="455,184 450,173 445,184" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="30" y="753" width="520" height="132" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="290" y="774.5">«requirement» Controlled Counts</tspan></text>
+<polyline points="30,795 550,795" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="43" y="817">id = &quot;INV-04&quot;</tspan><tspan x="43" y="841">text = &quot;Validate versions and reservations;</tspan><tspan x="43" y="865">apply configured approval policy.&quot;</tspan></text>
+<rect x="675" y="762" width="200" height="113" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="19" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="775" y="784.3">«artifact»</tspan><tspan x="775" y="807.0999999999999">inventoryService.js</tspan><tspan x="775" y="829.9">countStock /</tspan><tspan x="775" y="852.6999999999999">reviewCount</tspan></text>
+<polyline points="675,819 550,819" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="561,814 550,819 561,824" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="613" y="781">«satisfy»</tspan></text>
+<polyline points="30,819 12,819 12,228 450,228 450,173" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="455,184 450,173 445,184" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="30" y="909" width="520" height="132" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="290" y="930.5">«requirement» Traceable History</tspan></text>
+<polyline points="30,951 550,951" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="43" y="961">id = &quot;INV-05&quot;</tspan><tspan x="43" y="985">text = &quot;Append movements with deltas, actor,</tspan><tspan x="43" y="1009">reason;</tspan><tspan x="43" y="1033">corrections add records rather than erase them.&quot;</tspan></text>
+<rect x="675" y="918" width="200" height="113" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="19" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="775" y="951.7">«artifact»</tspan><tspan x="775" y="974.5">inventoryService.js</tspan><tspan x="775" y="997.3000000000001">inventoryModels.js</tspan></text>
+<polyline points="675,975 550,975" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="561,970 550,975 561,980" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="613" y="937">«satisfy»</tspan></text>
+<polyline points="30,975 12,975 12,228 450,228 450,173" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="455,184 450,173 445,184" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="460" y="201.5">«deriveReqt» points toward INV-00</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="1085">Requirements are inferred from implemented rules; links identify code responsibility.</tspan></text>
+</svg>

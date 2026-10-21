@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000"><title>Class Diagram</title><desc>Figure 2 illustrates the core Inventory record classes and their associations. Supplier can be associated with many StockItem and StockReceipt records; the supplier reference is optional. Each StockBatch belongs to one StockItem. A successfully recorded receipt contains one to 100 lines, and every StockReceiptLine identifies one receipt, one stock item and one batch. Its conversion and quantity fields retain the purchased and base-unit amounts.
+
+StockMovement records an action, quantity, reason and on-hand/reserved deltas. Its stock-item and batch references are optional because prepared-stock movements use the shared MenuItem instead. The diagram shows associations rather than unsupported lifecycle composition. Its receipt-line minimum describes the receiving workflow, not a separate SQL minimum-cardinality constraint. Counts, waste reports, recipes, allocations, settings and operation identity records are named as supporting models; they are not fictitious classes or methods.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="45" y="30" width="330" height="160" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="210" y="55">Supplier</tspan></text>
+<polyline points="45,82 375,82" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="55" y="110.8">id: Integer</tspan><tspan x="55" y="136">name: String</tspan><tspan x="55" y="161.2">active: Boolean</tspan></text>
+<rect x="525" y="30" width="330" height="160" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="55">StockItem</tspan></text>
+<polyline points="525,82 855,82" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="535" y="110.8">id: Integer</tspan><tspan x="535" y="136">name, kind, unit</tspan><tspan x="535" y="161.2">onHand, reserved: Decimal</tspan></text>
+<polyline points="375,100 525,100" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="412.5" y="67.5">0..1</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="492.5" y="67.5">0..*</tspan></text>
+<rect x="45" y="280" width="330" height="160" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="210" y="305">StockReceipt</tspan></text>
+<polyline points="45,332 375,332" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="55" y="360.8">id, supplierId</tspan><tspan x="55" y="386">number: String</tspan><tspan x="55" y="411.2">receivedAt: Date</tspan></text>
+<rect x="525" y="280" width="330" height="160" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="305">StockBatch</tspan></text>
+<polyline points="525,332 855,332" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="535" y="360.8">id, stockItemId</tspan><tspan x="535" y="386">onHand, reserved: Decimal</tspan><tspan x="535" y="411.2">expiryDate, quarantined</tspan></text>
+<polyline points="210,190 210,280" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="252.5" y="210.5">0..1</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="252.5" y="259.5">0..*</tspan></text>
+<polyline points="690,190 690,280" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="732.5" y="210.5">1</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="732.5" y="259.5">0..*</tspan></text>
+<rect x="45" y="545" width="330" height="160" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="210" y="570">StockReceiptLine</tspan></text>
+<polyline points="45,597 375,597" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="55" y="625.8">receiptId, stockItemId</tspan><tspan x="55" y="651">batchId, conversion</tspan><tspan x="55" y="676.1999999999999">quantity, unitCost: Decimal</tspan></text>
+<rect x="525" y="545" width="330" height="160" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="570">StockMovement</tspan></text>
+<polyline points="525,597 855,597" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="535" y="625.8">stockItemId, batchId</tspan><tspan x="535" y="651">action, quantity, reason</tspan><tspan x="535" y="676.1999999999999">onHandDelta, reservedDelta</tspan></text>
+<polyline points="210,440 210,545" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="252.5" y="467.5">1</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="252.5" y="522.5">1..*</tspan></text>
+<polyline points="630,440 630,485 375,485 375,585" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="667.5" y="465.5">1</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="419.5" y="555.5">0..*</tspan></text>
+<polyline points="745,440 745,545" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="787.5" y="467.5">0..1</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="787.5" y="522.5">0..*</tspan></text>
+<path d="M45 815H837L855 833V955H45Z M837 815V833H855" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="857.4">Supporting records: StockCount, WasteReport, MenuRecipe,</tspan><tspan x="450" y="885">StockAllocation, InventorySettings and InventoryOperation.</tspan><tspan x="450" y="912.6">Prepared movements use MenuItem; StockMovement.stockItemId is optional.</tspan></text>
+<polyline points="525,145 445,145 445,690 375,690" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="489.5" y="167">1</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="412" y="663">0..*</tspan></text>
+<polyline points="855,160 955,160 955,632 855,632" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="896" y="190">0..1</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="897" y="663">0..*</tspan></text>
+</svg>

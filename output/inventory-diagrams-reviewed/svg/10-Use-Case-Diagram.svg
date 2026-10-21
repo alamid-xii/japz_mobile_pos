@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1120" viewBox="0 0 900 1120"><title>Use Case Diagram</title><desc>Figure 10 shows the Inventory Staff use cases and the direct Admin boundary. Staff can view records, maintain supplies/suppliers, receive stock, manage recipes/batch holds, record counts/losses, review Kitchen waste and edit alert/refresh settings. Admin can perform these Inventory functions and also approve physical counts, reverse movements and control count-approval/reorder policies. These additional permissions are not granted to Inventory Staff.
+
+Kitchen waste submission and Cashier/Kitchen availability access are documented as direct interactions rather than complete additional modules. Receiving necessarily validates and converts delivery quantities, and CSV export is optional when viewing reports. The diagram avoids treating the act of queuing a count for review as permission for Staff to perform Admin approval. Actor associations describe goals, not a required sequence of screens.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="170" y="45" width="705" height="990" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="25" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="522.5" y="78">JAPZ Inventory Management</tspan></text>
+<ellipse cx="57" cy="157" rx="17" ry="17" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="57,174 57,235" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="20,197 94,197" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="57,235 24,277" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="57,235 90,277" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="57.5" y="303.8">Inventory</tspan><tspan x="57.5" y="330.2">Staff</tspan></text>
+<ellipse cx="57" cy="617" rx="17" ry="17" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="57,634 57,695" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="20,657 94,657" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="57,695 24,737" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="57,695 90,737" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="57.5" y="777">Admin</tspan></text>
+<ellipse cx="527.5" cy="157.5" rx="277.5" ry="32.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="527.5" y="157.5">View stock / history / reports</tspan></text>
+<polyline points="82,231 180,231 250,157" fill="none" stroke="black" stroke-width="1.8"/>
+<ellipse cx="527.5" cy="267.5" rx="277.5" ry="32.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="527.5" y="267.5">Maintain supplies / suppliers</tspan></text>
+<polyline points="82,231 180,231 250,267" fill="none" stroke="black" stroke-width="1.8"/>
+<ellipse cx="527.5" cy="377.5" rx="277.5" ry="32.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="527.5" y="377.5">Receive supplies / prepared stock</tspan></text>
+<polyline points="82,231 180,231 250,377" fill="none" stroke="black" stroke-width="1.8"/>
+<ellipse cx="527.5" cy="487.5" rx="277.5" ry="32.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="527.5" y="487.5">Manage recipes / batch holds</tspan></text>
+<polyline points="82,231 180,231 250,487" fill="none" stroke="black" stroke-width="1.8"/>
+<ellipse cx="527.5" cy="597.5" rx="277.5" ry="32.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="527.5" y="597.5">Record count / waste / return</tspan></text>
+<polyline points="82,231 180,231 250,597" fill="none" stroke="black" stroke-width="1.8"/>
+<ellipse cx="527.5" cy="707.5" rx="277.5" ry="32.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="527.5" y="707.5">Review Kitchen waste reports</tspan></text>
+<polyline points="82,231 180,231 250,707" fill="none" stroke="black" stroke-width="1.8"/>
+<ellipse cx="527.5" cy="817.5" rx="277.5" ry="32.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="527.5" y="817.5">Edit alert / refresh settings</tspan></text>
+<polyline points="82,231 180,231 250,817" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="82,700 180,700 250,817" fill="none" stroke="black" stroke-width="1.8"/>
+<ellipse cx="527.5" cy="927.5" rx="277.5" ry="32.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="527.5" y="914.9">Approve counts / reverse movements</tspan><tspan x="527.5" y="940.1">Set approval and reorder policies</tspan></text>
+<polyline points="82,700 180,700 180,927 250,927" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="517.5" y="1006">Admin can also perform Inventory Staff use cases.</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="1066.8">Kitchen boundary: submit waste reports. Cashier / Kitchen may read availability.</tspan><tspan x="450" y="1093.2">Receive includes validation and unit conversion; CSV export is optional.</tspan></text>
+</svg>

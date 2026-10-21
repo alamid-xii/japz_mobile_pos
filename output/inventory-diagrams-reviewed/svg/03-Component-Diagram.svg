@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1000" viewBox="0 0 900 1000"><title>Component Diagram</title><desc>Figure 3 separates the Inventory web component, API routing, access middleware, domain services and Sequelize persistence. Dependency arrows point toward the component used. The frontend reaches backend functions through the JSON API; it does not bypass routing by calling an authorization component or the database directly. Authentication is enforced on the server as well as through the frontend route guard.
+
+The domain service group contains the existing stock, recipe/availability, settings and order-inventory modules. Access middleware depends on the shared User model, while domain services depend on Inventory and directly shared persistence models. The web component performs CSV formatting, refresh scheduling and alert display. These are logical components of the implemented application, not separately deployed servers or newly introduced interfaces.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="35" y="40" width="830" height="890" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="66">JAPZ Inventory: logical software components</tspan></text>
+<rect x="100" y="115" width="700" height="105" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="139.9">«component» Inventory Web</tspan><tspan x="450" y="167.5">Screens + InventoryData + HTTP client</tspan><tspan x="450" y="195.1">CSV export / refresh / display alerts</tspan></text>
+<rect x="100" y="315" width="700" height="100" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="351.2">«component» Inventory API</tspan><tspan x="450" y="378.8">routes/inventory.js + shared routes/index.js</tspan></text>
+<polyline points="450,220 450,315" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="445,304 450,315 455,304" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="560" y="263">JSON API</tspan></text>
+<rect x="60" y="515" width="350" height="130" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="235" y="552.4">«component» Access middleware</tspan><tspan x="235" y="580">JWT authentication</tspan><tspan x="235" y="607.6">Approved-user / role checks</tspan></text>
+<rect x="490" y="515" width="350" height="130" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="665" y="552.4">«component» Domain services</tspan><tspan x="665" y="580">Stock / recipes / settings</tspan><tspan x="665" y="607.6">Order inventory lifecycle</tspan></text>
+<polyline points="265,415 265,515" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="260,504 265,515 270,504" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="345" y="462">«use»</tspan></text>
+<polyline points="660,415 660,515" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="655,504 660,515 665,504" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="740" y="462">«use»</tspan></text>
+<rect x="100" y="775" width="700" height="115" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="804.9">«component» Sequelize persistence</tspan><tspan x="450" y="832.5">Inventory + directly shared models</tspan><tspan x="450" y="860.1">Associations / db.js connection</tspan></text>
+<polyline points="235,645 235,775" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="230,764 235,775 240,764" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="340" y="714">User model</tspan></text>
+<polyline points="665,645 665,775" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="660,764 665,775 670,764" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="535" y="713">models / transactions</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="958">Dependency arrows point to the component used; these are logical modules.</tspan></text>
+</svg>

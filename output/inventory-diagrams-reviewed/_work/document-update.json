@@ -1,0 +1,160 @@
+﻿{
+    "figures":  17,
+    "edits":  [
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  4624251,
+                      "figure":  1,
+                      "figureHeightEMU":  5225404,
+                      "captionPreserved":  true,
+                      "media":  "media/image1.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  5135270,
+                      "figure":  2,
+                      "figureHeightEMU":  5135270,
+                      "captionPreserved":  true,
+                      "media":  "media/image2.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  5143500,
+                      "figure":  3,
+                      "figureHeightEMU":  5715000,
+                      "captionPreserved":  true,
+                      "media":  "media/image3.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  4985238,
+                      "figure":  4,
+                      "figureHeightEMU":  5760719,
+                      "captionPreserved":  true,
+                      "media":  "media/image4.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  5731510,
+                      "figure":  5,
+                      "figureHeightEMU":  5285726,
+                      "captionPreserved":  true,
+                      "media":  "media/image5.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  4913790,
+                      "figure":  6,
+                      "figureHeightEMU":  5623560,
+                      "captionPreserved":  true,
+                      "media":  "media/image6.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  true,
+                      "figureWidthEMU":  5731510,
+                      "figure":  7,
+                      "figureHeightEMU":  4776258,
+                      "captionPreserved":  true,
+                      "media":  "media/image7.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  5237018,
+                      "figure":  8,
+                      "figureHeightEMU":  5760720,
+                      "captionPreserved":  true,
+                      "media":  "media/image8.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  5605272,
+                      "figure":  9,
+                      "figureHeightEMU":  5885536,
+                      "captionPreserved":  true,
+                      "media":  "media/image9.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  4787411,
+                      "figure":  10,
+                      "figureHeightEMU":  5957667,
+                      "captionPreserved":  true,
+                      "media":  "media/image10.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  4601094,
+                      "figure":  11,
+                      "figureHeightEMU":  5725806,
+                      "captionPreserved":  true,
+                      "media":  "media/image11.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  4610100,
+                      "figure":  12,
+                      "figureHeightEMU":  5993130,
+                      "captionPreserved":  true,
+                      "media":  "media/image12.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  5501308,
+                      "figure":  13,
+                      "figureHeightEMU":  5623559,
+                      "captionPreserved":  true,
+                      "media":  "media/image13.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  5731510,
+                      "figure":  14,
+                      "figureHeightEMU":  6368344,
+                      "captionPreserved":  true,
+                      "media":  "media/image14.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  4813539,
+                      "figure":  15,
+                      "figureHeightEMU":  5508828,
+                      "captionPreserved":  true,
+                      "media":  "media/image15.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  5731510,
+                      "figure":  16,
+                      "figureHeightEMU":  5413093,
+                      "captionPreserved":  true,
+                      "media":  "media/image16.png"
+                  },
+                  {
+                      "paragraphFormattingPreserved":  true,
+                      "preservedImage":  false,
+                      "figureWidthEMU":  4526279,
+                      "figure":  17,
+                      "figureHeightEMU":  5582411,
+                      "captionPreserved":  true,
+                      "media":  "media/image17.png"
+                  }
+              ],
+    "referenceSHA256":  "1CE2035B0F24FFC7879FBFE04726B1934F6425428659E36FAD1547CE25A2D1C2",
+    "preservedParts":  "Every original package part except word/document.xml and corrected figure media"
+}

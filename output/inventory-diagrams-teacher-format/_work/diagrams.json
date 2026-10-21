@@ -1,0 +1,8486 @@
+[
+  {
+    "n": 1,
+    "name": "System Architecture Diagram",
+    "w": 900,
+    "h": 1050,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 75,
+        "y": 15,
+        "w": 750,
+        "h": 155
+      },
+      {
+        "kind": "text",
+        "x": 95,
+        "y": 20,
+        "w": 710,
+        "h": 40,
+        "s": "Users of the Inventory Module",
+        "size": 24,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 95,
+        "y": 65,
+        "w": 340,
+        "h": 88
+      },
+      {
+        "kind": "text",
+        "x": 110,
+        "y": 77,
+        "w": 310,
+        "h": 44,
+        "s": "Inventory Staff",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 465,
+        "y": 65,
+        "w": 340,
+        "h": 88
+      },
+      {
+        "kind": "text",
+        "x": 480,
+        "y": 77,
+        "w": 310,
+        "h": 44,
+        "s": "Admin",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 100,
+        "y": 110,
+        "w": 330,
+        "h": 40,
+        "s": "Daily stock operations",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 470,
+        "y": 110,
+        "w": 330,
+        "h": 40,
+        "s": "Approvals and corrections",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 60,
+        "y": 250,
+        "w": 460,
+        "h": 260
+      },
+      {
+        "kind": "text",
+        "x": 75,
+        "y": 262,
+        "w": 430,
+        "h": 44,
+        "s": "Inventory Web Application",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 78,
+        "y": 315,
+        "w": 424,
+        "h": 61
+      },
+      {
+        "kind": "text",
+        "x": 88,
+        "y": 323,
+        "w": 404,
+        "h": 45,
+        "s": "Overview / Stock Balances",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 78,
+        "y": 380,
+        "w": 424,
+        "h": 61
+      },
+      {
+        "kind": "text",
+        "x": 88,
+        "y": 388,
+        "w": 404,
+        "h": 45,
+        "s": "Receiving / Counts / Waste",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 78,
+        "y": 445,
+        "w": 424,
+        "h": 61
+      },
+      {
+        "kind": "text",
+        "x": 88,
+        "y": 453,
+        "w": 404,
+        "h": 45,
+        "s": "Recipes / Reports / Settings",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 630,
+        "y": 285,
+        "w": 240,
+        "h": 180
+      },
+      {
+        "kind": "text",
+        "x": 645,
+        "y": 297,
+        "w": 210,
+        "h": 44,
+        "s": "Access Control",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 648,
+        "y": 350,
+        "w": 204,
+        "h": 53.5
+      },
+      {
+        "kind": "text",
+        "x": 658,
+        "y": 358,
+        "w": 184,
+        "h": 37.5,
+        "s": "Approved account",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 648,
+        "y": 407.5,
+        "w": 204,
+        "h": 53.5
+      },
+      {
+        "kind": "text",
+        "x": 658,
+        "y": 415.5,
+        "w": 184,
+        "h": 37.5,
+        "s": "Role permissions",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            320,
+            170
+          ],
+          [
+            320,
+            250
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 335,
+        "y": 192,
+        "w": 200,
+        "h": 38,
+        "s": "HTTP access",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            520,
+            335
+          ],
+          [
+            630,
+            335
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 520,
+        "y": 292,
+        "w": 110,
+        "h": 38,
+        "s": "request",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            630,
+            405
+          ],
+          [
+            520,
+            405
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 510,
+        "y": 423,
+        "w": 130,
+        "h": 38,
+        "s": "authorized",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 60,
+        "y": 590,
+        "w": 810,
+        "h": 245
+      },
+      {
+        "kind": "text",
+        "x": 75,
+        "y": 602,
+        "w": 780,
+        "h": 44,
+        "s": "Application Server: Express Inventory API",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 82,
+        "y": 660,
+        "w": 375,
+        "h": 150
+      },
+      {
+        "kind": "text",
+        "x": 97,
+        "y": 672,
+        "w": 345,
+        "h": 44,
+        "s": "Stock / Recipe Services",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 100,
+        "y": 725,
+        "w": 339,
+        "h": 40.5,
+        "s": "Receiving, counts, waste, returns",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 100,
+        "y": 767.5,
+        "w": 339,
+        "h": 40.5,
+        "s": "Recipes / Batch availability",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 482,
+        "y": 660,
+        "w": 365,
+        "h": 150
+      },
+      {
+        "kind": "text",
+        "x": 497,
+        "y": 672,
+        "w": 335,
+        "h": 44,
+        "s": "Report / Settings Handlers",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 500,
+        "y": 725,
+        "w": 329,
+        "h": 40.5,
+        "s": "Movement history / CSV exports",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 500,
+        "y": 767.5,
+        "w": 329,
+        "h": 40.5,
+        "s": "Alerts / Refresh settings",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            290,
+            510
+          ],
+          [
+            290,
+            590
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 305,
+        "y": 539,
+        "w": 220,
+        "h": 38,
+        "s": "JSON requests",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            745,
+            465
+          ],
+          [
+            745,
+            560
+          ],
+          [
+            770,
+            560
+          ],
+          [
+            770,
+            590
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 530,
+        "y": 510,
+        "w": 185,
+        "h": 38,
+        "s": "role check",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "cylinder",
+        "x": 175,
+        "y": 910,
+        "w": 550,
+        "h": 130
+      },
+      {
+        "kind": "text",
+        "x": 185,
+        "y": 943,
+        "w": 530,
+        "h": 85,
+        "s": "Inventory Database (MySQL)\nItems, suppliers, batches, receipts,\ncounts, movements, recipes, and settings",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            835
+          ],
+          [
+            450,
+            910
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 465,
+        "y": 850,
+        "w": 340,
+        "h": 38,
+        "s": "SQL through Sequelize",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      }
+    ],
+    "caption": "System Architecture of the JAPZ Inventory Module",
+    "description": "Figure 1 shows how Inventory Staff access the inventory interface. The Express API checks permissions and processes stock, recipe, report, and settings requests, while Sequelize stores and retrieves inventory records in MySQL."
+  },
+  {
+    "n": 2,
+    "name": "Class Diagram",
+    "w": 900,
+    "h": 1000,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 45,
+        "y": 30,
+        "w": 330,
+        "h": 160
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 35,
+        "w": 320,
+        "h": 40,
+        "s": "Supplier",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            45,
+            82
+          ],
+          [
+            375,
+            82
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 55,
+        "y": 89,
+        "w": 310,
+        "h": 94,
+        "s": "id: Integer\nname: String\nactive: Boolean",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 525,
+        "y": 30,
+        "w": 330,
+        "h": 160
+      },
+      {
+        "kind": "text",
+        "x": 530,
+        "y": 35,
+        "w": 320,
+        "h": 40,
+        "s": "StockItem",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            525,
+            82
+          ],
+          [
+            855,
+            82
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 535,
+        "y": 89,
+        "w": 310,
+        "h": 94,
+        "s": "id: Integer\nname, kind, unit\nonHand, reserved: Decimal",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            375,
+            100
+          ],
+          [
+            525,
+            100
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 385,
+        "y": 50,
+        "w": 55,
+        "h": 35,
+        "s": "0..1",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 460,
+        "y": 50,
+        "w": 65,
+        "h": 35,
+        "s": "0..*",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 45,
+        "y": 280,
+        "w": 330,
+        "h": 160
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 285,
+        "w": 320,
+        "h": 40,
+        "s": "StockReceipt",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            45,
+            332
+          ],
+          [
+            375,
+            332
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 55,
+        "y": 339,
+        "w": 310,
+        "h": 94,
+        "s": "id, supplierId\nnumber: String\nreceivedAt: Date",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 525,
+        "y": 280,
+        "w": 330,
+        "h": 160
+      },
+      {
+        "kind": "text",
+        "x": 530,
+        "y": 285,
+        "w": 320,
+        "h": 40,
+        "s": "StockBatch",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            525,
+            332
+          ],
+          [
+            855,
+            332
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 535,
+        "y": 339,
+        "w": 310,
+        "h": 94,
+        "s": "id, stockItemId\nonHand, reserved: Decimal\nexpiryDate, quarantined",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            210,
+            190
+          ],
+          [
+            210,
+            280
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 215,
+        "y": 193,
+        "w": 75,
+        "h": 35,
+        "s": "0..1",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 215,
+        "y": 242,
+        "w": 75,
+        "h": 35,
+        "s": "0..*",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            690,
+            190
+          ],
+          [
+            690,
+            280
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 695,
+        "y": 193,
+        "w": 75,
+        "h": 35,
+        "s": "1",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 695,
+        "y": 242,
+        "w": 75,
+        "h": 35,
+        "s": "0..*",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 45,
+        "y": 545,
+        "w": 330,
+        "h": 160
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 550,
+        "w": 320,
+        "h": 40,
+        "s": "StockReceiptLine",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            45,
+            597
+          ],
+          [
+            375,
+            597
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 55,
+        "y": 604,
+        "w": 310,
+        "h": 94,
+        "s": "receiptId, stockItemId\nbatchId, conversion\nquantity, unitCost: Decimal",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 525,
+        "y": 545,
+        "w": 330,
+        "h": 160
+      },
+      {
+        "kind": "text",
+        "x": 530,
+        "y": 550,
+        "w": 320,
+        "h": 40,
+        "s": "StockMovement",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            525,
+            597
+          ],
+          [
+            855,
+            597
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 535,
+        "y": 604,
+        "w": 310,
+        "h": 94,
+        "s": "stockItemId, batchId\naction, quantity, reason\nonHandDelta, reservedDelta",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            210,
+            440
+          ],
+          [
+            210,
+            545
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 215,
+        "y": 450,
+        "w": 75,
+        "h": 35,
+        "s": "1",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 215,
+        "y": 505,
+        "w": 75,
+        "h": 35,
+        "s": "1..*",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            630,
+            440
+          ],
+          [
+            630,
+            485
+          ],
+          [
+            375,
+            485
+          ],
+          [
+            375,
+            585
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 630,
+        "y": 448,
+        "w": 75,
+        "h": 35,
+        "s": "1",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 382,
+        "y": 538,
+        "w": 75,
+        "h": 35,
+        "s": "0..*",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            745,
+            440
+          ],
+          [
+            745,
+            545
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 750,
+        "y": 450,
+        "w": 75,
+        "h": 35,
+        "s": "0..1",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 750,
+        "y": 505,
+        "w": 75,
+        "h": 35,
+        "s": "0..*",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "note",
+        "x": 45,
+        "y": 815,
+        "w": 810,
+        "h": 140
+      },
+      {
+        "kind": "text",
+        "x": 55,
+        "y": 823,
+        "w": 790,
+        "h": 124,
+        "s": "Other inventory records: StockCount, WasteReport,\nMenuRecipe, StockAllocation, InventorySettings, InventoryOperation.\nPrepared quantities are stored in the shared MenuItem model.",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      }
+    ],
+    "caption": "Core Inventory Classes and Relationships",
+    "description": "Figure 2 shows the main classes used to receive and track supplies. A receipt contains delivery lines, each linked to an item and batch; movements record quantity changes. Supporting classes handle counts, waste reports, recipes, reservations, and settings."
+  },
+  {
+    "n": 3,
+    "name": "Component Diagram",
+    "w": 900,
+    "h": 1000,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 55,
+        "y": 65,
+        "w": 790,
+        "h": 735
+      },
+      {
+        "kind": "text",
+        "x": 70,
+        "y": 77,
+        "w": 718,
+        "h": 44,
+        "s": "«component» JAPZ Inventory Module",
+        "size": 21,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 85,
+        "y": 145,
+        "w": 365,
+        "h": 240
+      },
+      {
+        "kind": "text",
+        "x": 100,
+        "y": 157,
+        "w": 293,
+        "h": 44,
+        "s": "«component» Inventory UI",
+        "size": 21,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 103,
+        "y": 210,
+        "w": 329,
+        "h": 54.333333333333336
+      },
+      {
+        "kind": "text",
+        "x": 113,
+        "y": 218,
+        "w": 309,
+        "h": 38.333333333333336,
+        "s": "Stock / Receiving Screens",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 103,
+        "y": 268.3333333333333,
+        "w": 329,
+        "h": 54.333333333333336
+      },
+      {
+        "kind": "text",
+        "x": 113,
+        "y": 276.3333333333333,
+        "w": 309,
+        "h": 38.333333333333336,
+        "s": "Count / Waste / Recipe Screens",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 103,
+        "y": 326.6666666666667,
+        "w": 329,
+        "h": 54.333333333333336
+      },
+      {
+        "kind": "text",
+        "x": 113,
+        "y": 334.6666666666667,
+        "w": 309,
+        "h": 38.333333333333336,
+        "s": "Reports / Settings Screens",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 510,
+        "y": 145,
+        "w": 305,
+        "h": 240
+      },
+      {
+        "kind": "text",
+        "x": 525,
+        "y": 157,
+        "w": 233,
+        "h": 44,
+        "s": "«component» Access",
+        "size": 21,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 528,
+        "y": 210,
+        "w": 269,
+        "h": 83.5
+      },
+      {
+        "kind": "text",
+        "x": 538,
+        "y": 218,
+        "w": 249,
+        "h": 67.5,
+        "s": "JWT authentication",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 528,
+        "y": 297.5,
+        "w": 269,
+        "h": 83.5
+      },
+      {
+        "kind": "text",
+        "x": 538,
+        "y": 305.5,
+        "w": 249,
+        "h": 67.5,
+        "s": "Approved-user / role checks",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 85,
+        "y": 485,
+        "w": 365,
+        "h": 240
+      },
+      {
+        "kind": "text",
+        "x": 100,
+        "y": 497,
+        "w": 293,
+        "h": 44,
+        "s": "«component» Stock Services",
+        "size": 21,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 103,
+        "y": 550,
+        "w": 329,
+        "h": 54.333333333333336
+      },
+      {
+        "kind": "text",
+        "x": 113,
+        "y": 558,
+        "w": 309,
+        "h": 38.333333333333336,
+        "s": "Receive / count / waste / return",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 103,
+        "y": 608.3333333333334,
+        "w": 329,
+        "h": 54.333333333333336
+      },
+      {
+        "kind": "text",
+        "x": 113,
+        "y": 616.3333333333334,
+        "w": 309,
+        "h": 38.333333333333336,
+        "s": "Recipes / Menu availability",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 103,
+        "y": 666.6666666666666,
+        "w": 329,
+        "h": 54.333333333333336
+      },
+      {
+        "kind": "text",
+        "x": 113,
+        "y": 674.6666666666666,
+        "w": 309,
+        "h": 38.333333333333336,
+        "s": "Versioned stock operations",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 510,
+        "y": 485,
+        "w": 305,
+        "h": 240
+      },
+      {
+        "kind": "text",
+        "x": 525,
+        "y": 497,
+        "w": 233,
+        "h": 44,
+        "s": "«component» Handlers",
+        "size": 21,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 528,
+        "y": 550,
+        "w": 269,
+        "h": 54.333333333333336
+      },
+      {
+        "kind": "text",
+        "x": 538,
+        "y": 558,
+        "w": 249,
+        "h": 38.333333333333336,
+        "s": "Reports / History",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 528,
+        "y": 608.3333333333334,
+        "w": 269,
+        "h": 54.333333333333336
+      },
+      {
+        "kind": "text",
+        "x": 538,
+        "y": 616.3333333333334,
+        "w": 249,
+        "h": 38.333333333333336,
+        "s": "Settings / Refresh policy",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 528,
+        "y": 666.6666666666666,
+        "w": 269,
+        "h": 54.333333333333336
+      },
+      {
+        "kind": "text",
+        "x": 538,
+        "y": 674.6666666666666,
+        "w": 249,
+        "h": 38.333333333333336,
+        "s": "Sequelize model access",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            260
+          ],
+          [
+            510,
+            260
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "ellipse",
+        "x": 470,
+        "y": 242,
+        "w": 25,
+        "h": 25
+      },
+      {
+        "kind": "text",
+        "x": 475,
+        "y": 403,
+        "w": 175,
+        "h": 60,
+        "s": "Authenticated\nrequests",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            260,
+            385
+          ],
+          [
+            260,
+            485
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 270,
+        "y": 410,
+        "w": 220,
+        "h": 38,
+        "s": "Inventory API",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            660,
+            385
+          ],
+          [
+            660,
+            485
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            615
+          ],
+          [
+            510,
+            615
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "cylinder",
+        "x": 250,
+        "y": 870,
+        "w": 400,
+        "h": 115
+      },
+      {
+        "kind": "text",
+        "x": 260,
+        "y": 906,
+        "w": 380,
+        "h": 70,
+        "s": "«database»\nMySQL Inventory Records",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            260,
+            725
+          ],
+          [
+            260,
+            835
+          ],
+          [
+            410,
+            835
+          ],
+          [
+            410,
+            870
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            660,
+            725
+          ],
+          [
+            660,
+            835
+          ],
+          [
+            500,
+            835
+          ],
+          [
+            500,
+            870
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 813,
+        "y": 85,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 808,
+        "y": 89,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 808,
+        "y": 99,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 418,
+        "y": 165,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 413,
+        "y": 169,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 413,
+        "y": 179,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 783,
+        "y": 165,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 778,
+        "y": 169,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 778,
+        "y": 179,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 418,
+        "y": 505,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 413,
+        "y": 509,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 413,
+        "y": 519,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 783,
+        "y": 505,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 778,
+        "y": 509,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 778,
+        "y": 519,
+        "w": 9,
+        "h": 6
+      }
+    ],
+    "caption": "Components of the Inventory Module",
+    "description": "Figure 3 shows the software components that support inventory operations. Inventory screens use a shared data provider and HTTP client to access the API. The router works with access checks, inventory services, and database models to process requests."
+  },
+  {
+    "n": 4,
+    "name": "Deployment Diagram",
+    "w": 900,
+    "h": 1040,
+    "ops": [
+      {
+        "kind": "node",
+        "x": 90,
+        "y": 40,
+        "w": 720,
+        "h": 245
+      },
+      {
+        "kind": "text",
+        "x": 105,
+        "y": 52,
+        "w": 690,
+        "h": 44,
+        "s": "«device» Staff Computer",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 115,
+        "y": 110,
+        "w": 480,
+        "h": 150
+      },
+      {
+        "kind": "text",
+        "x": 130,
+        "y": 122,
+        "w": 450,
+        "h": 44,
+        "s": "«executionEnvironment» Browser",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 133,
+        "y": 175,
+        "w": 444,
+        "h": 81
+      },
+      {
+        "kind": "text",
+        "x": 143,
+        "y": 183,
+        "w": 424,
+        "h": 65,
+        "s": "«artifact» Inventory React UI",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 625,
+        "y": 135,
+        "w": 155,
+        "h": 110
+      },
+      {
+        "kind": "text",
+        "x": 635,
+        "y": 143,
+        "w": 135,
+        "h": 94,
+        "s": "Inventory\nStaff / Admin",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "ellipse",
+        "x": 270,
+        "y": 375,
+        "w": 360,
+        "h": 85
+      },
+      {
+        "kind": "text",
+        "x": 280,
+        "y": 383,
+        "w": 340,
+        "h": 69,
+        "s": "Local HTTP Connection",
+        "size": 24,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            285
+          ],
+          [
+            450,
+            375
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 465,
+        "y": 310,
+        "w": 200,
+        "h": 38,
+        "s": "HTTP / JSON",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "node",
+        "x": 90,
+        "y": 545,
+        "w": 720,
+        "h": 245
+      },
+      {
+        "kind": "text",
+        "x": 105,
+        "y": 557,
+        "w": 690,
+        "h": 44,
+        "s": "«device» Local Development Host",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 115,
+        "y": 620,
+        "w": 320,
+        "h": 135
+      },
+      {
+        "kind": "text",
+        "x": 130,
+        "y": 632,
+        "w": 290,
+        "h": 44,
+        "s": "Vite: port 5173",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 133,
+        "y": 685,
+        "w": 284,
+        "h": 66
+      },
+      {
+        "kind": "text",
+        "x": 143,
+        "y": 693,
+        "w": 264,
+        "h": 50,
+        "s": "Frontend assets",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 465,
+        "y": 620,
+        "w": 320,
+        "h": 135
+      },
+      {
+        "kind": "text",
+        "x": 480,
+        "y": 632,
+        "w": 290,
+        "h": 44,
+        "s": "Node.js: port 3000",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 483,
+        "y": 685,
+        "w": 284,
+        "h": 66
+      },
+      {
+        "kind": "text",
+        "x": 493,
+        "y": 693,
+        "w": 264,
+        "h": 50,
+        "s": "Express inventory API",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            460
+          ],
+          [
+            450,
+            545
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "node",
+        "x": 200,
+        "y": 865,
+        "w": 500,
+        "h": 150
+      },
+      {
+        "kind": "text",
+        "x": 215,
+        "y": 877,
+        "w": 470,
+        "h": 44,
+        "s": "«executionEnvironment» MySQL",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 230,
+        "y": 925,
+        "w": 440,
+        "h": 50,
+        "s": "«artifact» japz_pos : port 3306",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            625,
+            790
+          ],
+          [
+            625,
+            830
+          ],
+          [
+            450,
+            830
+          ],
+          [
+            450,
+            865
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 270,
+        "y": 795,
+        "w": 320,
+        "h": 32,
+        "s": "Sequelize / SQL",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      }
+    ],
+    "caption": "Local Deployment of the Inventory Module",
+    "description": "Figure 4 shows the configured local deployment of the inventory module. Staff use a browser to access the React application, which communicates with the Express API. The backend reads and saves inventory data in MySQL through Sequelize."
+  },
+  {
+    "n": 5,
+    "name": "Object Diagram",
+    "w": 900,
+    "h": 780,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 30,
+        "y": 30,
+        "w": 370,
+        "h": 128
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 35,
+        "w": 360,
+        "h": 40,
+        "s": "supplier1 : Supplier",
+        "size": 23,
+        "bold": true,
+        "align": "center",
+        "underline": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            30,
+            82
+          ],
+          [
+            400,
+            82
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 89,
+        "w": 350,
+        "h": 62,
+        "s": "id = 1\nname = \"Sample Supplier\"",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 500,
+        "y": 30,
+        "w": 370,
+        "h": 128
+      },
+      {
+        "kind": "text",
+        "x": 505,
+        "y": 35,
+        "w": 360,
+        "h": 40,
+        "s": "item1 : StockItem",
+        "size": 23,
+        "bold": true,
+        "align": "center",
+        "underline": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            500,
+            82
+          ],
+          [
+            870,
+            82
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 510,
+        "y": 89,
+        "w": 350,
+        "h": 62,
+        "s": "id = 10; name = \"Flour\"\nunit = \"g\"; onHand = 5000",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            400,
+            100
+          ],
+          [
+            500,
+            100
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 30,
+        "y": 280,
+        "w": 370,
+        "h": 128
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 285,
+        "w": 360,
+        "h": 40,
+        "s": "receipt1 : StockReceipt",
+        "size": 23,
+        "bold": true,
+        "align": "center",
+        "underline": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            30,
+            332
+          ],
+          [
+            400,
+            332
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 339,
+        "w": 350,
+        "h": 62,
+        "s": "id = 20; supplierId = 1\nnumber = \"REC-020\"",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 500,
+        "y": 280,
+        "w": 370,
+        "h": 128
+      },
+      {
+        "kind": "text",
+        "x": 505,
+        "y": 285,
+        "w": 360,
+        "h": 40,
+        "s": "batch1 : StockBatch",
+        "size": 23,
+        "bold": true,
+        "align": "center",
+        "underline": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            500,
+            332
+          ],
+          [
+            870,
+            332
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 510,
+        "y": 339,
+        "w": 350,
+        "h": 62,
+        "s": "id = 30; stockItemId = 10\nonHand = 5000; reserved = 0",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            215,
+            159
+          ],
+          [
+            215,
+            280
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            685,
+            159
+          ],
+          [
+            685,
+            280
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 30,
+        "y": 545,
+        "w": 370,
+        "h": 192
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 550,
+        "w": 360,
+        "h": 40,
+        "s": "line1 : StockReceiptLine",
+        "size": 23,
+        "bold": true,
+        "align": "center",
+        "underline": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            30,
+            597
+          ],
+          [
+            400,
+            597
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 604,
+        "w": 350,
+        "h": 126,
+        "s": "receiptId = 20; batchId = 30\npurchaseQuantity = 5; purchaseUnit = kg\nconversion = 1000\nquantity = 5000 g",
+        "size": 20,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 500,
+        "y": 545,
+        "w": 370,
+        "h": 128
+      },
+      {
+        "kind": "text",
+        "x": 505,
+        "y": 550,
+        "w": 360,
+        "h": 40,
+        "s": "movement1 : StockMovement",
+        "size": 23,
+        "bold": true,
+        "align": "center",
+        "underline": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            500,
+            597
+          ],
+          [
+            870,
+            597
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 510,
+        "y": 604,
+        "w": 350,
+        "h": 62,
+        "s": "action = \"receive\"; batchId = 30\nonHandDelta = 5000 g",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            215,
+            409
+          ],
+          [
+            215,
+            545
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            630,
+            409
+          ],
+          [
+            630,
+            477
+          ],
+          [
+            400,
+            477
+          ],
+          [
+            400,
+            585
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            740,
+            409
+          ],
+          [
+            740,
+            545
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      }
+    ],
+    "caption": "Example Objects After Receiving Flour",
+    "description": "Figure 5 presents an illustrative stock receipt for five kilograms of flour. The system converts the delivery to 5,000 grams and links the supplier, receipt, line, batch, and movement records. These sample values demonstrate the model and are not actual business records."
+  },
+  {
+    "n": 6,
+    "name": "Package Diagram",
+    "w": 900,
+    "h": 1030,
+    "ops": [
+      {
+        "kind": "package",
+        "x": 35,
+        "y": 40,
+        "w": 830,
+        "h": 560
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 52,
+        "w": 800,
+        "h": 44,
+        "s": "JAPZ Inventory Source",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "package",
+        "x": 65,
+        "y": 125,
+        "w": 350,
+        "h": 185
+      },
+      {
+        "kind": "text",
+        "x": 80,
+        "y": 137,
+        "w": 320,
+        "h": 44,
+        "s": "«package» presentation",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 83,
+        "y": 190,
+        "w": 314,
+        "h": 56
+      },
+      {
+        "kind": "text",
+        "x": 93,
+        "y": 198,
+        "w": 294,
+        "h": 40,
+        "s": "Receiving / Supplies / Counts",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 83,
+        "y": 250,
+        "w": 314,
+        "h": 56
+      },
+      {
+        "kind": "text",
+        "x": 93,
+        "y": 258,
+        "w": 294,
+        "h": 40,
+        "s": "Recipes / Reports / Settings",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "package",
+        "x": 500,
+        "y": 125,
+        "w": 335,
+        "h": 185
+      },
+      {
+        "kind": "text",
+        "x": 515,
+        "y": 137,
+        "w": 305,
+        "h": 44,
+        "s": "«package» client",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 518,
+        "y": 190,
+        "w": 299,
+        "h": 56
+      },
+      {
+        "kind": "text",
+        "x": 528,
+        "y": 198,
+        "w": 279,
+        "h": 40,
+        "s": "InventoryData / data context",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 518,
+        "y": 250,
+        "w": 299,
+        "h": 56
+      },
+      {
+        "kind": "text",
+        "x": 528,
+        "y": 258,
+        "w": 279,
+        "h": 40,
+        "s": "API client / request IDs",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "package",
+        "x": 65,
+        "y": 380,
+        "w": 350,
+        "h": 185
+      },
+      {
+        "kind": "text",
+        "x": 80,
+        "y": 392,
+        "w": 320,
+        "h": 44,
+        "s": "«package» routes",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 83,
+        "y": 445,
+        "w": 314,
+        "h": 56
+      },
+      {
+        "kind": "text",
+        "x": 93,
+        "y": 453,
+        "w": 294,
+        "h": 40,
+        "s": "Inventory endpoints",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 83,
+        "y": 505,
+        "w": 314,
+        "h": 56
+      },
+      {
+        "kind": "text",
+        "x": 93,
+        "y": 513,
+        "w": 294,
+        "h": 40,
+        "s": "Access middleware",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "package",
+        "x": 500,
+        "y": 380,
+        "w": 335,
+        "h": 185
+      },
+      {
+        "kind": "text",
+        "x": 515,
+        "y": 392,
+        "w": 305,
+        "h": 44,
+        "s": "«package» services",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 518,
+        "y": 445,
+        "w": 299,
+        "h": 56
+      },
+      {
+        "kind": "text",
+        "x": 528,
+        "y": 453,
+        "w": 279,
+        "h": 40,
+        "s": "Stock / Order allocations",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 518,
+        "y": 505,
+        "w": 299,
+        "h": 56
+      },
+      {
+        "kind": "text",
+        "x": 528,
+        "y": 513,
+        "w": 279,
+        "h": 40,
+        "s": "Availability / Settings",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            415,
+            220
+          ],
+          [
+            500,
+            220
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 417,
+        "y": 170,
+        "w": 83,
+        "h": 38,
+        "s": "«uses»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            650,
+            310
+          ],
+          [
+            650,
+            345
+          ],
+          [
+            240,
+            345
+          ],
+          [
+            240,
+            380
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 375,
+        "y": 306,
+        "w": 180,
+        "h": 38,
+        "s": "HTTP API",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            415,
+            470
+          ],
+          [
+            500,
+            470
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 418,
+        "y": 419,
+        "w": 82,
+        "h": 38,
+        "s": "«uses»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "package",
+        "x": 65,
+        "y": 700,
+        "w": 350,
+        "h": 190
+      },
+      {
+        "kind": "text",
+        "x": 80,
+        "y": 712,
+        "w": 320,
+        "h": 44,
+        "s": "«package» models",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 83,
+        "y": 765,
+        "w": 314,
+        "h": 58.5
+      },
+      {
+        "kind": "text",
+        "x": 93,
+        "y": 773,
+        "w": 294,
+        "h": 42.5,
+        "s": "Items / Batches / Receipts",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 83,
+        "y": 827.5,
+        "w": 314,
+        "h": 58.5
+      },
+      {
+        "kind": "text",
+        "x": 93,
+        "y": 835.5,
+        "w": 294,
+        "h": 42.5,
+        "s": "Counts / Movements / Recipes",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "package",
+        "x": 500,
+        "y": 700,
+        "w": 335,
+        "h": 190
+      },
+      {
+        "kind": "text",
+        "x": 515,
+        "y": 712,
+        "w": 305,
+        "h": 44,
+        "s": "«package» shared",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 518,
+        "y": 765,
+        "w": 299,
+        "h": 58.5
+      },
+      {
+        "kind": "text",
+        "x": 528,
+        "y": 773,
+        "w": 279,
+        "h": 42.5,
+        "s": "MenuItem / User / Order",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 518,
+        "y": 827.5,
+        "w": 299,
+        "h": 58.5
+      },
+      {
+        "kind": "text",
+        "x": 528,
+        "y": 835.5,
+        "w": 279,
+        "h": 42.5,
+        "s": "Database connection",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            650,
+            565
+          ],
+          [
+            650,
+            650
+          ],
+          [
+            240,
+            650
+          ],
+          [
+            240,
+            700
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 370,
+        "y": 604,
+        "w": 200,
+        "h": 38,
+        "s": "«access»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            650,
+            565
+          ],
+          [
+            650,
+            700
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 265,
+        "y": 960,
+        "w": 370,
+        "h": 60
+      },
+      {
+        "kind": "text",
+        "x": 275,
+        "y": 968,
+        "w": 350,
+        "h": 44,
+        "s": "MySQL : Inventory Storage",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            240,
+            890
+          ],
+          [
+            240,
+            990
+          ],
+          [
+            265,
+            990
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            650,
+            890
+          ],
+          [
+            650,
+            990
+          ],
+          [
+            635,
+            990
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      }
+    ],
+    "caption": "Packages of the Inventory Module",
+    "description": "Figure 6 groups the inventory source into interface, client, route, service, and model packages. The dependencies show how inventory pages reach the backend and database. This organization separates screen behavior, business rules, and data storage."
+  },
+  {
+    "n": 7,
+    "name": "Composite Structure Diagram",
+    "w": 900,
+    "h": 750,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 45,
+        "y": 70,
+        "w": 810,
+        "h": 600
+      },
+      {
+        "kind": "text",
+        "x": 75,
+        "y": 90,
+        "w": 750,
+        "h": 50,
+        "s": "Inventory API: internal structure",
+        "size": 25,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 29,
+        "y": 180,
+        "w": 32,
+        "h": 32
+      },
+      {
+        "kind": "text",
+        "x": 10,
+        "y": 10,
+        "w": 350,
+        "h": 50,
+        "s": "HTTP request port",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 145,
+        "y": 175,
+        "w": 610,
+        "h": 90
+      },
+      {
+        "kind": "text",
+        "x": 155,
+        "y": 183,
+        "w": 590,
+        "h": 74,
+        "s": "access : Authentication / Role Check",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 145,
+        "y": 345,
+        "w": 610,
+        "h": 90
+      },
+      {
+        "kind": "text",
+        "x": 155,
+        "y": 353,
+        "w": 590,
+        "h": 74,
+        "s": "handler : Inventory Route",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 145,
+        "y": 515,
+        "w": 350,
+        "h": 95
+      },
+      {
+        "kind": "text",
+        "x": 155,
+        "y": 523,
+        "w": 330,
+        "h": 79,
+        "s": "stock : Inventory Service",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 575,
+        "y": 515,
+        "w": 180,
+        "h": 95
+      },
+      {
+        "kind": "text",
+        "x": 585,
+        "y": 523,
+        "w": 160,
+        "h": 79,
+        "s": "data :\nModels",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            61,
+            196
+          ],
+          [
+            145,
+            196
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            265
+          ],
+          [
+            450,
+            345
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            320,
+            435
+          ],
+          [
+            320,
+            515
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            495,
+            562
+          ],
+          [
+            575,
+            562
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 839,
+        "y": 550,
+        "w": 32,
+        "h": 32
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            755,
+            566
+          ],
+          [
+            839,
+            566
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 540,
+        "y": 680,
+        "w": 340,
+        "h": 45,
+        "s": "SQL persistence port",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      }
+    ],
+    "caption": "Internal Collaboration Within the Inventory API",
+    "description": "Figure 7 shows the collaborating parts inside the inventory API. Access checks pass authorized requests to route handlers, which call inventory services and models. The HTTP and SQL ports represent the module boundaries used for requests and persistence."
+  },
+  {
+    "n": 8,
+    "name": "Profile Diagram",
+    "w": 900,
+    "h": 990,
+    "ops": [
+      {
+        "kind": "package",
+        "x": 120,
+        "y": 35,
+        "w": 660,
+        "h": 170
+      },
+      {
+        "kind": "text",
+        "x": 135,
+        "y": 47,
+        "w": 630,
+        "h": 44,
+        "s": "«profile» JAPZInventoryProfile",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 145,
+        "y": 102,
+        "w": 610,
+        "h": 85,
+        "s": "name = \"JAPZInventoryProfile\"\nPurpose: inventory-specific UML documentation",
+        "size": 23,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 25,
+        "y": 330,
+        "w": 270,
+        "h": 128
+      },
+      {
+        "kind": "text",
+        "x": 30,
+        "y": 335,
+        "w": 260,
+        "h": 40,
+        "s": "InventoryRecord",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            382
+          ],
+          [
+            295,
+            382
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 389,
+        "w": 250,
+        "h": 62,
+        "s": "unit : BaseUnit\nauditFields : Boolean",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 295,
+        "w": 270,
+        "h": 32,
+        "s": "«stereotype»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 100,
+        "y": 560,
+        "w": 180,
+        "h": 35,
+        "s": "extends Class",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            205
+          ],
+          [
+            450,
+            270
+          ],
+          [
+            160,
+            270
+          ],
+          [
+            160,
+            295
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 320,
+        "y": 330,
+        "w": 270,
+        "h": 128
+      },
+      {
+        "kind": "text",
+        "x": 325,
+        "y": 335,
+        "w": 260,
+        "h": 40,
+        "s": "StockService",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            320,
+            382
+          ],
+          [
+            590,
+            382
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 330,
+        "y": 389,
+        "w": 250,
+        "h": 62,
+        "s": "responsibility : String\nmodule = \"inventory\"",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "text",
+        "x": 320,
+        "y": 295,
+        "w": 270,
+        "h": 32,
+        "s": "«stereotype»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 346,
+        "y": 560,
+        "w": 199,
+        "h": 35,
+        "s": "extends Component",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            205
+          ],
+          [
+            450,
+            270
+          ],
+          [
+            455,
+            270
+          ],
+          [
+            455,
+            295
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 615,
+        "y": 330,
+        "w": 270,
+        "h": 128
+      },
+      {
+        "kind": "text",
+        "x": 620,
+        "y": 335,
+        "w": 260,
+        "h": 40,
+        "s": "StockOperation",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            615,
+            382
+          ],
+          [
+            885,
+            382
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 625,
+        "y": 389,
+        "w": 250,
+        "h": 62,
+        "s": "action : StockAction\nchangesBalance : Boolean",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "text",
+        "x": 615,
+        "y": 295,
+        "w": 270,
+        "h": 32,
+        "s": "«stereotype»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 641,
+        "y": 560,
+        "w": 199,
+        "h": 35,
+        "s": "extends Operation",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            205
+          ],
+          [
+            450,
+            270
+          ],
+          [
+            750,
+            270
+          ],
+          [
+            750,
+            295
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 25,
+        "y": 665,
+        "w": 270,
+        "h": 160
+      },
+      {
+        "kind": "text",
+        "x": 30,
+        "y": 670,
+        "w": 260,
+        "h": 40,
+        "s": "BaseUnit",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            717
+          ],
+          [
+            295,
+            717
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 724,
+        "w": 250,
+        "h": 94,
+        "s": "g\nml\npcs",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 628,
+        "w": 270,
+        "h": 32,
+        "s": "«enumeration»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 320,
+        "y": 665,
+        "w": 270,
+        "h": 192
+      },
+      {
+        "kind": "text",
+        "x": 325,
+        "y": 670,
+        "w": 260,
+        "h": 40,
+        "s": "StockAction",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            320,
+            717
+          ],
+          [
+            590,
+            717
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 330,
+        "y": 724,
+        "w": 250,
+        "h": 126,
+        "s": "receive / count\nreserve / consume\nrelease / waste\nsupplier_return",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "text",
+        "x": 320,
+        "y": 628,
+        "w": 270,
+        "h": 32,
+        "s": "«enumeration»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "note",
+        "x": 615,
+        "y": 665,
+        "w": 270,
+        "h": 180
+      },
+      {
+        "kind": "text",
+        "x": 625,
+        "y": 673,
+        "w": 250,
+        "h": 164,
+        "s": "«constraints»\nNo negative stock\nProtect reservations\nKeep movement history",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            75,
+            477
+          ],
+          [
+            75,
+            665
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            850,
+            477
+          ],
+          [
+            850,
+            600
+          ],
+          [
+            600,
+            600
+          ],
+          [
+            600,
+            730
+          ],
+          [
+            590,
+            730
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      }
+    ],
+    "caption": "Inventory Documentation Profile",
+    "description": "Figure 8 defines inventory-specific stereotypes for UML documentation. InventoryRecord identifies stored records, StockService identifies service components, and StockOperation identifies stock actions. These labels are modeling conventions and are not an additional application feature."
+  },
+  {
+    "n": 9,
+    "name": "Data Flow Diagram (DFD)",
+    "w": 900,
+    "h": 900,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 300,
+        "y": 10,
+        "w": 300,
+        "h": 80
+      },
+      {
+        "kind": "text",
+        "x": 310,
+        "y": 18,
+        "w": 280,
+        "h": 64,
+        "s": "Inventory Staff",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "round",
+        "x": 35,
+        "y": 225,
+        "w": 370,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 45,
+        "y": 260,
+        "w": 350,
+        "h": 62,
+        "s": "Maintain Supplies\nand Suppliers",
+        "size": 24,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "round",
+        "x": 495,
+        "y": 225,
+        "w": 370,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 505,
+        "y": 260,
+        "w": 350,
+        "h": 62,
+        "s": "Receive or\nAdjust Stock",
+        "size": 24,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            355,
+            90
+          ],
+          [
+            355,
+            160
+          ],
+          [
+            220,
+            160
+          ],
+          [
+            220,
+            225
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 70,
+        "y": 118,
+        "w": 170,
+        "h": 38,
+        "s": "item details",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            545,
+            90
+          ],
+          [
+            545,
+            160
+          ],
+          [
+            680,
+            160
+          ],
+          [
+            680,
+            225
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 648,
+        "y": 118,
+        "w": 165,
+        "h": 38,
+        "s": "stock entry",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "store",
+        "x": 35,
+        "y": 410,
+        "w": 370,
+        "h": 90
+      },
+      {
+        "kind": "text",
+        "x": 84,
+        "y": 418,
+        "w": 310,
+        "h": 74,
+        "s": "Items / Suppliers",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "store",
+        "x": 495,
+        "y": 410,
+        "w": 370,
+        "h": 90
+      },
+      {
+        "kind": "text",
+        "x": 544,
+        "y": 418,
+        "w": 310,
+        "h": 74,
+        "s": "Receipts / Batches",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            330
+          ],
+          [
+            220,
+            410
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 240,
+        "y": 350,
+        "w": 140,
+        "h": 38,
+        "s": "records",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            680,
+            330
+          ],
+          [
+            680,
+            410
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 695,
+        "y": 350,
+        "w": 175,
+        "h": 38,
+        "s": "receipt data",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "store",
+        "x": 495,
+        "y": 595,
+        "w": 370,
+        "h": 90
+      },
+      {
+        "kind": "text",
+        "x": 544,
+        "y": 603,
+        "w": 310,
+        "h": 74,
+        "s": "Stock Movements",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            865,
+            280
+          ],
+          [
+            885,
+            280
+          ],
+          [
+            885,
+            640
+          ],
+          [
+            865,
+            640
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 35,
+        "y": 610,
+        "w": 370,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 45,
+        "y": 645,
+        "w": 350,
+        "h": 62,
+        "s": "View Stock\nand Reports",
+        "size": 24,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            500
+          ],
+          [
+            220,
+            610
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 235,
+        "y": 540,
+        "w": 150,
+        "h": 38,
+        "s": "balances",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            495,
+            450
+          ],
+          [
+            455,
+            450
+          ],
+          [
+            455,
+            610
+          ],
+          [
+            405,
+            610
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 465,
+        "y": 531,
+        "w": 180,
+        "h": 38,
+        "s": "batch data",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            495,
+            660
+          ],
+          [
+            405,
+            660
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 35,
+        "y": 805,
+        "w": 370,
+        "h": 75
+      },
+      {
+        "kind": "text",
+        "x": 45,
+        "y": 813,
+        "w": 350,
+        "h": 59,
+        "s": "Inventory Staff",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            715
+          ],
+          [
+            220,
+            805
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 235,
+        "y": 745,
+        "w": 230,
+        "h": 38,
+        "s": "stock / reports",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            35,
+            255
+          ],
+          [
+            405,
+            255
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 226,
+        "w": 360,
+        "h": 27,
+        "s": "1.0",
+        "size": 22,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            495,
+            255
+          ],
+          [
+            865,
+            255
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 500,
+        "y": 226,
+        "w": 360,
+        "h": 27,
+        "s": "2.0",
+        "size": 22,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            35,
+            640
+          ],
+          [
+            405,
+            640
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 611,
+        "w": 360,
+        "h": 27,
+        "s": "3.0",
+        "size": 22,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 680,
+        "y": 535,
+        "w": 195,
+        "h": 38,
+        "s": "movement entries",
+        "size": 21,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 406,
+        "y": 689,
+        "w": 90,
+        "h": 32,
+        "s": "history",
+        "size": 20,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            495,
+            282
+          ],
+          [
+            435,
+            282
+          ],
+          [
+            435,
+            385
+          ],
+          [
+            380,
+            385
+          ],
+          [
+            380,
+            410
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 460,
+        "y": 355,
+        "w": 180,
+        "h": 32,
+        "s": "updated balances",
+        "size": 21,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 37,
+        "y": 422,
+        "w": 35,
+        "h": 66,
+        "s": "D1",
+        "size": 19,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 497,
+        "y": 422,
+        "w": 35,
+        "h": 66,
+        "s": "D2",
+        "size": 19,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 497,
+        "y": 607,
+        "w": 35,
+        "h": 66,
+        "s": "D3",
+        "size": 19,
+        "align": "center"
+      }
+    ],
+    "caption": "Inventory Data Flow",
+    "description": "Figure 9 shows how inventory information moves between staff, processes, and data stores. Supply maintenance saves item and supplier records, while stock operations update receipts, batches, and movements. The reporting process reads these records to display balances and stock history."
+  },
+  {
+    "n": 10,
+    "name": "Use Case Diagram",
+    "w": 900,
+    "h": 1040,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 175,
+        "y": 40,
+        "w": 710,
+        "h": 970
+      },
+      {
+        "kind": "text",
+        "x": 190,
+        "y": 52,
+        "w": 680,
+        "h": 45,
+        "s": "JAPZ Inventory Management",
+        "size": 25,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "ellipse",
+        "x": 50,
+        "y": 400,
+        "w": 34,
+        "h": 34
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            67,
+            434
+          ],
+          [
+            67,
+            495
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            30,
+            457
+          ],
+          [
+            104,
+            457
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            67,
+            495
+          ],
+          [
+            34,
+            537
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            67,
+            495
+          ],
+          [
+            100,
+            537
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": -30,
+        "y": 540,
+        "w": 195,
+        "h": 60,
+        "s": "Inventory\nStaff",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "ellipse",
+        "x": 220,
+        "y": 130,
+        "w": 335,
+        "h": 78
+      },
+      {
+        "kind": "text",
+        "x": 230,
+        "y": 138,
+        "w": 315,
+        "h": 62,
+        "s": "View inventory overview",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            110,
+            493
+          ],
+          [
+            220,
+            169
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "ellipse",
+        "x": 220,
+        "y": 245,
+        "w": 335,
+        "h": 78
+      },
+      {
+        "kind": "text",
+        "x": 230,
+        "y": 253,
+        "w": 315,
+        "h": 62,
+        "s": "Maintain supplies / suppliers",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            110,
+            493
+          ],
+          [
+            220,
+            284
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "ellipse",
+        "x": 220,
+        "y": 360,
+        "w": 335,
+        "h": 78
+      },
+      {
+        "kind": "text",
+        "x": 230,
+        "y": 368,
+        "w": 315,
+        "h": 62,
+        "s": "Receive stock",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            110,
+            493
+          ],
+          [
+            220,
+            399
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "ellipse",
+        "x": 220,
+        "y": 475,
+        "w": 335,
+        "h": 78
+      },
+      {
+        "kind": "text",
+        "x": 230,
+        "y": 483,
+        "w": 315,
+        "h": 62,
+        "s": "Record physical count",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            110,
+            493
+          ],
+          [
+            220,
+            514
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "ellipse",
+        "x": 220,
+        "y": 590,
+        "w": 335,
+        "h": 78
+      },
+      {
+        "kind": "text",
+        "x": 230,
+        "y": 598,
+        "w": 315,
+        "h": 62,
+        "s": "Record waste / return",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            110,
+            493
+          ],
+          [
+            220,
+            629
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "ellipse",
+        "x": 220,
+        "y": 705,
+        "w": 335,
+        "h": 78
+      },
+      {
+        "kind": "text",
+        "x": 230,
+        "y": 713,
+        "w": 315,
+        "h": 62,
+        "s": "Manage recipes / batches",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            110,
+            493
+          ],
+          [
+            220,
+            744
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "ellipse",
+        "x": 220,
+        "y": 820,
+        "w": 335,
+        "h": 78
+      },
+      {
+        "kind": "text",
+        "x": 230,
+        "y": 828,
+        "w": 315,
+        "h": 62,
+        "s": "View history / reports",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            110,
+            493
+          ],
+          [
+            220,
+            859
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "ellipse",
+        "x": 675,
+        "y": 310,
+        "w": 185,
+        "h": 100
+      },
+      {
+        "kind": "text",
+        "x": 685,
+        "y": 318,
+        "w": 165,
+        "h": 84,
+        "s": "Validate delivery\nand convert units",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            555,
+            400
+          ],
+          [
+            675,
+            360
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 550,
+        "y": 310,
+        "w": 130,
+        "h": 38,
+        "s": "«include»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "ellipse",
+        "x": 675,
+        "y": 520,
+        "w": 185,
+        "h": 100
+      },
+      {
+        "kind": "text",
+        "x": 685,
+        "y": 528,
+        "w": 165,
+        "h": 84,
+        "s": "Submit for\nAdmin review",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            675,
+            570
+          ],
+          [
+            555,
+            514
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 546,
+        "y": 575,
+        "w": 130,
+        "h": 38,
+        "s": "«extend»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "ellipse",
+        "x": 675,
+        "y": 770,
+        "w": 185,
+        "h": 100
+      },
+      {
+        "kind": "text",
+        "x": 685,
+        "y": 778,
+        "w": 165,
+        "h": 84,
+        "s": "Export CSV",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            675,
+            810
+          ],
+          [
+            555,
+            850
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 551,
+        "y": 744,
+        "w": 130,
+        "h": 38,
+        "s": "«extend»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 605,
+        "y": 910,
+        "w": 250,
+        "h": 60,
+        "s": "[Approval policy]\n[Export selected]",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "ellipse",
+        "x": 220,
+        "y": 930,
+        "w": 335,
+        "h": 60
+      },
+      {
+        "kind": "text",
+        "x": 230,
+        "y": 938,
+        "w": 315,
+        "h": 44,
+        "s": "Configure inventory settings",
+        "size": 22,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            110,
+            493
+          ],
+          [
+            220,
+            960
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      }
+    ],
+    "caption": "Inventory Staff Use Cases",
+    "description": "Figure 10 shows the inventory goals available to Inventory Staff. Receiving includes delivery validation and unit conversion; count review and CSV export extend the related goals when their conditions apply. Admin handles required count approvals and movement reversals."
+  },
+  {
+    "n": 11,
+    "name": "Activity Diagram",
+    "w": 900,
+    "h": 1100,
+    "ops": [
+      {
+        "kind": "dot",
+        "x": 450,
+        "y": 18,
+        "final": false
+      },
+      {
+        "kind": "round",
+        "x": 275,
+        "y": 65,
+        "w": 350,
+        "h": 70
+      },
+      {
+        "kind": "text",
+        "x": 285,
+        "y": 73,
+        "w": 330,
+        "h": 54,
+        "s": "Open Inventory Workspace",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            30
+          ],
+          [
+            450,
+            65
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 275,
+        "y": 180,
+        "w": 350,
+        "h": 70
+      },
+      {
+        "kind": "text",
+        "x": 285,
+        "y": 188,
+        "w": 330,
+        "h": 54,
+        "s": "Authenticate / check role",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            135
+          ],
+          [
+            450,
+            180
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "diamond",
+        "x": 350,
+        "y": 290,
+        "w": 200,
+        "h": 100
+      },
+      {
+        "kind": "text",
+        "x": 360,
+        "y": 298,
+        "w": 180,
+        "h": 84,
+        "s": "Authorized?",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            250
+          ],
+          [
+            450,
+            290
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 660,
+        "y": 305,
+        "w": 210,
+        "h": 70
+      },
+      {
+        "kind": "text",
+        "x": 670,
+        "y": 313,
+        "w": 190,
+        "h": 54,
+        "s": "Display access denied",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            550,
+            340
+          ],
+          [
+            660,
+            340
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 565,
+        "y": 298,
+        "w": 80,
+        "h": 38,
+        "s": "No",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            390
+          ],
+          [
+            450,
+            440
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 457,
+        "y": 398,
+        "w": 90,
+        "h": 38,
+        "s": "Yes",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "diamond",
+        "x": 345,
+        "y": 440,
+        "w": 210,
+        "h": 90
+      },
+      {
+        "kind": "text",
+        "x": 355,
+        "y": 448,
+        "w": 190,
+        "h": 74,
+        "s": "Choose\nfunction",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            345,
+            485
+          ],
+          [
+            235,
+            485
+          ],
+          [
+            235,
+            595
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            555,
+            485
+          ],
+          [
+            685,
+            485
+          ],
+          [
+            685,
+            595
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 45,
+        "y": 595,
+        "w": 380,
+        "h": 75
+      },
+      {
+        "kind": "text",
+        "x": 55,
+        "y": 603,
+        "w": 360,
+        "h": 59,
+        "s": "Receive / Count / Waste / Return",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "round",
+        "x": 500,
+        "y": 595,
+        "w": 370,
+        "h": 75
+      },
+      {
+        "kind": "text",
+        "x": 510,
+        "y": 603,
+        "w": 350,
+        "h": 59,
+        "s": "View Balances / History / Reports",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "round",
+        "x": 45,
+        "y": 730,
+        "w": 380,
+        "h": 75
+      },
+      {
+        "kind": "text",
+        "x": 55,
+        "y": 738,
+        "w": 360,
+        "h": 59,
+        "s": "Validate quantities and permissions",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            235,
+            670
+          ],
+          [
+            235,
+            730
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 500,
+        "y": 730,
+        "w": 370,
+        "h": 75
+      },
+      {
+        "kind": "text",
+        "x": 510,
+        "y": 738,
+        "w": 350,
+        "h": 59,
+        "s": "Choose filters and read stock data",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            685,
+            670
+          ],
+          [
+            685,
+            730
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 45,
+        "y": 865,
+        "w": 380,
+        "h": 80
+      },
+      {
+        "kind": "text",
+        "x": 55,
+        "y": 873,
+        "w": 360,
+        "h": 64,
+        "s": "Save changes together\nor queue count for review",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            235,
+            805
+          ],
+          [
+            235,
+            865
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 500,
+        "y": 865,
+        "w": 370,
+        "h": 80
+      },
+      {
+        "kind": "text",
+        "x": 510,
+        "y": 873,
+        "w": 350,
+        "h": 64,
+        "s": "Display results / export CSV",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            685,
+            805
+          ],
+          [
+            685,
+            865
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 300,
+        "y": 1010,
+        "w": 300,
+        "h": 60
+      },
+      {
+        "kind": "text",
+        "x": 310,
+        "y": 1018,
+        "w": 280,
+        "h": 44,
+        "s": "Refresh / leave workspace",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            235,
+            945
+          ],
+          [
+            235,
+            980
+          ],
+          [
+            450,
+            980
+          ],
+          [
+            450,
+            1010
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            685,
+            945
+          ],
+          [
+            685,
+            980
+          ],
+          [
+            450,
+            980
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "dot",
+        "x": 635,
+        "y": 1040,
+        "final": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            600,
+            1040
+          ],
+          [
+            623,
+            1040
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            765,
+            375
+          ],
+          [
+            890,
+            375
+          ],
+          [
+            890,
+            1080
+          ],
+          [
+            635,
+            1080
+          ],
+          [
+            635,
+            1052
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 533,
+        "w": 235,
+        "h": 32,
+        "s": "[Stock operation]",
+        "size": 21,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 650,
+        "y": 533,
+        "w": 220,
+        "h": 32,
+        "s": "[View / report]",
+        "size": 21,
+        "align": "center"
+      }
+    ],
+    "caption": "Main Activity Flow of the Inventory Module",
+    "description": "Figure 11 presents the main Inventory Staff workflow after authentication. Staff can record stock operations or view balances, history, and reports. Stock changes are validated and saved together, while counts that require approval remain pending until Admin review."
+  },
+  {
+    "n": 12,
+    "name": "Sequence Diagram",
+    "w": 900,
+    "h": 1080,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 890,
+        "h": 1070
+      },
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 399,
+        "h": 45
+      },
+      {
+        "kind": "text",
+        "x": 18,
+        "y": 9,
+        "w": 374,
+        "h": 35,
+        "s": "sd  Receive Inventory Stock",
+        "size": 24,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 8,
+        "y": 80,
+        "w": 154,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 18,
+        "y": 88,
+        "w": 134,
+        "h": 89,
+        "s": "Inventory\nStaff",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            85,
+            185
+          ],
+          [
+            85,
+            1040
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 243,
+        "y": 80,
+        "w": 154,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 253,
+        "y": 88,
+        "w": 134,
+        "h": 89,
+        "s": "«boundary»\nReceiving UI",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            320,
+            185
+          ],
+          [
+            320,
+            1040
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 478,
+        "y": 80,
+        "w": 154,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 488,
+        "y": 88,
+        "w": 134,
+        "h": 89,
+        "s": "«control»\nAPI / Service",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            555,
+            185
+          ],
+          [
+            555,
+            1040
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 718,
+        "y": 80,
+        "w": 154,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 728,
+        "y": 88,
+        "w": 134,
+        "h": 89,
+        "s": "«entity»\nModels / MySQL",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            795,
+            185
+          ],
+          [
+            795,
+            1040
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 313,
+        "y": 225,
+        "w": 14,
+        "h": 670
+      },
+      {
+        "kind": "rect",
+        "x": 548,
+        "y": 285,
+        "w": 14,
+        "h": 540
+      },
+      {
+        "kind": "rect",
+        "x": 788,
+        "y": 350,
+        "w": 14,
+        "h": 400
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            85,
+            225
+          ],
+          [
+            320,
+            225
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 93,
+        "y": 182,
+        "w": 219,
+        "h": 38,
+        "s": "1. enter delivery",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            320,
+            290
+          ],
+          [
+            555,
+            290
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 328,
+        "y": 247,
+        "w": 219,
+        "h": 38,
+        "s": "2. submit + requestId",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            555,
+            375
+          ],
+          [
+            795,
+            375
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 563,
+        "y": 332,
+        "w": 224,
+        "h": 38,
+        "s": "3. find prior request",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            795,
+            445
+          ],
+          [
+            555,
+            445
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 563,
+        "y": 402,
+        "w": 224,
+        "h": 38,
+        "s": "4. no prior result",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            555,
+            550
+          ],
+          [
+            607,
+            550
+          ],
+          [
+            607,
+            579
+          ],
+          [
+            555,
+            579
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 563,
+        "y": 518,
+        "w": 224,
+        "h": 32,
+        "s": "5. validate / convert",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            555,
+            640
+          ],
+          [
+            795,
+            640
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 563,
+        "y": 597,
+        "w": 224,
+        "h": 38,
+        "s": "6. receipt + stock writes",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            555,
+            735
+          ],
+          [
+            795,
+            735
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 563,
+        "y": 692,
+        "w": 224,
+        "h": 38,
+        "s": "7. commit result",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            555,
+            835
+          ],
+          [
+            320,
+            835
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 328,
+        "y": 792,
+        "w": 219,
+        "h": 38,
+        "s": "8. return receipt",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            320,
+            905
+          ],
+          [
+            85,
+            905
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 93,
+        "y": 862,
+        "w": 219,
+        "h": 38,
+        "s": "9. refresh stock",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 505,
+        "y": 475,
+        "w": 375,
+        "h": 225
+      },
+      {
+        "kind": "text",
+        "x": 515,
+        "y": 480,
+        "w": 325,
+        "h": 32,
+        "s": "loop  [each delivery line]",
+        "size": 21,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 15,
+        "y": 945,
+        "w": 865,
+        "h": 103
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 950,
+        "w": 220,
+        "h": 32,
+        "s": "alt  [saved request]",
+        "size": 22,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "text",
+        "x": 240,
+        "y": 954,
+        "w": 620,
+        "h": 34,
+        "s": "Return the original receipt without duplicating stock",
+        "size": 21,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            15,
+            992
+          ],
+          [
+            880,
+            992
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 1000,
+        "w": 215,
+        "h": 35,
+        "s": "[invalid / failed save]",
+        "size": 21,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "text",
+        "x": 245,
+        "y": 1000,
+        "w": 620,
+        "h": 35,
+        "s": "Rollback transaction and return an error",
+        "size": 21,
+        "bold": false,
+        "align": "center",
+        "background": true
+      }
+    ],
+    "caption": "Sequence of a Successful Stock Receipt",
+    "description": "Figure 12 shows the order of messages during a new stock receipt. The interface submits the delivery and request ID, the backend validates and saves the stock changes, and the database commits the transaction. The saved receipt is returned so the interface can refresh the display."
+  },
+  {
+    "n": 13,
+    "name": "State Machine Diagram",
+    "w": 900,
+    "h": 920,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 890,
+        "h": 910
+      },
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 373,
+        "h": 45
+      },
+      {
+        "kind": "text",
+        "x": 18,
+        "y": 9,
+        "w": 348,
+        "h": 35,
+        "s": "stm  Stock Count Lifecycle",
+        "size": 24,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "dot",
+        "x": 450,
+        "y": 85,
+        "final": false
+      },
+      {
+        "kind": "diamond",
+        "x": 345,
+        "y": 145,
+        "w": 210,
+        "h": 110
+      },
+      {
+        "kind": "text",
+        "x": 355,
+        "y": 153,
+        "w": 190,
+        "h": 94,
+        "s": "Approval\nrequired?",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            97
+          ],
+          [
+            450,
+            145
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 335,
+        "y": 345,
+        "w": 230,
+        "h": 95
+      },
+      {
+        "kind": "text",
+        "x": 345,
+        "y": 353,
+        "w": 210,
+        "h": 30,
+        "s": "pending",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            255
+          ],
+          [
+            450,
+            345
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 465,
+        "y": 280,
+        "w": 90,
+        "h": 38,
+        "s": "Yes",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "round",
+        "x": 40,
+        "y": 695,
+        "w": 240,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 703,
+        "w": 220,
+        "h": 30,
+        "s": "rejected",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "round",
+        "x": 330,
+        "y": 695,
+        "w": 240,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 340,
+        "y": 703,
+        "w": 220,
+        "h": 30,
+        "s": "stale",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "round",
+        "x": 620,
+        "y": 695,
+        "w": 240,
+        "h": 105
+      },
+      {
+        "kind": "text",
+        "x": 630,
+        "y": 703,
+        "w": 220,
+        "h": 30,
+        "s": "applied",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            335,
+            395
+          ],
+          [
+            160,
+            395
+          ],
+          [
+            160,
+            695
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 495,
+        "w": 130,
+        "h": 38,
+        "s": "Admin rejects",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "diamond",
+        "x": 330,
+        "y": 505,
+        "w": 240,
+        "h": 110
+      },
+      {
+        "kind": "text",
+        "x": 340,
+        "y": 513,
+        "w": 220,
+        "h": 94,
+        "s": "Review still\nvalid?",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            440
+          ],
+          [
+            450,
+            505
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            615
+          ],
+          [
+            450,
+            695
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 460,
+        "y": 640,
+        "w": 70,
+        "h": 38,
+        "s": "No",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            570,
+            560
+          ],
+          [
+            740,
+            560
+          ],
+          [
+            740,
+            695
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 575,
+        "y": 590,
+        "w": 150,
+        "h": 38,
+        "s": "Yes / approve",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            555,
+            200
+          ],
+          [
+            880,
+            200
+          ],
+          [
+            880,
+            750
+          ],
+          [
+            860,
+            750
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            335,
+            388
+          ],
+          [
+            565,
+            388
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 345,
+        "y": 393,
+        "w": 210,
+        "h": 42,
+        "s": "entry / keep balance",
+        "size": 20,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            40,
+            738
+          ],
+          [
+            280,
+            738
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 743,
+        "w": 220,
+        "h": 52,
+        "s": "entry / No stock change",
+        "size": 20,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            330,
+            738
+          ],
+          [
+            570,
+            738
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 340,
+        "y": 743,
+        "w": 220,
+        "h": 52,
+        "s": "entry / New count needed",
+        "size": 20,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            620,
+            738
+          ],
+          [
+            860,
+            738
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 630,
+        "y": 743,
+        "w": 220,
+        "h": 52,
+        "s": "entry / Stock updated",
+        "size": 20,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 555,
+        "y": 250,
+        "w": 320,
+        "h": 45,
+        "s": "[No review required] / apply",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      }
+    ],
+    "caption": "Stock Count Status Changes",
+    "description": "Figure 13 shows the implemented stock count states: pending, applied, rejected, and stale. A count applies immediately when review is unnecessary; otherwise, Admin reviews it. Approval changes the balance only when the stock version and reserved quantities remain valid."
+  },
+  {
+    "n": 14,
+    "name": "Communication Diagram",
+    "w": 900,
+    "h": 870,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 890,
+        "h": 860
+      },
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 477,
+        "h": 45
+      },
+      {
+        "kind": "text",
+        "x": 18,
+        "y": 9,
+        "w": 452,
+        "h": 35,
+        "s": "UML  Stock Receiving Communication",
+        "size": 24,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 40,
+        "y": 75,
+        "w": 300,
+        "h": 100
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 83,
+        "w": 280,
+        "h": 39,
+        "s": ": InventoryStaff",
+        "size": 22,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 535,
+        "y": 75,
+        "w": 325,
+        "h": 100
+      },
+      {
+        "kind": "text",
+        "x": 545,
+        "y": 83,
+        "w": 305,
+        "h": 39,
+        "s": ": ReceivingInterface",
+        "size": 22,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 535,
+        "y": 355,
+        "w": 325,
+        "h": 100
+      },
+      {
+        "kind": "text",
+        "x": 545,
+        "y": 363,
+        "w": 305,
+        "h": 39,
+        "s": ": InventoryRouter",
+        "size": 22,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 535,
+        "y": 675,
+        "w": 325,
+        "h": 100
+      },
+      {
+        "kind": "text",
+        "x": 545,
+        "y": 683,
+        "w": 305,
+        "h": 39,
+        "s": ": InventoryService",
+        "size": 22,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 40,
+        "y": 675,
+        "w": 300,
+        "h": 100
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 683,
+        "w": 280,
+        "h": 39,
+        "s": ": Sequelize / MySQL",
+        "size": 22,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            340,
+            125
+          ],
+          [
+            535,
+            125
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 352,
+        "y": 77,
+        "w": 170,
+        "h": 38,
+        "s": "1: submit",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            697,
+            175
+          ],
+          [
+            697,
+            355
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 380,
+        "y": 237,
+        "w": 280,
+        "h": 38,
+        "s": "1.1: POST receive",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            697,
+            455
+          ],
+          [
+            697,
+            675
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 335,
+        "y": 532,
+        "w": 320,
+        "h": 60,
+        "s": "1.1.1: authorize\n1.1.2: receiveStock",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            535,
+            725
+          ],
+          [
+            340,
+            725
+          ]
+        ],
+        "arrow": "open",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 305,
+        "y": 630,
+        "w": 300,
+        "h": 38,
+        "s": "1.1.2.1: save + commit",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            340,
+            790
+          ],
+          [
+            535,
+            790
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 365,
+        "y": 802,
+        "w": 250,
+        "h": 38,
+        "s": "1.1.2.2: receipt",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            845,
+            675
+          ],
+          [
+            885,
+            675
+          ],
+          [
+            885,
+            125
+          ],
+          [
+            860,
+            125
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 335,
+        "y": 195,
+        "w": 330,
+        "h": 40,
+        "s": "1.2: receipt response",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            40,
+            127
+          ],
+          [
+            340,
+            127
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 131,
+        "w": 280,
+        "h": 40,
+        "s": "delivery / request",
+        "size": 20,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            535,
+            127
+          ],
+          [
+            860,
+            127
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 545,
+        "y": 131,
+        "w": 305,
+        "h": 40,
+        "s": "delivery / request",
+        "size": 20,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            535,
+            407
+          ],
+          [
+            860,
+            407
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 545,
+        "y": 411,
+        "w": 305,
+        "h": 40,
+        "s": "role-checked request",
+        "size": 20,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            535,
+            727
+          ],
+          [
+            860,
+            727
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 545,
+        "y": 731,
+        "w": 305,
+        "h": 40,
+        "s": "receipt / balances",
+        "size": 20,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            40,
+            727
+          ],
+          [
+            340,
+            727
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 50,
+        "y": 731,
+        "w": 280,
+        "h": 40,
+        "s": "receipt / balances",
+        "size": 20,
+        "bold": false,
+        "align": "center"
+      }
+    ],
+    "caption": "Object Communication During Receiving",
+    "description": "Figure 14 shows the collaborating objects in a stock receipt. Numbered messages follow the request from Inventory Staff to the interface, router, service, and database. The service saves the receipt and stock changes, then returns the result to the interface."
+  },
+  {
+    "n": 15,
+    "name": "Interaction Overview Diagram",
+    "w": 900,
+    "h": 1060,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 890,
+        "h": 1050
+      },
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 490,
+        "h": 45
+      },
+      {
+        "kind": "text",
+        "x": 18,
+        "y": 9,
+        "w": 465,
+        "h": 35,
+        "s": "UML  Inventory Interaction Overview",
+        "size": 24,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "dot",
+        "x": 450,
+        "y": 70,
+        "final": false
+      },
+      {
+        "kind": "round",
+        "x": 250,
+        "y": 105,
+        "w": 400,
+        "h": 55
+      },
+      {
+        "kind": "text",
+        "x": 260,
+        "y": 113,
+        "w": 380,
+        "h": 39,
+        "s": "Open Inventory Workspace",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            82
+          ],
+          [
+            450,
+            105
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 40,
+        "y": 200,
+        "w": 820,
+        "h": 230
+      },
+      {
+        "kind": "text",
+        "x": 55,
+        "y": 207,
+        "w": 790,
+        "h": 35,
+        "s": "ref  1. Authenticate and authorize",
+        "size": 23,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 90,
+        "y": 255,
+        "w": 180,
+        "h": 60
+      },
+      {
+        "kind": "text",
+        "x": 100,
+        "y": 263,
+        "w": 160,
+        "h": 44,
+        "s": "Inventory Staff",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            180,
+            315
+          ],
+          [
+            180,
+            415
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 360,
+        "y": 255,
+        "w": 180,
+        "h": 60
+      },
+      {
+        "kind": "text",
+        "x": 370,
+        "y": 263,
+        "w": 160,
+        "h": 44,
+        "s": "Access Checks",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            315
+          ],
+          [
+            450,
+            415
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 640,
+        "y": 255,
+        "w": 180,
+        "h": 60
+      },
+      {
+        "kind": "text",
+        "x": 650,
+        "y": 263,
+        "w": 160,
+        "h": 44,
+        "s": "User Records",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            730,
+            315
+          ],
+          [
+            730,
+            415
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            180,
+            348
+          ],
+          [
+            450,
+            348
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 190,
+        "y": 311,
+        "w": 250,
+        "h": 38,
+        "s": "verify identity / role",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            393
+          ],
+          [
+            730,
+            393
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 475,
+        "y": 350,
+        "w": 230,
+        "h": 38,
+        "s": "process request",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            160
+          ],
+          [
+            450,
+            200
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "diamond",
+        "x": 340,
+        "y": 470,
+        "w": 220,
+        "h": 95
+      },
+      {
+        "kind": "text",
+        "x": 350,
+        "y": 478,
+        "w": 200,
+        "h": 79,
+        "s": "Authorized?",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            430
+          ],
+          [
+            450,
+            470
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "round",
+        "x": 675,
+        "y": 487,
+        "w": 185,
+        "h": 70
+      },
+      {
+        "kind": "text",
+        "x": 685,
+        "y": 495,
+        "w": 165,
+        "h": 54,
+        "s": "Show denied access",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            560,
+            518
+          ],
+          [
+            675,
+            518
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 570,
+        "y": 471,
+        "w": 90,
+        "h": 38,
+        "s": "No",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "dot",
+        "x": 800,
+        "y": 600,
+        "final": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            767,
+            557
+          ],
+          [
+            800,
+            588
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 40,
+        "y": 620,
+        "w": 820,
+        "h": 230
+      },
+      {
+        "kind": "text",
+        "x": 55,
+        "y": 627,
+        "w": 790,
+        "h": 35,
+        "s": "ref  2. Receive inventory stock (Figure 12)",
+        "size": 23,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 90,
+        "y": 675,
+        "w": 180,
+        "h": 60
+      },
+      {
+        "kind": "text",
+        "x": 100,
+        "y": 683,
+        "w": 160,
+        "h": 44,
+        "s": "Receiving UI",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            180,
+            735
+          ],
+          [
+            180,
+            835
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 360,
+        "y": 675,
+        "w": 180,
+        "h": 60
+      },
+      {
+        "kind": "text",
+        "x": 370,
+        "y": 683,
+        "w": 160,
+        "h": 44,
+        "s": "Stock Service",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            735
+          ],
+          [
+            450,
+            835
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 640,
+        "y": 675,
+        "w": 180,
+        "h": 60
+      },
+      {
+        "kind": "text",
+        "x": 650,
+        "y": 683,
+        "w": 160,
+        "h": 44,
+        "s": "Models / MySQL",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            730,
+            735
+          ],
+          [
+            730,
+            835
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            180,
+            768
+          ],
+          [
+            450,
+            768
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 190,
+        "y": 731,
+        "w": 250,
+        "h": 38,
+        "s": "submit delivery",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            813
+          ],
+          [
+            730,
+            813
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 475,
+        "y": 770,
+        "w": 230,
+        "h": 38,
+        "s": "process request",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            565
+          ],
+          [
+            450,
+            620
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 460,
+        "y": 575,
+        "w": 90,
+        "h": 38,
+        "s": "Yes",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 185,
+        "y": 920,
+        "w": 530,
+        "h": 80
+      },
+      {
+        "kind": "text",
+        "x": 195,
+        "y": 928,
+        "w": 510,
+        "h": 64,
+        "s": "ref  3. Refresh inventory balances\nGET inventory data → display current stock",
+        "size": 23,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            850
+          ],
+          [
+            450,
+            920
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "dot",
+        "x": 450,
+        "y": 1040,
+        "final": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            450,
+            1000
+          ],
+          [
+            450,
+            1028
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      }
+    ],
+    "caption": "Overview of Inventory Receiving Interactions",
+    "description": "Figure 15 combines activity decisions with the interactions used by the inventory module. Authentication precedes stock receiving, and a successful receipt is followed by a balance refresh. The receiving interaction is expanded in Figure 12; denied access ends the current attempt."
+  },
+  {
+    "n": 16,
+    "name": "Timing Diagram",
+    "w": 900,
+    "h": 850,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 890,
+        "h": 840
+      },
+      {
+        "kind": "rect",
+        "x": 5,
+        "y": 5,
+        "w": 412,
+        "h": 45
+      },
+      {
+        "kind": "text",
+        "x": 18,
+        "y": 9,
+        "w": 387,
+        "h": 35,
+        "s": "UML  Inventory Timing Diagram",
+        "size": 24,
+        "bold": true,
+        "align": "left"
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 65,
+        "w": 850,
+        "h": 50,
+        "s": "Receive Stock: illustrative 0–4 second timeline",
+        "size": 25,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            150
+          ],
+          [
+            220,
+            710
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 185,
+        "y": 118,
+        "w": 70,
+        "h": 30,
+        "s": "0",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            300,
+            150
+          ],
+          [
+            300,
+            710
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 265,
+        "y": 118,
+        "w": 70,
+        "h": 30,
+        "s": "0.5",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            380,
+            150
+          ],
+          [
+            380,
+            710
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 345,
+        "y": 118,
+        "w": 70,
+        "h": 30,
+        "s": "1",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            460,
+            150
+          ],
+          [
+            460,
+            710
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 425,
+        "y": 118,
+        "w": 70,
+        "h": 30,
+        "s": "1.5",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            540,
+            150
+          ],
+          [
+            540,
+            710
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 505,
+        "y": 118,
+        "w": 70,
+        "h": 30,
+        "s": "2",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            620,
+            150
+          ],
+          [
+            620,
+            710
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 585,
+        "y": 118,
+        "w": 70,
+        "h": 30,
+        "s": "2.5",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            700,
+            150
+          ],
+          [
+            700,
+            710
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 665,
+        "y": 118,
+        "w": 70,
+        "h": 30,
+        "s": "3",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            780,
+            150
+          ],
+          [
+            780,
+            710
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 745,
+        "y": 118,
+        "w": 70,
+        "h": 30,
+        "s": "3.5",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            860,
+            150
+          ],
+          [
+            860,
+            710
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 825,
+        "y": 118,
+        "w": 70,
+        "h": 30,
+        "s": "4",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            150
+          ],
+          [
+            875,
+            150
+          ]
+        ],
+        "arrow": "filled",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 15,
+        "y": 190,
+        "w": 175,
+        "h": 80
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 198,
+        "w": 155,
+        "h": 64,
+        "s": "Inventory Staff",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 220,
+        "y": 150,
+        "w": 80,
+        "h": 40,
+        "s": "Submit",
+        "size": 20,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "text",
+        "x": 780,
+        "y": 150,
+        "w": 80,
+        "h": 40,
+        "s": "View",
+        "size": 20,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            235
+          ],
+          [
+            220,
+            235
+          ],
+          [
+            220,
+            195
+          ],
+          [
+            300,
+            195
+          ],
+          [
+            300,
+            235
+          ],
+          [
+            780,
+            235
+          ],
+          [
+            780,
+            195
+          ],
+          [
+            860,
+            195
+          ],
+          [
+            860,
+            235
+          ],
+          [
+            860,
+            235
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 15,
+        "y": 295,
+        "w": 175,
+        "h": 80
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 303,
+        "w": 155,
+        "h": 64,
+        "s": "Receiving UI",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 260,
+        "y": 255,
+        "w": 104,
+        "h": 40,
+        "s": "Send",
+        "size": 20,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "text",
+        "x": 732,
+        "y": 255,
+        "w": 127.99999999999997,
+        "h": 40,
+        "s": "Display result",
+        "size": 20,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            340
+          ],
+          [
+            260,
+            340
+          ],
+          [
+            260,
+            300
+          ],
+          [
+            364,
+            300
+          ],
+          [
+            364,
+            340
+          ],
+          [
+            732,
+            340
+          ],
+          [
+            732,
+            300
+          ],
+          [
+            860,
+            300
+          ],
+          [
+            860,
+            340
+          ],
+          [
+            860,
+            340
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 15,
+        "y": 400,
+        "w": 175,
+        "h": 80
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 408,
+        "w": 155,
+        "h": 64,
+        "s": "Access Checks",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 300,
+        "y": 360,
+        "w": 128,
+        "h": 40,
+        "s": "Authorize",
+        "size": 20,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            445
+          ],
+          [
+            300,
+            445
+          ],
+          [
+            300,
+            405
+          ],
+          [
+            428,
+            405
+          ],
+          [
+            428,
+            445
+          ],
+          [
+            860,
+            445
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 15,
+        "y": 505,
+        "w": 175,
+        "h": 80
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 513,
+        "w": 155,
+        "h": 64,
+        "s": "Stock Service",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 428,
+        "y": 465,
+        "w": 112,
+        "h": 40,
+        "s": "Validate",
+        "size": 20,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "text",
+        "x": 540,
+        "y": 465,
+        "w": 192.00000000000003,
+        "h": 40,
+        "s": "Receive stock",
+        "size": 20,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            550
+          ],
+          [
+            428,
+            550
+          ],
+          [
+            428,
+            510
+          ],
+          [
+            540,
+            510
+          ],
+          [
+            540,
+            550
+          ],
+          [
+            540,
+            550
+          ],
+          [
+            540,
+            510
+          ],
+          [
+            732,
+            510
+          ],
+          [
+            732,
+            550
+          ],
+          [
+            860,
+            550
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "rect",
+        "x": 15,
+        "y": 610,
+        "w": 175,
+        "h": 80
+      },
+      {
+        "kind": "text",
+        "x": 25,
+        "y": 618,
+        "w": 155,
+        "h": 64,
+        "s": "Sequelize / MySQL",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "text",
+        "x": 428,
+        "y": 570,
+        "w": 112,
+        "h": 40,
+        "s": "Lock",
+        "size": 20,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "text",
+        "x": 540,
+        "y": 570,
+        "w": 192.00000000000003,
+        "h": 40,
+        "s": "Write / commit",
+        "size": 20,
+        "bold": false,
+        "align": "center",
+        "background": true
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            220,
+            655
+          ],
+          [
+            428,
+            655
+          ],
+          [
+            428,
+            615
+          ],
+          [
+            540,
+            615
+          ],
+          [
+            540,
+            655
+          ],
+          [
+            540,
+            655
+          ],
+          [
+            540,
+            615
+          ],
+          [
+            732,
+            615
+          ],
+          [
+            732,
+            655
+          ],
+          [
+            860,
+            655
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 20,
+        "y": 765,
+        "w": 860,
+        "h": 55,
+        "s": "Times model the order of work; they are not measured performance targets.",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      }
+    ],
+    "caption": "Timing of the Stock Receiving Process",
+    "description": "Figure 16 models when each participant is active during a stock receipt: submission, authorization, validation, persistence, and display. The stepped timelines show how the interface, backend, and database coordinate. The four-second timeline is illustrative and does not represent measured response times."
+  },
+  {
+    "n": 17,
+    "name": "Requirement Diagram (SysML)",
+    "w": 900,
+    "h": 1100,
+    "ops": [
+      {
+        "kind": "rect",
+        "x": 180,
+        "y": 30,
+        "w": 540,
+        "h": 128
+      },
+      {
+        "kind": "text",
+        "x": 185,
+        "y": 35,
+        "w": 530,
+        "h": 40,
+        "s": "«requirement» INV-00",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            180,
+            82
+          ],
+          [
+            720,
+            82
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 190,
+        "y": 89,
+        "w": 520,
+        "h": 62,
+        "s": "Inventory Management\nSupport accurate, controlled stock operations.",
+        "size": 21,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 25,
+        "y": 300,
+        "w": 500,
+        "h": 125
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 306,
+        "w": 480,
+        "h": 35,
+        "s": "«requirement» INV-01: Access Control",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            345
+          ],
+          [
+            525,
+            345
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 352,
+        "w": 470,
+        "h": 64,
+        "s": "Approved Inventory / Admin\nmay change inventory.",
+        "size": 22,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 655,
+        "y": 305,
+        "w": 225,
+        "h": 115
+      },
+      {
+        "kind": "text",
+        "x": 665,
+        "y": 313,
+        "w": 205,
+        "h": 99,
+        "s": "«component»\nAccess Middleware",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            655,
+            365
+          ],
+          [
+            525,
+            365
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 530,
+        "y": 314,
+        "w": 120,
+        "h": 38,
+        "s": "«satisfy»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            365
+          ],
+          [
+            10,
+            365
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 25,
+        "y": 450,
+        "w": 500,
+        "h": 125
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 456,
+        "w": 480,
+        "h": 35,
+        "s": "«requirement» INV-02: Reliable Receiving",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            495
+          ],
+          [
+            525,
+            495
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 502,
+        "w": 470,
+        "h": 64,
+        "s": "Commit related records together;\nrepeat requests do not duplicate stock.",
+        "size": 22,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 655,
+        "y": 455,
+        "w": 225,
+        "h": 115
+      },
+      {
+        "kind": "text",
+        "x": 665,
+        "y": 463,
+        "w": 205,
+        "h": 99,
+        "s": "«component»\nStock Receiving Service",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            655,
+            515
+          ],
+          [
+            525,
+            515
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 530,
+        "y": 464,
+        "w": 120,
+        "h": 38,
+        "s": "«satisfy»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            515
+          ],
+          [
+            10,
+            515
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 25,
+        "y": 600,
+        "w": 500,
+        "h": 125
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 606,
+        "w": 480,
+        "h": 35,
+        "s": "«requirement» INV-03: Safe Availability",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            645
+          ],
+          [
+            525,
+            645
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 652,
+        "w": 470,
+        "h": 64,
+        "s": "Exclude expired / held batches\nand protect reserved stock.",
+        "size": 22,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 655,
+        "y": 605,
+        "w": 225,
+        "h": 115
+      },
+      {
+        "kind": "text",
+        "x": 665,
+        "y": 613,
+        "w": 205,
+        "h": 99,
+        "s": "«component»\nStock / Availability Services",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            655,
+            665
+          ],
+          [
+            525,
+            665
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 530,
+        "y": 614,
+        "w": 120,
+        "h": 38,
+        "s": "«satisfy»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            665
+          ],
+          [
+            10,
+            665
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 25,
+        "y": 750,
+        "w": 500,
+        "h": 125
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 756,
+        "w": 480,
+        "h": 35,
+        "s": "«requirement» INV-04: Controlled Counts",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            795
+          ],
+          [
+            525,
+            795
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 802,
+        "w": 470,
+        "h": 64,
+        "s": "Reject stale counts and apply\nthe configured approval policy.",
+        "size": 22,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 655,
+        "y": 755,
+        "w": 225,
+        "h": 115
+      },
+      {
+        "kind": "text",
+        "x": 665,
+        "y": 763,
+        "w": 205,
+        "h": 99,
+        "s": "«component»\nCount / Review Services",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            655,
+            815
+          ],
+          [
+            525,
+            815
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 530,
+        "y": 764,
+        "w": 120,
+        "h": 38,
+        "s": "«satisfy»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            815
+          ],
+          [
+            10,
+            815
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "rect",
+        "x": 25,
+        "y": 900,
+        "w": 500,
+        "h": 125
+      },
+      {
+        "kind": "text",
+        "x": 35,
+        "y": 906,
+        "w": 480,
+        "h": 35,
+        "s": "«requirement» INV-05: Traceable History",
+        "size": 23,
+        "bold": true,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            945
+          ],
+          [
+            525,
+            945
+          ]
+        ],
+        "arrow": "",
+        "dash": false
+      },
+      {
+        "kind": "text",
+        "x": 40,
+        "y": 952,
+        "w": 470,
+        "h": 64,
+        "s": "Store quantity changes,\nactor, and reason.",
+        "size": 22,
+        "bold": false,
+        "align": "left"
+      },
+      {
+        "kind": "rect",
+        "x": 655,
+        "y": 905,
+        "w": 225,
+        "h": 115
+      },
+      {
+        "kind": "text",
+        "x": 665,
+        "y": 913,
+        "w": 205,
+        "h": 99,
+        "s": "«component»\nMovement Records",
+        "size": 22,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            655,
+            965
+          ],
+          [
+            525,
+            965
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 530,
+        "y": 914,
+        "w": 120,
+        "h": 38,
+        "s": "«satisfy»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            25,
+            965
+          ],
+          [
+            10,
+            965
+          ]
+        ],
+        "arrow": "",
+        "dash": true
+      },
+      {
+        "kind": "text",
+        "x": 180,
+        "y": 195,
+        "w": 260,
+        "h": 32,
+        "s": "«deriveReqt»",
+        "size": 21,
+        "bold": false,
+        "align": "center"
+      },
+      {
+        "kind": "rect",
+        "x": 853,
+        "y": 321,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 325,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 335,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 853,
+        "y": 471,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 475,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 485,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 853,
+        "y": 621,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 625,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 635,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 853,
+        "y": 771,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 775,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 785,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 853,
+        "y": 921,
+        "w": 18,
+        "h": 24
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 925,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "rect",
+        "x": 848,
+        "y": 935,
+        "w": 9,
+        "h": 6
+      },
+      {
+        "kind": "line",
+        "points": [
+          [
+            10,
+            965
+          ],
+          [
+            10,
+            245
+          ],
+          [
+            450,
+            245
+          ],
+          [
+            450,
+            158
+          ]
+        ],
+        "arrow": "open",
+        "dash": true
+      }
+    ],
+    "caption": "Requirements of the Inventory Module",
+    "description": "Figure 17 derives the inventory module’s supporting requirements from its overall purpose. The requirements cover access control, reliable receiving, safe availability, controlled counts, and traceable history. Satisfy links identify the implementation elements responsible for these rules."
+  }
+]

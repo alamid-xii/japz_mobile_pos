@@ -1,0 +1,48 @@
+[
+  {
+    "number": 1,
+    "name": "System Architecture Diagram \u2014 Option A",
+    "slug": "Option-A-Minimal-Technical-Architecture",
+    "width": 1500,
+    "height": 1090,
+    "description": "The inventory web client exchanges authenticated JSON requests with one Express inventory API. Access control, inventory services and Sequelize persistence cooperate within the application layer, which stores and reads inventory records in MySQL.",
+    "note": "Vite provides frontend development/build tooling. Prepared stock uses MenuItem; recipe components are JSON values. This view describes the checked source architecture.",
+    "sources": [
+      "japz-web/src/features/inventory/InventoryLayout.tsx",
+      "japz-web/src/features/inventory/InventoryData.tsx",
+      "japz-web/src/services/api.ts",
+      "japz-backend/routes/inventory.js",
+      "japz-backend/middleware/access.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-backend/services/menuAvailability.js",
+      "japz-backend/services/inventorySettings.js",
+      "japz-backend/models/inventoryModels.js",
+      "japz-backend/models/menuItemModel.js",
+      "japz-backend/models/db.js"
+    ],
+    "option": "A"
+  },
+  {
+    "number": 1,
+    "name": "System Architecture Diagram \u2014 Option B",
+    "slug": "Option-B-Structured-Component-Architecture",
+    "width": 1800,
+    "height": 1090,
+    "description": "This left-to-right view follows the web client through the guarded inventory API to peer handler/service groups and shared Sequelize persistence. The MySQL boundary distinguishes inventory records from user, menu and order references shared with the application.",
+    "note": "Reports and movement history run in inventory route handlers. Handler/service groups share Sequelize models within one Express backend.",
+    "sources": [
+      "japz-web/src/features/inventory/InventoryLayout.tsx",
+      "japz-web/src/features/inventory/InventoryData.tsx",
+      "japz-web/src/services/api.ts",
+      "japz-backend/routes/inventory.js",
+      "japz-backend/middleware/access.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-backend/services/menuAvailability.js",
+      "japz-backend/services/inventorySettings.js",
+      "japz-backend/models/inventoryModels.js",
+      "japz-backend/models/menuItemModel.js",
+      "japz-backend/models/db.js"
+    ],
+    "option": "B"
+  }
+]

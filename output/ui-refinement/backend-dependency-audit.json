@@ -1,0 +1,110 @@
+﻿{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "handlebars": {
+      "name": "handlebars",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241676,
+          "name": "handlebars",
+          "dependency": "handlebars",
+          "title": "Handlebars: JavaScript Injection via Unsafe Inline Embedding of Precompiled Templates",
+          "url": "https://github.com/advisories/GHSA-xw65-4hp5-5hc7",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-116"
+          ],
+          "cvss": {
+            "score": 4.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=4.0.0 <=4.7.9"
+        },
+        {
+          "source": 1241677,
+          "name": "handlebars",
+          "dependency": "handlebars",
+          "title": "Handlebars: JavaScript Injection via AST Type Confusion in compile (bypass of CVE-2026-33937)",
+          "url": "https://github.com/advisories/GHSA-8r5x-fm3f-whwj",
+          "severity": "critical",
+          "cwe": [
+            "CWE-94",
+            "CWE-843"
+          ],
+          "cvss": {
+            "score": 9.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": ">=4.0.0 <=4.7.9"
+        },
+        {
+          "source": 1242173,
+          "name": "handlebars",
+          "dependency": "handlebars",
+          "title": "Handlebars: JavaScript Injection via Own Property Check Bypass",
+          "url": "https://github.com/advisories/GHSA-p8wg-vrv2-v86f",
+          "severity": "critical",
+          "cwe": [
+            "CWE-184",
+            "CWE-1289"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=3.0.0 <=4.7.9"
+        }
+      ],
+      "effects": [
+        "hbs"
+      ],
+      "range": "3.0.0 - 4.7.9",
+      "nodes": [
+        "node_modules/handlebars"
+      ],
+      "fixAvailable": {
+        "name": "hbs",
+        "version": "2.9.0",
+        "isSemVerMajor": true
+      }
+    },
+    "hbs": {
+      "name": "hbs",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [
+        "handlebars"
+      ],
+      "effects": [],
+      "range": "1.0.5 - 1.0.9 || >=3.0.0",
+      "nodes": [
+        "node_modules/hbs"
+      ],
+      "fixAvailable": {
+        "name": "hbs",
+        "version": "2.9.0",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 2,
+      "total": 2
+    },
+    "dependencies": {
+      "prod": 204,
+      "dev": 0,
+      "optional": 1,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 204
+    }
+  }
+}

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1000" viewBox="0 0 900 1000"><title>Communication Diagram</title><desc>Figure 14 shows the receiving collaboration as a communication diagram with numbered messages. Staff submit delivery data to the receiving interface, which posts to the Inventory router. The access-middleware participant verifies JWT identity, approved status and permitted role before the protected handler calls receiveStock. The middleware check must complete successfully before the protected service performs stock writes.
+
+The service coordinates the transaction, operation-identity lookup, repeated line writes, stored result and commit through Sequelize/MySQL. The asterisk denotes repetition for each delivery line. Replies follow the same collaboration links back to the UI. Participant names are documentation roles for implemented modules and records, not newly added runtime classes. Figure 12 contains the more detailed replay and rollback alternatives.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="5" y="5" width="890" height="990" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="5" y="5" width="570" height="43" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="start" dominant-baseline="middle"><tspan x="18" y="25.5">sd  Stock Receiving (communication view)</tspan></text>
+<rect x="35" y="95" width="350" height="93" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="210" y="119">: InventoryStaff</tspan></text>
+<polyline points="35,145 385,145" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="45" y="166.5">delivery data</tspan></text>
+<rect x="515" y="95" width="350" height="93" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="119">ui : ReceivingInterface</tspan></text>
+<polyline points="515,145 865,145" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="525" y="166.5">requestId / line inputs</tspan></text>
+<rect x="515" y="350" width="350" height="93" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="374">api : InventoryRouter</tspan></text>
+<polyline points="515,400 865,400" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="525" y="421.5">/api/inventory/receive</tspan></text>
+<rect x="35" y="350" width="350" height="93" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="210" y="374">access : Middleware</tspan></text>
+<polyline points="35,400 385,400" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="45" y="421.5">JWT / approved User / role</tspan></text>
+<rect x="515" y="620" width="350" height="93" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="644">service : InventoryService</tspan></text>
+<polyline points="515,670 865,670" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="525" y="678.9">receiveStock /</tspan><tspan x="525" y="704.1">inventoryOperation</tspan></text>
+<rect x="35" y="620" width="350" height="93" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="210" y="644">db : Sequelize / MySQL</tspan></text>
+<polyline points="35,670 385,670" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="45" y="691.5">receipt / batches / movements</tspan></text>
+<polyline points="385,158 515,158" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="504,163 515,158 504,153" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="128">1: submit</tspan></text>
+<polyline points="690,188 690,350" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="685,339 690,350 695,339" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="682.5" y="288">1.1: POST receive</tspan></text>
+<polyline points="515,410 385,410" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="396,405 385,410 396,415" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="447" y="482">1.1.1: authenticate / authorize</tspan></text>
+<polyline points="690,443 690,620" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="685,609 690,620 695,609" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="680" y="552">1.1.2: receiveStock</tspan></text>
+<polyline points="515,686 385,686" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="396,681 385,686 396,691" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450.5" y="777">1.1.2.1: transaction / replay check</tspan><tspan x="450.5" y="801">1.1.2.2*: line writes; save result; commit</tspan></text>
+<polyline points="385,705 515,705" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="504,710 515,705 504,700" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="847">1.1.2.3: receipt result</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="934.9">Replies return along the same links. * denotes repetition per delivery line.</tspan><tspan x="450" y="960.1">The middleware check completes before the protected route calls the service.</tspan></text>
+</svg>

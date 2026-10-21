@@ -1,0 +1,87 @@
+﻿[
+    {
+        "images":  1,
+        "page":  1,
+        "text":  "JAPZ ERP: JAPZ Grill Burger \u0026 Bistro\rInventory Management Module\rSystem Architecture Diagram\r/\rFigure 1. System Architecture of the JAPZ Inventory Module\rFigure 1 shows how Inventory Staff access the inventory interface. The Express API checks permissions and processes stock, recipe, report, and settings requests, while Sequelize stores and retrieves inventory records in MySQL.\r"
+    },
+    {
+        "images":  1,
+        "page":  2,
+        "text":  "Class Diagram\r/\rFigure 2. Core Inventory Classes and Relationships\rFigure 2 shows the main classes used to receive and track supplies. A receipt contains delivery lines, each linked to an item and batch; movements record quantity changes. Supporting classes handle counts, waste reports, recipes, reservations, and settings.\r"
+    },
+    {
+        "images":  1,
+        "page":  3,
+        "text":  "Component Diagram\r/\rFigure 3. Components of the Inventory Module\rFigure 3 shows the software components that support inventory operations. Inventory screens use a shared data provider and HTTP client to access the API. The router works with access checks, inventory services, and database models to process requests.\r"
+    },
+    {
+        "images":  1,
+        "page":  4,
+        "text":  "Deployment Diagram\r/\rFigure 4. Local Deployment of the Inventory Module\rFigure 4 shows the configured local deployment of the inventory module. Staff use a browser to access the React application, which communicates with the Express API. The backend reads and saves inventory data in MySQL through Sequelize.\r"
+    },
+    {
+        "images":  1,
+        "page":  5,
+        "text":  "Object Diagram\r/\rFigure 5. Example Objects After Receiving Flour\rFigure 5 presents an illustrative stock receipt for five kilograms of flour. The system converts the delivery to 5,000 grams and links the supplier, receipt, line, batch, and movement records. These sample values demonstrate the model and are not actual business records.\r"
+    },
+    {
+        "images":  1,
+        "page":  6,
+        "text":  "Package Diagram\r/\rFigure 6. Packages of the Inventory Module\rFigure 6 groups the inventory source into interface, client, route, service, and model packages. The dependencies show how inventory pages reach the backend and database. This organization separates screen behavior, business rules, and data storage.\r"
+    },
+    {
+        "images":  1,
+        "page":  7,
+        "text":  "Composite Structure Diagram\r/\rFigure 7. Internal Collaboration Within the Inventory API\rFigure 7 shows the collaborating parts inside the inventory API. Access checks pass authorized requests to route handlers, which call inventory services and models. The HTTP and SQL ports represent the module boundaries used for requests and persistence.\r"
+    },
+    {
+        "images":  1,
+        "page":  8,
+        "text":  "Profile Diagram\r/\rFigure 8. Inventory Documentation Profile\rFigure 8 defines inventory-specific stereotypes for UML documentation. InventoryRecord identifies stored records, StockService identifies service components, and StockOperation identifies stock actions. These labels are modeling conventions and are not an additional application feature.\r"
+    },
+    {
+        "images":  1,
+        "page":  9,
+        "text":  "Data Flow Diagram (DFD)\r/\rFigure 9. Inventory Data Flow\rFigure 9 shows how inventory information moves between staff, processes, and data stores. Supply maintenance saves item and supplier records, while stock operations update receipts, batches, and movements. The reporting process reads these records to display balances and stock history.\r"
+    },
+    {
+        "images":  1,
+        "page":  10,
+        "text":  "Use Case Diagram\r/\rFigure 10. Inventory Staff Use Cases\rFigure 10 shows the inventory goals available to Inventory Staff. Receiving includes delivery validation and unit conversion; count review and CSV export extend the related goals when their conditions apply. Admin handles required count approvals and movement reversals.\r"
+    },
+    {
+        "images":  1,
+        "page":  11,
+        "text":  "Activity Diagram\r/\rFigure 11. Stock Receiving Activity\rFigure 11 presents the main Inventory Staff workflow after authentication. Staff can record stock operations or view balances, history, and reports. Stock changes are validated and saved together, while counts that require approval remain pending until Admin review.\r"
+    },
+    {
+        "images":  1,
+        "page":  12,
+        "text":  "Sequence Diagram\r/\rFigure 12. Sequence of a Successful Stock Receipt\rFigure 12 shows the order of messages during a new stock receipt. The interface submits the delivery and request ID, the backend validates and saves the stock changes, and the database commits the transaction. The saved receipt is returned so the interface can refresh the display.\r"
+    },
+    {
+        "images":  1,
+        "page":  13,
+        "text":  "State Machine Diagram\r/\rFigure 13. Stock Count Status Changes\rFigure 13 shows the implemented stock count states: pending, applied, rejected, and stale. A count applies immediately when review is unnecessary; otherwise, Admin reviews it. Approval changes the balance only when the stock version and reserved quantities remain valid.\r"
+    },
+    {
+        "images":  1,
+        "page":  14,
+        "text":  "Communication Diagram\r/\rFigure 14. Object Communication During Receiving\rFigure 14 shows the collaborating objects in a stock receipt. Numbered messages follow the request from Inventory Staff to the interface, router, service, and database. The service saves the receipt and stock changes, then returns the result to the interface.\r"
+    },
+    {
+        "images":  1,
+        "page":  15,
+        "text":  "Interaction Overview Diagram\r/\rFigure 15. Overview of Inventory Receiving Interactions\rFigure 15 combines activity decisions with the interactions used by the inventory module. Authentication precedes stock receiving, and a successful receipt is followed by a balance refresh. The receiving interaction is expanded in Figure 12; denied access ends the current attempt.\r"
+    },
+    {
+        "images":  1,
+        "page":  16,
+        "text":  "Timing Diagram\r/\rFigure 16. Timing of Inventory Data Refresh\rFigure 16 models when each participant is active during a stock receipt: submission, authorization, validation, persistence, and display. The stepped timelines show how the interface, backend, and database coordinate. The four-second timeline is illustrative and does not represent measured response times.\r"
+    },
+    {
+        "images":  1,
+        "page":  17,
+        "text":  "Requirement Diagram (SysML)\r/\rFigure 17. Requirements of the Inventory Module\rFigure 17 derives the inventory module’s supporting requirements from its overall purpose. The requirements cover access control, reliable receiving, safe availability, controlled counts, and traceable history. Satisfy links identify the implementation elements responsible for these rules.\r"
+    }
+]

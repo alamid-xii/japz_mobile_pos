@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1030" viewBox="0 0 900 1030"><title>Package Diagram</title><desc>Figure 6 organizes the implementation by its real source responsibilities. The features/inventory package contains screens, shared controls, InventoryData and data helpers. Client support represents the shared hooks, protected-route component, request-ID utility and Axios transport. Its connection to backend routes represents an HTTP contract rather than a JavaScript import across the browser/server boundary.
+
+The backend routes use access middleware and domain services. Middleware reads User records, while Inventory services use stock and directly shared models through the models package. models/index.js registers associations and db.js supplies the Sequelize connection. MySQL is an external persistence service, not a source-code package. These package dependencies describe code organization without asserting separate deployment units.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="35" y="40" width="830" height="930" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="66">Inventory source packages (logical folder view)</tspan></text>
+<rect x="65" y="152" width="350" height="123" fill="none" stroke="black" stroke-width="1.8"/><rect x="65" y="130" width="105" height="22" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="240" y="176.1">«package» features/inventory</tspan><tspan x="240" y="202.5">Screens / shared controls</tspan><tspan x="240" y="228.89999999999998">InventoryData.tsx + data.ts</tspan></text>
+<rect x="500" y="152" width="335" height="123" fill="none" stroke="black" stroke-width="1.8"/><rect x="500" y="130" width="105" height="22" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="667.5" y="176.1">«package» client support</tspan><tspan x="667.5" y="202.5">hooks / components / utils</tspan><tspan x="667.5" y="228.89999999999998">services/api.ts</tspan></text>
+<polyline points="415,210 500,210" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="489,215 500,210 489,205" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="458.5" y="185">«use»</tspan></text>
+<rect x="65" y="437" width="350" height="113" fill="none" stroke="black" stroke-width="1.8"/><rect x="65" y="415" width="105" height="22" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="240" y="468.7">«package» routes</tspan><tspan x="240" y="496.3">inventory.js / index.js</tspan></text>
+<rect x="500" y="437" width="335" height="113" fill="none" stroke="black" stroke-width="1.8"/><rect x="500" y="415" width="105" height="22" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="667.5" y="468.7">«package» middleware</tspan><tspan x="667.5" y="496.3">access.js</tspan></text>
+<polyline points="650,275 650,338 240,338 240,415" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="235,404 240,415 245,404" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="438" y="309">HTTP JSON contract</tspan></text>
+<polyline points="415,490 500,490" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="489,495 500,490 489,485" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="457.5" y="466">«use»</tspan></text>
+<rect x="65" y="687" width="350" height="128" fill="none" stroke="black" stroke-width="1.8"/><rect x="65" y="665" width="105" height="22" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="240" y="689.6">«package» services</tspan><tspan x="240" y="714.8000000000001">inventoryService /</tspan><tspan x="240" y="740">inventoryOrders</tspan><tspan x="240" y="765.2">menuAvailability /</tspan><tspan x="240" y="790.4">inventorySettings</tspan></text>
+<rect x="500" y="687" width="335" height="128" fill="none" stroke="black" stroke-width="1.8"/><rect x="500" y="665" width="105" height="22" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="667.5" y="714.8">«package» models</tspan><tspan x="667.5" y="740">inventoryModels + shared models</tspan><tspan x="667.5" y="765.1999999999999">index.js associations / db.js</tspan></text>
+<polyline points="240,550 240,665" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="235,654 240,665 245,654" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="315" y="605">«use»</tspan></text>
+<polyline points="415,740 500,740" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="489,745 500,740 489,735" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="457.5" y="716">«use»</tspan></text>
+<polyline points="665,550 665,665" fill="none" stroke="black" stroke-width="1.8" stroke-dasharray="8 6"/>
+<polyline points="660,654 665,665 670,654" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="745" y="604">User model</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="878.6">All backend models use db.js (Sequelize). MySQL is the persistence</tspan><tspan x="450" y="905">service,</tspan><tspan x="450" y="931.4">not a JavaScript package or an independent Inventory application module.</tspan></text>
+</svg>

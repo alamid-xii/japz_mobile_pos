@@ -1,0 +1,95 @@
+﻿
+> japz-web@0.0.0 build
+> tsc -b && vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 1856 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              1.02 kB │ gzip:   0.50 kB
+dist/assets/inventory-bMyeXxDV.css          13.43 kB │ gzip:   3.24 kB
+dist/assets/index-BjlronnW.css              51.25 kB │ gzip:   9.70 kB
+dist/assets/check-DSw8-3AE.js                0.13 kB │ gzip:   0.15 kB
+dist/assets/chevron-down-CafC52Q8.js         0.14 kB │ gzip:   0.15 kB
+dist/assets/Stocks-D3Vm_P3Q.js               0.14 kB │ gzip:   0.14 kB
+dist/assets/chevron-left-ioOEqH-r.js         0.14 kB │ gzip:   0.16 kB
+dist/assets/chevron-right-BOknqlq_.js        0.14 kB │ gzip:   0.15 kB
+dist/assets/plus-Dw0o7Vza.js                 0.17 kB │ gzip:   0.16 kB
+dist/assets/x-DAxq3UaC.js                    0.17 kB │ gzip:   0.16 kB
+dist/assets/clock-CcugiREs.js                0.18 kB │ gzip:   0.17 kB
+dist/assets/arrow-left-DGwDG9ol.js           0.18 kB │ gzip:   0.17 kB
+dist/assets/search-CHDChAlw.js               0.18 kB │ gzip:   0.17 kB
+dist/assets/circle-check-DBRzZiw3.js         0.19 kB │ gzip:   0.18 kB
+dist/assets/trending-up-BAOP-jaW.js          0.19 kB │ gzip:   0.18 kB
+dist/assets/requestId-B6ZXThSX.js            0.19 kB │ gzip:   0.16 kB
+dist/assets/circle-check-big-DhcsSPce.js     0.20 kB │ gzip:   0.19 kB
+dist/assets/user-BZzyQXSM.js                 0.20 kB │ gzip:   0.19 kB
+dist/assets/mail-D3OeIhwF.js                 0.23 kB │ gzip:   0.21 kB
+dist/assets/log-out-CnZvj92i.js              0.24 kB │ gzip:   0.20 kB
+dist/assets/download-BiDkl1if.js             0.24 kB │ gzip:   0.20 kB
+dist/assets/chart-column-CMmJhW5m.js         0.26 kB │ gzip:   0.21 kB
+dist/assets/map-pin-B7l2AaCi.js              0.27 kB │ gzip:   0.23 kB
+dist/assets/calendar-CWMLeDsy.js             0.27 kB │ gzip:   0.22 kB
+dist/assets/pagination-BVCKtCp_.js           0.29 kB │ gzip:   0.24 kB
+dist/assets/sticky-note-R-7jnHIe.js          0.29 kB │ gzip:   0.23 kB
+dist/assets/shopping-cart-BQd471GA.js        0.30 kB │ gzip:   0.24 kB
+dist/assets/users-B8grKoWz.js                0.32 kB │ gzip:   0.24 kB
+dist/assets/chef-hat-CCbZIk-2.js             0.32 kB │ gzip:   0.25 kB
+dist/assets/refresh-cw-xNO83-Jm.js           0.33 kB │ gzip:   0.24 kB
+dist/assets/power-0OgOjrkH.js                0.37 kB │ gzip:   0.28 kB
+dist/assets/utensils-crossed-BwpN7rzu.js     0.37 kB │ gzip:   0.27 kB
+dist/assets/package-CWTYJto6.js              0.38 kB │ gzip:   0.27 kB
+dist/assets/truck-DMX8FoPu.js                0.41 kB │ gzip:   0.28 kB
+dist/assets/clipboard-list-9bGiJwtn.js       0.42 kB │ gzip:   0.27 kB
+dist/assets/speaker-Bs3JKmH0.js              0.47 kB │ gzip:   0.31 kB
+dist/assets/file-text-CUV1XS9w.js            0.57 kB │ gzip:   0.34 kB
+dist/assets/eye-C0jK61xj.js                  0.65 kB │ gzip:   0.36 kB
+dist/assets/star-8aZrAm5p.js                 0.69 kB │ gzip:   0.40 kB
+dist/assets/settings-UFQYIc4S.js             0.94 kB │ gzip:   0.42 kB
+dist/assets/Welcome-B-GbxHSk.js              1.00 kB │ gzip:   0.52 kB
+dist/assets/Form-6DLHo3Je.js                 1.02 kB │ gzip:   0.59 kB
+dist/assets/createLucideIcon-BHXrRIlS.js     1.20 kB │ gzip:   0.69 kB
+dist/assets/ActionNotice-C8yiJCft.js         1.22 kB │ gzip:   0.58 kB
+dist/assets/RoleSelection-FAiPlg9M.js        1.26 kB │ gzip:   0.49 kB
+dist/assets/Profile-DdcLAi2j.js              1.48 kB │ gzip:   0.73 kB
+dist/assets/KitchenWaste-DOhWDwn7.js         1.67 kB │ gzip:   0.89 kB
+dist/assets/Profile-yIgOyaIn.js              1.96 kB │ gzip:   0.91 kB
+dist/assets/Suppliers-BkU_nm7b.js            2.80 kB │ gzip:   1.22 kB
+dist/assets/ForgotPassword-XVw_RxYT.js       3.14 kB │ gzip:   1.33 kB
+dist/assets/KitchenLayout-CJMkpram.js        3.84 kB │ gzip:   1.55 kB
+dist/assets/Profile-DJ6HQcbY.js              4.04 kB │ gzip:   1.59 kB
+dist/assets/AdminLayout-CnPwvb4l.js          4.07 kB │ gzip:   1.76 kB
+dist/assets/Login-C3u2xo6y.js                4.27 kB │ gzip:   1.70 kB
+dist/assets/Guide-8LhpmYyc.js                4.37 kB │ gzip:   1.68 kB
+dist/assets/Receipt-Bur2pBCM.js              4.77 kB │ gzip:   1.60 kB
+dist/assets/Overview-BtWQs-U7.js             5.43 kB │ gzip:   1.58 kB
+dist/assets/shared-CI5LjMc1.js               5.80 kB │ gzip:   2.45 kB
+dist/assets/Settings-Bpgjii9x.js             6.31 kB │ gzip:   2.07 kB
+dist/assets/Completed-CkZYPXzO.js            6.34 kB │ gzip:   2.11 kB
+dist/assets/CashierLayout-pOJJhPge.js        6.44 kB │ gzip:   2.12 kB
+dist/assets/ResetPassword-y0Z5vUn3.js        6.45 kB │ gzip:   1.91 kB
+dist/assets/Receiving-CYntPry4.js            6.55 kB │ gzip:   2.45 kB
+dist/assets/CashPayment-Ie8S0Gcz.js          7.07 kB │ gzip:   2.37 kB
+dist/assets/Feedback-BycVCfTb.js             7.34 kB │ gzip:   2.69 kB
+dist/assets/InventoryLayout-S_Sm0vND.js      7.39 kB │ gzip:   3.08 kB
+dist/assets/CountsLosses-BIOlERJb.js         7.74 kB │ gzip:   2.75 kB
+dist/assets/Supplies-Dm94lghE.js             8.62 kB │ gzip:   2.84 kB
+dist/assets/OrderHistory-JXFXWqAP.js         9.46 kB │ gzip:   2.42 kB
+dist/assets/Dashboard-Dh8OH6Hv.js           10.13 kB │ gzip:   3.71 kB
+dist/assets/HistoryReports-C8vjEi61.js      10.20 kB │ gzip:   3.32 kB
+dist/assets/Incoming-DclLLQpQ.js            10.29 kB │ gzip:   3.32 kB
+dist/assets/Register-C2mjiWHk.js            12.24 kB │ gzip:   3.41 kB
+dist/assets/PaymentSelection-CTXZEBcB.js    14.17 kB │ gzip:   4.18 kB
+dist/assets/MenuStock-lvek2O35.js           14.31 kB │ gzip:   4.46 kB
+dist/assets/ActiveOrders-D8UctlST.js        15.31 kB │ gzip:   3.64 kB
+dist/assets/Employees-VC1tTtvU.js           17.86 kB │ gzip:   4.35 kB
+dist/assets/FeedbackHub-DCA97Jeg.js         18.21 kB │ gzip:   5.23 kB
+dist/assets/Settings-DQeENOrP.js            19.81 kB │ gzip:   5.33 kB
+dist/assets/POS-BmTO7In9.js                 20.67 kB │ gzip:   5.42 kB
+dist/assets/DiscountsVouchers-CczYuSrq.js   22.07 kB │ gzip:   4.30 kB
+dist/assets/MenuInventory-zFeyUeum.js       27.84 kB │ gzip:   6.36 kB
+dist/assets/SalesForecast-CZ-JCPB-.js       29.64 kB │ gzip:   7.49 kB
+dist/assets/MenuBoard-BiYdKLYi.js          226.67 kB │ gzip:  52.76 kB
+dist/assets/index-KPF1lRGq.js              305.88 kB │ gzip: 100.68 kB
+✓ built in 14.60s

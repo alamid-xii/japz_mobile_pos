@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="990" viewBox="0 0 900 990"><title>Profile Diagram</title><desc>Figure 8 defines an Inventory-specific UML documentation profile. InventoryRecord extends the Class metaclass, StockService extends Component, and StockOperation extends Operation. Each extension uses a solid line with a filled triangle directed at the UML metaclass. The BaseUnit and StockAction enumerations type stereotype properties; they are not targets of metaclass extensions.
+
+The base-unit values match g, ml and pcs. StockAction now includes the movement actions defined by the model, including opening, reversal, hold and unhold. The constraints summarize non-negative balances, reservation protection and append-only history enforced by service logic. JAPZInventoryProfile is an illustrative modeling convention for this documentation, not an implemented profile engine or an additional application feature.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="25" y="57" width="850" height="848" fill="none" stroke="black" stroke-width="1.8"/><rect x="25" y="35" width="105" height="22" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="26" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="82">«profile» JAPZInventoryProfile</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="129">Documentation convention only; not an implemented runtime profile engine.</tspan></text>
+<rect x="45" y="215" width="230" height="152" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="160" y="239.2">«stereotype»</tspan><tspan x="160" y="266.8">InventoryRecord</tspan></text>
+<polyline points="45,293 275,293" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="18" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="55" y="319.2">unit : BaseUnit</tspan><tspan x="55" y="340.8">auditFields : Boolean</tspan></text>
+<rect x="45" y="485" width="230" height="92" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="160" y="516.6">«metaclass»</tspan><tspan x="160" y="545.4">Class</tspan></text>
+<polyline points="160,367 160,485" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="151,467 160,485 169,467" fill="black"/>
+<rect x="335" y="215" width="230" height="152" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="239.2">«stereotype»</tspan><tspan x="450" y="266.8">StockService</tspan></text>
+<polyline points="335,293 565,293" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="18" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="345" y="319.2">responsibility : String</tspan><tspan x="345" y="340.8">module = &quot;inventory&quot;</tspan></text>
+<rect x="335" y="485" width="230" height="92" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="516.6">«metaclass»</tspan><tspan x="450" y="545.4">Component</tspan></text>
+<polyline points="450,367 450,485" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="441,467 450,485 459,467" fill="black"/>
+<rect x="625" y="215" width="230" height="152" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="740" y="239.2">«stereotype»</tspan><tspan x="740" y="266.8">StockOperation</tspan></text>
+<polyline points="625,293 855,293" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="18" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="635" y="319.2">action : StockAction</tspan><tspan x="635" y="340.8">changesBalance : Boolean</tspan></text>
+<rect x="625" y="485" width="230" height="92" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="740" y="516.6">«metaclass»</tspan><tspan x="740" y="545.4">Operation</tspan></text>
+<polyline points="740,367 740,485" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="731,467 740,485 749,467" fill="black"/>
+<rect x="45" y="690" width="230" height="165" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="160" y="722.1">«enumeration»</tspan><tspan x="160" y="747.3000000000001">BaseUnit</tspan><tspan x="160" y="772.5">g</tspan><tspan x="160" y="797.7">ml</tspan><tspan x="160" y="822.9">pcs</tspan></text>
+<rect x="310" y="665" width="300" height="215" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="460" y="724.5">«enumeration» StockAction</tspan><tspan x="460" y="748.5">opening / receive / reserve</tspan><tspan x="460" y="772.5">consume / release / waste</tspan><tspan x="460" y="796.5">count / supplier_return</tspan><tspan x="460" y="820.5">reversal / hold / unhold</tspan></text>
+<path d="M625 690H837L855 708V850H625Z M837 690V708H855" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="740" y="704">«constraint»</tspan><tspan x="740" y="730.4">No negative stock</tspan><tspan x="740" y="756.8">Protect</tspan><tspan x="740" y="783.2">reservations</tspan><tspan x="740" y="809.6">Append movement</tspan><tspan x="740" y="836">history</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="934.9">Filled extension triangles target UML metaclasses. Enumerations type the tags;</tspan><tspan x="450" y="960.1">they are not extended metaclasses. Constraints summarize service rules.</tspan></text>
+</svg>

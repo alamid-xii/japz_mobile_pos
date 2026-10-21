@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1120" viewBox="0 0 900 1120"><title>Activity Diagram</title><desc>Figure 11 models the main choice between stock-changing work and read-only reports. Approved-user and role checks precede protected actions. On the stock path, receiving, count, waste and return inputs are validated against quantity, version and reservation rules. Related writes commit together, or a physical count is recorded as pending when policy requires Admin review; queuing that count leaves its balance unchanged.
+
+Invalid input or a failed transactional write produces an error and rolls back pending changes. The user can correct the input and retry with the form's request identity. The report branch retrieves filtered data and may generate a browser CSV download. A merge node reunites successful branches before refreshing or leaving the workspace; denied access terminates the attempt without entering stock processing.</desc><rect width="100%" height="100%" fill="white"/>
+<circle cx="450" cy="25" r="10" fill="black"/>
+<rect x="275" y="65" width="350" height="65" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="97.5">Open Inventory workspace</tspan></text>
+<polyline points="450,35 450,65" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,54 450,65 455,54" fill="black"/>
+<rect x="245" y="185" width="410" height="70" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="206.2">Authenticate approved user</tspan><tspan x="450" y="233.79999999999998">Check requested role/action</tspan></text>
+<polyline points="450,130 450,185" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,174 450,185 455,174" fill="black"/>
+<polygon points="450,300 585,347.5 450,395 315,347.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="347.5">Authorized?</tspan></text>
+<polyline points="450,255 450,300" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,289 450,300 455,289" fill="black"/>
+<rect x="690" y="308" width="175" height="80" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="777.5" y="334.8">Display</tspan><tspan x="777.5" y="361.2">access denied</tspan></text>
+<polyline points="585,347 690,347" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="679,352 690,347 679,342" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="637.5" y="318">[no]</tspan></text>
+<polygon points="450,460 585,505 450,550 315,505" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="505">Select function</tspan></text>
+<polyline points="450,395 450,460" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,449 450,460 455,449" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="510" y="427">[yes]</tspan></text>
+<rect x="35" y="620" width="380" height="78" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="225" y="645.8">Receive / count / waste / return</tspan><tspan x="225" y="672.1999999999999">Validate input and stock state</tspan></text>
+<rect x="500" y="620" width="365" height="78" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="682.5" y="632.6">Read balances / history /</tspan><tspan x="682.5" y="659">reports</tspan><tspan x="682.5" y="685.4">Apply selected filters</tspan></text>
+<polyline points="315,505 225,505 225,620" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="220,609 225,620 230,609" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="145" y="568">[stock change]</tspan></text>
+<polyline points="585,505 680,505 680,620" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="675,609 680,620 685,609" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="736" y="568">[view / report]</tspan></text>
+<polygon points="215,755 355,795 215,835 75,795" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="215" y="795">Valid?</tspan></text>
+<polyline points="225,698 225,755" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="220,744 225,755 230,744" fill="black"/>
+<rect x="35" y="885" width="380" height="82" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="225" y="912.8">Commit related writes atomically</tspan><tspan x="225" y="939.1999999999999">or record pending count</tspan></text>
+<polyline points="215,835 215,885" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="210,874 215,885 220,874" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="270" y="862">[yes]</tspan></text>
+<rect x="500" y="885" width="365" height="82" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="682.5" y="912.8">Display results</tspan><tspan x="682.5" y="939.1999999999999">Optional browser CSV export</tspan></text>
+<polyline points="680,698 875,698 875,869 680,869 680,885" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="675,874 680,885 685,874" fill="black"/>
+<rect x="425" y="758" width="430" height="64" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="640" y="777.4">[invalid / failed write]</tspan><tspan x="640" y="802.6">Roll back; show error; correct input</tspan></text>
+<polyline points="355,795 425,795" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="414,800 425,795 414,790" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="391" y="764">[no]</tspan></text>
+<polyline points="640,758 640,730 225,730 225,698" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="230,709 225,698 220,709" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="439" y="717">retry with corrected input</tspan></text>
+<polygon points="450,1010 480,1032 450,1054 420,1032" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="215,967 215,1032 420,1032" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="409,1037 420,1032 409,1027" fill="black"/>
+<polyline points="680,967 680,1032 480,1032" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="491,1027 480,1032 491,1037" fill="black"/>
+<polyline points="865,347 890,347 890,1080 465,1080" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="476,1075 465,1080 476,1085" fill="black"/>
+<circle cx="450" cy="1080" r="12" fill="none" stroke="black" stroke-width="1.8"/>
+<circle cx="450" cy="1080" r="7" fill="black"/>
+<polyline points="450,1054 450,1068" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,1057 450,1068 455,1057" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="585" y="1059">refresh / leave</tspan></text>
+</svg>

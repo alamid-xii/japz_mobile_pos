@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="830" viewBox="0 0 900 830"><title>Object Diagram</title><desc>Figure 5 shows an illustrative flour-receiving snapshot linking a supplier, stock item, receipt, line, batch and movement. The illustrative line identifies receipt 20, item 10 and batch 30. Five kilograms multiplied by the configured conversion of 1,000 grams per kilogram produces a received quantity of 5,000 grams. The related item and batch therefore show the same on-hand quantity with no reservation in this example.
+
+The receiving movement records a positive 5,000-gram change and links to the batch. Underlined object headings distinguish instances from the classes in Figure 2. The supplier, identifiers, receipt reference and quantities are illustrative teaching values, not a database export or verified business delivery. The snapshot is intentionally limited to one successful receipt line and does not imply that all receipts contain only one item.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="30" y="30" width="370" height="128" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-decoration="underline" text-anchor="middle" dominant-baseline="middle"><tspan x="215" y="55">supplier1 : Supplier</tspan></text>
+<polyline points="30,82 400,82" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="40" y="107.4">id = 1</tspan><tspan x="40" y="132.6">name = &quot;Sample Supplier&quot;</tspan></text>
+<rect x="500" y="30" width="370" height="128" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-decoration="underline" text-anchor="middle" dominant-baseline="middle"><tspan x="685" y="55">item1 : StockItem</tspan></text>
+<polyline points="500,82 870,82" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="510" y="107.4">id = 10; name = &quot;Flour&quot;</tspan><tspan x="510" y="132.6">unit = &quot;g&quot;; onHand = 5000</tspan></text>
+<polyline points="400,100 500,100" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="30" y="280" width="370" height="128" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-decoration="underline" text-anchor="middle" dominant-baseline="middle"><tspan x="215" y="305">receipt1 : StockReceipt</tspan></text>
+<polyline points="30,332 400,332" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="40" y="357.4">id = 20; supplierId = 1</tspan><tspan x="40" y="382.59999999999997">number = &quot;REC-020&quot;</tspan></text>
+<rect x="500" y="280" width="370" height="128" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-decoration="underline" text-anchor="middle" dominant-baseline="middle"><tspan x="685" y="305">batch1 : StockBatch</tspan></text>
+<polyline points="500,332 870,332" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="510" y="357.4">id = 30; stockItemId = 10</tspan><tspan x="510" y="382.59999999999997">onHand = 5000; reserved = 0</tspan></text>
+<polyline points="215,159 215,280" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="685,159 685,280" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="30" y="545" width="370" height="192" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-decoration="underline" text-anchor="middle" dominant-baseline="middle"><tspan x="215" y="570">line1 : StockReceiptLine</tspan></text>
+<polyline points="30,597 400,597" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="40" y="619">receiptId = 20; batchId = 30</tspan><tspan x="40" y="643">stockItemId = 10; purchaseQuantity =</tspan><tspan x="40" y="667">5</tspan><tspan x="40" y="691">purchaseUnit = kg; conversion = 1000</tspan><tspan x="40" y="715">quantity = 5000 g</tspan></text>
+<rect x="500" y="545" width="370" height="128" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-decoration="underline" text-anchor="middle" dominant-baseline="middle"><tspan x="685" y="570">movement1 : StockMovement</tspan></text>
+<polyline points="500,597 870,597" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="510" y="622.4">action = &quot;receive&quot;; batchId = 30</tspan><tspan x="510" y="647.6">onHandDelta = 5000 g</tspan></text>
+<polyline points="215,409 215,545" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="630,409 630,477 400,477 400,585" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="740,409 740,545" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="525,150 450,150 450,700 375,700" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="781.9">Illustrative objects only: IDs, supplier and quantities are not live business</tspan><tspan x="450" y="807.1">data.</tspan></text>
+</svg>

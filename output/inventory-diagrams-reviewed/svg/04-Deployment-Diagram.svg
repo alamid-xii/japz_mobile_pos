@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1040" viewBox="0 0 900 1040"><title>Deployment Diagram</title><desc>Figure 4 shows the configured local deployment and its separate frontend and backend communication paths. The browser obtains React assets from Vite on port 5173 and sends Inventory HTTP/JSON calls to the Express API on port 3000. These are separate connections even when all execution environments are on one physical workstation. Vite serves and updates the frontend; Express performs protected backend operations.
+
+Only the backend accesses MySQL through Sequelize and the MySQL driver. Port 3306 and the japz_pos schema describe the main project's local configuration. The separate GitDiagram repository is an extraction with its own configurable database name; that does not change the main system's deployment. No live cloud topology, production host, load balancer or backup service is implied by this diagram.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="90" y="40" width="720" height="230" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="66">«device» Local workstation (configured development setup)</tspan></text>
+<path d="M115 128L133 110H785V217L767 235H115Z M115 128H767L785 110 M767 128V235" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="25" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="157.5">«executionEnvironment» Browser</tspan><tspan x="450" y="187.5">«artifact» Inventory React application</tspan></text>
+<rect x="65" y="365" width="770" height="365" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="391">«device» Local development host</tspan></text>
+<path d="M100 468L118 450H420V652L402 670H100Z M100 468H402L420 450 M402 468V670" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="260" y="531.2">«executionEnvironment»</tspan><tspan x="260" y="560">Vite :5173</tspan><tspan x="260" y="588.8000000000001">«artifact» Frontend assets</tspan></text>
+<path d="M480 468L498 450H800V652L782 670H480Z M480 468H782L800 450 M782 468V670" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="640" y="531.2">«executionEnvironment»</tspan><tspan x="640" y="560">Node.js / Express :3000</tspan><tspan x="640" y="588.8000000000001">«artifact» Inventory API</tspan></text>
+<polyline points="280,270 280,365" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="212.5" y="308">HTTP: frontend assets</tspan></text>
+<polyline points="640,270 640,365" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="657" y="308">HTTP / JSON: API calls</tspan></text>
+<path d="M240 853L258 835H660V967L642 985H240Z M240 853H642L660 835 M642 853V985" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="25" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="880">«executionEnvironment» MySQL</tspan><tspan x="450" y="910">:3306</tspan><tspan x="450" y="940">«artifact» japz_pos schema</tspan></text>
+<polyline points="640,730 640,785 450,785 450,835" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="757.5" y="747">MySQL protocol / SQL</tspan><tspan x="757.5" y="771">via Sequelize</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="1012.5">Nodes may share one physical computer; no production topology is asserted.</tspan></text>
+</svg>

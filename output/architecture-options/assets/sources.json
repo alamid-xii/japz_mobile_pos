@@ -1,0 +1,68 @@
+[
+  {
+    "file": "react.svg",
+    "url": "https://raw.githubusercontent.com/facebook/react/main/fixtures/dom/public/react-logo.svg",
+    "sha256": "671afde83899249e6c2883b0d1592fc00886d3c0620d20bcab566cd2caa97f1a"
+  },
+  {
+    "file": "vite.svg",
+    "url": "https://raw.githubusercontent.com/vitejs/vite/v7.3.1/docs/public/logo.svg",
+    "sha256": "17e50649ce0babbf448e8a728d4475192b60b4d096a7d9414df727128435519e"
+  },
+  {
+    "file": "nodejs.svg",
+    "url": "https://nodejs.org/static/logos/jsIconGreen.svg",
+    "sha256": "3c88b1a2261132b11d242fe8831525be051450e1149c965d5a5f1ded63e9b50d"
+  },
+  {
+    "file": "express.svg",
+    "url": "https://expressjs.com/favicon.svg",
+    "sha256": "aa2a703c4d0f5564771b093d097c67c09ac5a7bd6e68c39a7eb7f18d853924df"
+  },
+  {
+    "file": "sequelize.svg",
+    "url": "https://sequelize.org/img/logo.svg",
+    "sha256": "54f270491f8dd713409d17d0686995d14e0cee6637e5f52e851d717cc713f042"
+  },
+  {
+    "file": "lucide-shield-check.svg",
+    "url": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/shield-check.svg",
+    "sha256": "8d4fcdbde5bba4abb1a2f6fe53e37ceb6343a1d5449a9d88f6f97c1971d26c4e"
+  },
+  {
+    "file": "lucide-boxes.svg",
+    "url": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/boxes.svg",
+    "sha256": "7e301f6c38337389f5a96675d14cb9d8ef8a613329e99c3dfcf7c635bdd1faae"
+  },
+  {
+    "file": "lucide-chart-no-axes-combined.svg",
+    "url": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/chart-no-axes-combined.svg",
+    "sha256": "2f8a708c357488cfde7428d9b055b9bb4a99c08dc71e9296da03ecc19291c4ab"
+  },
+  {
+    "file": "lucide-settings-2.svg",
+    "url": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/settings-2.svg",
+    "sha256": "06d06c191bd7eb28afaf9d40acb5c49ef69448fdeda91801d9823d7c440a4e10"
+  },
+  {
+    "file": "lucide-book-open.svg",
+    "url": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/book-open.svg",
+    "sha256": "9b9bed0ff057283d5c5c5a1c71f8d3e927db26a56639603a92fdf7b25961510e"
+  },
+  {
+    "file": "lucide-database.svg",
+    "url": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/database.svg",
+    "sha256": "471eb14bc8d144896a82dfc4aa9daf350f769f0896f4bef33e50aabdbb51130d"
+  },
+  {
+    "file": "lucide-monitor.svg",
+    "url": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/monitor.svg",
+    "sha256": "d1a443233345724859de8e4fb48968ba91e885e12ddbd710701548bd91b39428"
+  },
+  {
+    "file": "typescript.svg",
+    "url": "https://www.typescriptlang.org/branding/typescript-design-assets.zip",
+    "archive_member": "ts-logo-128.svg",
+    "sha256": "25e995fa85ae9ff6b5749f4ffeb21b2fe71d74e9b8d8db8eac4b9732cd9ef287"
+  }
+]

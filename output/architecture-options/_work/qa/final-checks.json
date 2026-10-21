@@ -1,0 +1,26 @@
+{
+  "options": [
+    {
+      "option": "A",
+      "png_size": [
+        3000,
+        2180
+      ],
+      "editable_cells": 62,
+      "edges": 5
+    },
+    {
+      "option": "B",
+      "png_size": [
+        3600,
+        2180
+      ],
+      "editable_cells": 85,
+      "edges": 16
+    }
+  ],
+  "docx_images": 2,
+  "rendered_word_pages": 2,
+  "archive_files": 22,
+  "layout_checks": []
+}

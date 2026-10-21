@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="920" viewBox="0 0 900 920"><title>State Machine Diagram</title><desc>Figure 13 models the implemented StockCount states pending, applied, rejected and stale. A valid submission is created as applied when review is unnecessary, or pending when the Inventory user's discrepancy requires approval. Admin submissions bypass the approval queue. A pending count preserves the current balance until an Admin review decision is made.
+
+Rejecting a pending count records rejected without changing stock. Approving it first checks the item's expected version and whether the counted quantity still covers reservations. A conflict records stale and requires a new count; otherwise the service applies the difference and records applied. Initial submission failures return an error before a count exists and must not be drawn as a newly created stale record. Re-reviewing a completed count does not apply the change again.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="5" y="5" width="890" height="910" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="5" y="5" width="373" height="45" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="start" dominant-baseline="middle"><tspan x="18" y="26.5">stm  Stock Count Lifecycle</tspan></text>
+<circle cx="450" cy="85" r="10" fill="black"/>
+<polygon points="450,145 555,200 450,255 345,200" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="186.2">Approval</tspan><tspan x="450" y="213.79999999999998">required?</tspan></text>
+<polyline points="450,97 450,145" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="445,134 450,145 455,134" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="335" y="345" width="230" height="95" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="368">pending</tspan></text>
+<polyline points="450,255 450,345" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="445,334 450,345 455,334" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="510" y="299">[yes]</tspan></text>
+<rect x="40" y="695" width="240" height="105" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="160" y="718">rejected</tspan></text>
+<rect x="330" y="695" width="240" height="105" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="718">stale</tspan></text>
+<rect x="620" y="695" width="240" height="105" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="740" y="718">applied</tspan></text>
+<polyline points="335,395 160,395 160,695" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="155,684 160,695 165,684" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="25" y="514">reject</tspan></text>
+<polygon points="450,505 570,560 450,615 330,560" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="560">Review valid?</tspan></text>
+<polyline points="450,440 450,505" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="445,494 450,505 455,494" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="450,615 450,695" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="445,684 450,695 455,684" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="495" y="659">[stale]</tspan></text>
+<polyline points="570,560 740,560 740,695" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="735,684 740,695 745,684" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="start" dominant-baseline="middle"><tspan x="575" y="596.4">[valid] /</tspan><tspan x="575" y="621.6">apply</tspan></text>
+<polyline points="555,200 880,200 880,750 860,750" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="871,745 860,750 871,755" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="335,388 565,388" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="414">entry / keep balance</tspan></text>
+<polyline points="40,738 280,738" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="160" y="757">entry / No stock</tspan><tspan x="160" y="781">change</tspan></text>
+<polyline points="330,738 570,738" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="757">entry / New count</tspan><tspan x="450" y="781">needed</tspan></text>
+<polyline points="620,738 860,738" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="740" y="769">entry / Stock updated</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="715" y="272.5">[approval not required] / apply</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="620" y="459.5">approve (Admin)</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="861.4">Only valid submissions create a count. Initial version/reservation failures</tspan><tspan x="450" y="886.6">return an error; only a pending count can become stale during Admin approval.</tspan></text>
+</svg>

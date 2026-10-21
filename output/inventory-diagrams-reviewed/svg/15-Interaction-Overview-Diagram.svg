@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1030" viewBox="0 0 900 1030"><title>Interaction Overview Diagram</title><desc>Figure 15 coordinates the smaller receiving interactions using frames labeled ref and guarded activity decisions. Authorization is followed by an access decision. An authorized attempt invokes the receiving interaction expanded in Figure 12. A saved result, including a valid idempotent retry, is followed by retrieval of current stock and receipt history.
+
+Denied access ends the attempt. A receiving error is displayed for correction or retry, and does not enter the successful-refresh path. The overview keeps activity decisions separate from the detailed message sequence and transaction logic. Each referenced interaction corresponds to existing authentication, receiving or refresh behavior; the frames do not imply a new workflow engine.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="5" y="5" width="890" height="1020" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="5" y="5" width="466" height="43" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="bold" text-anchor="start" dominant-baseline="middle"><tspan x="18" y="25.5">Inventory Receiving Interactions</tspan></text>
+<circle cx="450" cy="85" r="10" fill="black"/>
+<rect x="230" y="125" width="440" height="70" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="160">Open Inventory workspace</tspan></text>
+<polyline points="450,95 450,125" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,114 450,125 455,114" fill="black"/>
+<rect x="120" y="260" width="660" height="100" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="120" y="260" width="65" height="30" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="152.5" y="275">ref</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="310.1">Authenticate and authorize</tspan><tspan x="450" y="338.90000000000003">JWT / approved user / requested role</tspan></text>
+<polyline points="450,195 450,260" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,249 450,260 455,249" fill="black"/>
+<polygon points="450,420 585,462.5 450,505 315,462.5" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="462.5">Authorized?</tspan></text>
+<polyline points="450,360 450,420" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,409 450,420 455,409" fill="black"/>
+<rect x="680" y="420" width="190" height="80" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="775" y="446.8">Show denied</tspan><tspan x="775" y="473.2">access</tspan></text>
+<polyline points="585,462 680,462" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="669,467 680,462 669,457" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="634.5" y="438">[no]</tspan></text>
+<circle cx="775" cy="570" r="12" fill="none" stroke="black" stroke-width="1.8"/>
+<circle cx="775" cy="570" r="7" fill="black"/>
+<polyline points="775,500 775,558" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="770,547 775,558 780,547" fill="black"/>
+<rect x="120" y="585" width="660" height="110" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="120" y="585" width="65" height="30" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="152.5" y="600">ref</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="640.1">Receive Inventory Stock (Figure 12)</tspan><tspan x="450" y="668.9">Transactional receiving / idempotent result</tspan></text>
+<polyline points="450,505 450,585" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,574 450,585 455,574" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="515" y="546">[yes]</tspan></text>
+<polygon points="450,745 570,784 450,823 330,784" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="784">Saved result?</tspan></text>
+<polyline points="450,695 450,745" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,734 450,745 455,734" fill="black"/>
+<rect x="675" y="752" width="205" height="82" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="22" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="777.5" y="779.8">Show error</tspan><tspan x="777.5" y="806.1999999999999">Correct / retry</tspan></text>
+<polyline points="570,784 675,784" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="664,789 675,784 664,779" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="620" y="762">[no]</tspan></text>
+<rect x="120" y="884" width="530" height="78" fill="none" stroke="black" stroke-width="1.8"/>
+<rect x="120" y="884" width="65" height="30" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="152.5" y="899">ref</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="24" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="385" y="937.5">Refresh stock and receipt history</tspan></text>
+<polyline points="450,823 450,884" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,873 450,884 455,873" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="512.5" y="857">[yes]</tspan></text>
+<circle cx="450" cy="1000" r="12" fill="none" stroke="black" stroke-width="1.8"/>
+<circle cx="450" cy="1000" r="7" fill="black"/>
+<polyline points="450,962 450,988" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,977 450,988 455,977" fill="black"/>
+<polyline points="775,834 775,1000 465,1000" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="476,995 465,1000 476,1005" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="722.5" y="951">[leave]</tspan></text>
+<polyline points="880,790 890,790 890,650 780,650" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="791,645 780,650 791,655" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="835" y="711">[retry]</tspan></text>
+</svg>

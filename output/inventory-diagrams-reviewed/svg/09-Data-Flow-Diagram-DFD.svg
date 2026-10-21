@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1050" viewBox="0 0 1000 1050"><title>Data Flow Diagram (DFD)</title><desc>Figure 9 is a Level 1 data-flow view. Inventory Staff and Admin supply master details, receiving entries, counts, losses and review decisions. The first two processes maintain reference/policy data and stock transactions. Their outputs update balances, receipt/batch/count/waste records and movement history. Named arrows represent information transferred, rather than control flow or the chronological order of API calls.
+
+The direct Cashier/Kitchen boundary provides order and status data for allocation, reservation, consumption and release; Kitchen waste reports enter the receiving/loss process. The reporting process reads master data, batches, allocations and movements to produce balances, availability and report data. CSV files are assembled in the frontend. The stores group related implemented tables for readability and do not assert a new physical database design.</desc><rect width="100%" height="100%" fill="white"/>
+<rect x="35" y="35" width="350" height="65" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="210" y="67.5">Inventory Staff / Admin</tspan></text>
+<rect x="515" y="35" width="350" height="65" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="67.5">Cashier / Kitchen boundaries</tspan></text>
+<rect x="35" y="190" width="350" height="108" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="35,220 385,220" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="210" y="205">1.0</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="210" y="243.7">Maintain supplies, recipes</tspan><tspan x="210" y="271.3">and Inventory settings</tspan></text>
+<rect x="515" y="190" width="350" height="108" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="515,220 865,220" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="205">2.0</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="243.7">Receive / count / loss</tspan><tspan x="690" y="271.3">Review counts and waste</tspan></text>
+<polyline points="210,100 210,190" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="205,179 210,190 215,179" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="192.5" y="134">details / policy changes</tspan></text>
+<polyline points="385,65 450,65 450,220 515,220" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="504,225 515,220 504,215" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="563.5" y="128">stock entries</tspan><tspan x="563.5" y="152">review decisions</tspan></text>
+<polyline points="690,100 690,190" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="685,179 690,190 695,179" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="785" y="142">waste reports</tspan></text>
+<path d="M385 390H35V485H385 M75 390V485" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="55" y="437.5">D1</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="230.5" y="424.9">Items / menu / suppliers</tspan><tspan x="230.5" y="450.09999999999997">Recipes / settings</tspan></text>
+<path d="M865 390H515V485H865 M555 390V485" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="535" y="437.5">D2</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="710.5" y="424.9">Receipts / batches</tspan><tspan x="710.5" y="450.09999999999997">Counts / waste / operations</tspan></text>
+<polyline points="210,298 210,390" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="205,379 210,390 215,379" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="200" y="337">master updates</tspan></text>
+<polyline points="690,298 690,390" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="685,379 690,390 695,379" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="700" y="336">receipt / count / waste data</tspan></text>
+<polyline points="515,260 450,260 450,425 385,425" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="396,420 385,425 396,430" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="480" y="327">balances / versions</tspan></text>
+<polyline points="385,459 425,459 425,360 735,360 735,298" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="740,309 735,298 730,309" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="555" y="369">units / policies</tspan></text>
+<rect x="515" y="560" width="350" height="108" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="515,590 865,590" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="575">3.0</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="690" y="613.7">Reserve / consume / release</tspan><tspan x="690" y="641.3000000000001">Order inventory allocation</tspan></text>
+<polyline points="865,65 955,65 955,590 865,590" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="876,585 865,590 876,595" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="930" y="317">orders /</tspan><tspan x="930" y="341">status</tspan></text>
+<polyline points="690,485 690,560" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="685,549 690,560 695,549" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="608.5" y="516">usable batches</tspan></text>
+<polyline points="795,560 795,485" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="800,496 795,485 790,496" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="885" y="524">batch deltas</tspan></text>
+<polyline points="385,475 465,475 465,590 515,590" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="504,595 515,590 504,585" fill="black"/>
+<rect x="275" y="519" width="230" height="34" fill="white"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="390" y="536">recipe / menu data</tspan></text>
+<polyline points="515,651 410,651 410,480 385,480" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="396,475 385,480 396,485" fill="black"/>
+<rect x="385" y="572" width="120" height="58" fill="white"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="445" y="589">balance</tspan><tspan x="445" y="613">updates</tspan></text>
+<path d="M385 560H35V668H385 M75 560V668" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="55" y="614">D3</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="230.5" y="588.8">Stock movements</tspan><tspan x="230.5" y="614">Actor / reason / deltas</tspan><tspan x="230.5" y="639.1999999999999">Allocations</tspan></text>
+<polyline points="560,298 485,298 485,607 385,607" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="396,602 385,607 396,612" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="399.5" y="513">movement entries</tspan></text>
+<polyline points="515,623 385,623" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="396,618 385,623 396,628" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="495" y="655">allocation / movements</tspan></text>
+<rect x="235" y="785" width="430" height="112" rx="10" fill="none" stroke="black" stroke-width="1.8"/>
+<polyline points="235,815 665,815" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="21" font-weight="bold" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="800">4.0</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="840.7">View balances, availability</tspan><tspan x="450" y="868.3000000000001">History / reports</tspan></text>
+<polyline points="210,485 210,510 15,510 15,745 300,745 300,785" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="295,774 300,785 305,774" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="147.5" y="723">stock / recipes</tspan></text>
+<polyline points="690,668 690,745 600,745 600,785" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="595,774 600,785 605,774" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="752.5" y="732">allocations / batches</tspan></text>
+<polyline points="210,668 210,710 400,710 400,785" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="395,774 400,785 405,774" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="360" y="729">movement history</tspan></text>
+<rect x="235" y="965" width="430" height="55" fill="none" stroke="black" stroke-width="1.8"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="23" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="992.5">Inventory Staff / Admin</tspan></text>
+<polyline points="450,897 450,965" fill="none" stroke="black" stroke-width="1.8"/>
+<polygon points="445,954 450,965 455,954" fill="black"/>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="590" y="925">views / CSV data</tspan></text>
+<text font-family="Calibri,Arial,sans-serif" font-size="20" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan x="450" y="1034">DFD Level 1: arrows carry named data. CSV files are produced by the frontend.</tspan></text>
+</svg>

@@ -1,0 +1,259 @@
+[
+  {
+    "number": 1,
+    "name": "System Architecture Diagram",
+    "slug": "01-System-Architecture-Diagram",
+    "width": 1800,
+    "height": 1090,
+    "description": "This left-to-right view follows the web client through the guarded inventory API to peer handler/service groups and shared Sequelize persistence. The MySQL boundary distinguishes inventory records from user, menu and order references shared with the application.",
+    "note": "Reports and movement history run in inventory route handlers. Handler/service groups share Sequelize models within one Express backend.",
+    "sources": [
+      "japz-web/src/features/inventory/InventoryLayout.tsx",
+      "japz-web/src/features/inventory/InventoryData.tsx",
+      "japz-web/src/services/api.ts",
+      "japz-backend/routes/inventory.js",
+      "japz-backend/middleware/access.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-backend/services/menuAvailability.js",
+      "japz-backend/services/inventorySettings.js",
+      "japz-backend/models/inventoryModels.js",
+      "japz-backend/models/menuItemModel.js",
+      "japz-backend/models/db.js"
+    ]
+  },
+  {
+    "number": 2,
+    "name": "Class Diagram",
+    "slug": "02-Class-Diagram",
+    "width": 1800,
+    "height": 1570,
+    "description": "This class diagram shows the receiving model relationships and the supporting inventory classes, with selected attributes and actual service functions. Stock quantities use decimals for supplies and integers for prepared menu stock.",
+    "note": "Multiplicity is shown on the principal associations; supporting references remain typed attributes to preserve readability. StockCount/WasteReport link to StockItem and StockBatch; MenuRecipe links to MenuItem; StockAllocation links to Order. User audit references are shown without expanding user management. Service functions are module operations, not invented model methods.",
+    "sources": [
+      "japz-backend/models/inventoryModels.js",
+      "japz-backend/models/index.js",
+      "japz-backend/models/menuItemModel.js",
+      "japz-backend/services/inventoryService.js"
+    ]
+  },
+  {
+    "number": 3,
+    "name": "Component Diagram",
+    "slug": "03-Component-Diagram",
+    "width": 1700,
+    "height": 1120,
+    "description": "Inventory screens use the data provider and HTTP client to call the inventory router. The router depends on access checks, inventory services and model queries; the access middleware loads the shared User model.",
+    "note": "These logical components run within one frontend and one backend. Reporting queries execute in route handlers; no separate reporting service or API gateway is implemented.",
+    "sources": [
+      "japz-backend/routes/inventory.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-web/src/features/inventory/Receiving.tsx",
+      "japz-backend/middleware/access.js",
+      "japz-web/src/features/inventory/InventoryData.tsx"
+    ]
+  },
+  {
+    "number": 4,
+    "name": "Deployment Diagram",
+    "slug": "04-Deployment-Diagram",
+    "width": 1650,
+    "height": 1070,
+    "description": "The deployment diagram places the inventory UI, backend code and database schema in their configured browser, Node.js and MySQL execution environments on the local workstation. Communication paths identify HTTP/JSON requests and the MySQL protocol.",
+    "note": "Configured development ports are Vite 5173, Express 3000 and MySQL 3306. render.yaml supplies backend hosting configuration, but no live cloud topology, load balancer or backup service is verified.",
+    "sources": [
+      "start-local.ps1",
+      "japz-backend/index.js",
+      "japz-backend/models/db.js",
+      "japz-web/package.json",
+      "render.yaml"
+    ]
+  },
+  {
+    "number": 5,
+    "name": "Object Diagram",
+    "slug": "05-Object-Diagram",
+    "width": 1500,
+    "height": 950,
+    "description": "This object diagram instantiates the receiving classes after one example receipt. Underlined instance names, attribute slots and solid links show a consistent snapshot of supplier, item, batch, receipt, line and movement objects.",
+    "note": "All IDs, names, dates and values are illustrative. They describe a valid implemented operation and do not claim these records exist in the business database.",
+    "sources": [
+      "japz-backend/models/inventoryModels.js",
+      "japz-backend/services/inventoryService.js:390"
+    ]
+  },
+  {
+    "number": 6,
+    "name": "Package Diagram",
+    "slug": "06-Package-Diagram",
+    "width": 1600,
+    "height": 1120,
+    "description": "Frontend inventory screens depend on shared HTTP, authentication and request-ID utilities. Backend routes use inventory services and models, including direct report/history queries; services use the persistence models.",
+    "note": "Grouped utility directories and route/middleware directories are logical package groupings, not new physical folders or independently deployed services.",
+    "sources": [
+      "japz-web/src/features/inventory",
+      "japz-web/src/services/api.ts",
+      "japz-backend/routes/inventory.js",
+      "japz-backend/services",
+      "japz-backend/models"
+    ]
+  },
+  {
+    "number": 7,
+    "name": "Composite Structure Diagram",
+    "slug": "07-Composite-Structure-Diagram",
+    "width": 1500,
+    "height": 950,
+    "description": "The composite structure diagram opens the inventory router boundary to show its collaborating middleware, route handler, stock service and Sequelize model parts. Ports represent the HTTP request boundary and SQL persistence boundary.",
+    "note": "The implementation uses modules, functions and an Express Router object. This UML structured classifier is a documentation abstraction, not an additional runtime inventory class.",
+    "sources": [
+      "japz-backend/routes/inventory.js",
+      "japz-backend/middleware/access.js",
+      "japz-backend/services/inventoryService.js"
+    ]
+  },
+  {
+    "number": 8,
+    "name": "Profile Diagram",
+    "slug": "08-Profile-Diagram",
+    "width": 1500,
+    "height": 1020,
+    "description": "JAPZInventoryProfile defines domain-specific stereotypes for inventory records, service components and stock operations. Each definition carries a tagged value and extends its corresponding UML metaclass.",
+    "note": "This is a proposed documentation profile required by the activity. The application has no implemented UML profile loader or formal modeling-tool integration.",
+    "sources": [
+      "japz-backend/models/inventoryModels.js",
+      "japz-backend/services/inventoryService.js",
+      "OMG UML 2.5.1, Profiles"
+    ]
+  },
+  {
+    "number": 9,
+    "name": "Data Flow Diagram (DFD)",
+    "slug": "09-Data-Flow-Diagram-DFD",
+    "width": 1500,
+    "height": 1050,
+    "description": "This level 1 DFD follows stock receiving data from an authorized actor through authentication, receipt processing and presentation. It includes user records, duplicate-request records and the stock persistence data store.",
+    "note": "D3 groups actual inventory tables, including suppliers; it is not a new database table. The browser subsequently reads updated balances. DFD arrows carry data and do not imply transaction control order.",
+    "sources": [
+      "japz-backend/routes/inventory.js",
+      "japz-backend/middleware/access.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-web/src/features/inventory/Receiving.tsx"
+    ]
+  },
+  {
+    "number": 10,
+    "name": "Use Case Diagram",
+    "slug": "10-Use-Case-Diagram",
+    "width": 1700,
+    "height": 1250,
+    "description": "Inventory Staff and Admin share the inventory operating goals shown on the left; the Admin actor also performs count review, reversals and policy control. Cashier and Kitchen appear at inventory read boundaries, and Kitchen can submit and view its own waste reports.",
+    "note": "Inventory Operator is a diagram actor grouping, not an extra application role. Authentication and approved user status are preconditions. Inventory screens require Inventory/Admin; the boundary actors use their permitted API interactions.",
+    "sources": [
+      "japz-backend/routes/inventory.js",
+      "japz-backend/services/inventorySettings.js",
+      "japz-web/src/App.tsx"
+    ]
+  },
+  {
+    "number": 11,
+    "name": "Activity Diagram",
+    "slug": "11-Activity-Diagram",
+    "width": 1600,
+    "height": 1520,
+    "description": "This activity models receiving access checks, request identity branches and the transaction that creates receipt records and stock changes. A new successful request commits; an identical retry returns its prior result; conflicting identities and write errors abort the attempt.",
+    "note": "The outcome decision summarizes exceptions across the enclosed write sequence. Corrections begin a new submission; a failed operation does not leave partially committed inventory changes.",
+    "sources": [
+      "japz-backend/routes/inventory.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-web/src/features/inventory/Receiving.tsx"
+    ]
+  },
+  {
+    "number": 12,
+    "name": "Sequence Diagram",
+    "slug": "12-Sequence-Diagram",
+    "width": 1700,
+    "height": 1410,
+    "description": "The sequence follows one new receiving request through the browser, inventory API and persistence boundary. The loop fragment represents the actual per-line validation, conversion and stock writes before the operation result and receipt commit together.",
+    "note": "Router and services share an API lifeline; Sequelize and MySQL share a persistence lifeline. Alternatives are summarized in the note and expanded as activity branches in Diagram 11.",
+    "sources": [
+      "japz-backend/routes/inventory.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-web/src/features/inventory/Receiving.tsx",
+      "japz-backend/middleware/access.js"
+    ]
+  },
+  {
+    "number": 13,
+    "name": "State Machine Diagram",
+    "slug": "13-State-Machine-Diagram",
+    "width": 1600,
+    "height": 1130,
+    "description": "StockCount records begin as pending when review is required, or applied when the actor and policy permit immediate adjustment. Admin approval applies only if the item version still matches and counted stock protects reservations; otherwise the record becomes stale. Rejection leaves balances unchanged.",
+    "note": "Choice diamonds are UML pseudostates, not additional database status values. Invalid input is rejected before creation. Review policy depends on role, countApproval and the item adjustmentLimit.",
+    "sources": [
+      "japz-backend/routes/inventory.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-backend/models/inventoryModels.js"
+    ]
+  },
+  {
+    "number": 14,
+    "name": "Communication Diagram",
+    "slug": "14-Communication-Diagram",
+    "width": 1700,
+    "height": 1110,
+    "description": "This communication diagram shows the actor, receiving UI, inventory API and persistence objects collaborating on a stock receipt. Nested message numbers describe authorization, transaction identity handling, repeated line writes and commit along the API-to-persistence link.",
+    "note": "The inventory API groups existing middleware, route handlers and services for readability; it is not an added runtime class. Return messages are dashed, and repeated line messages use the UML iteration marker.",
+    "sources": [
+      "japz-backend/routes/inventory.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-web/src/features/inventory/Receiving.tsx"
+    ]
+  },
+  {
+    "number": 15,
+    "name": "Interaction Overview Diagram",
+    "slug": "15-Interaction-Overview-Diagram",
+    "width": 1500,
+    "height": 1190,
+    "description": "The interaction overview connects receiving authorization, the detailed stock transaction and inventory readback as referenced interactions. Decisions route denied access and failed transactions to their corresponding UI outcomes.",
+    "note": "The stock transaction interaction is expanded in Diagram 12. Failure paths end the current attempt; a corrected submission begins a new interaction. No parallel background save is implied.",
+    "sources": [
+      "japz-backend/middleware/access.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-web/src/features/inventory/Receiving.tsx",
+      "japz-web/src/features/inventory/InventoryData.tsx"
+    ]
+  },
+  {
+    "number": 16,
+    "name": "Timing Diagram",
+    "slug": "16-Timing-Diagram",
+    "width": 1500,
+    "height": 1080,
+    "description": "This timing diagram shows the visible-tab state and refresh/request states across the configured 30-second polling ticks. The initial refresh and subsequent successful requests update the inventory data and timestamp.",
+    "note": "The illustrated 3- and 4-second request durations are examples only. setInterval is a schedule, not a deadline guarantee; hidden tabs skip interval-triggered requests, focus/manual refresh can run earlier, and older responses are ignored using a sequence counter. No real-time push or hard latency guarantee is implemented.",
+    "sources": [
+      "japz-web/src/features/inventory/InventoryData.tsx",
+      "japz-web/src/services/api.ts",
+      "japz-backend/services/inventorySettings.js"
+    ]
+  },
+  {
+    "number": 17,
+    "name": "Requirement Diagram (SysML)",
+    "slug": "17-Requirement-Diagram-SysML",
+    "width": 1500,
+    "height": 1210,
+    "description": "The requirement diagram expresses five concrete inventory rules supported by the implementation and links each rule to the code element that satisfies it. SysML requirement blocks carry an ID and requirement text; satisfy arrows point to the requirement.",
+    "note": "These are implementation-derived documentation requirements. No independent client requirement baseline, formal SysML model or real-time performance requirement was supplied. Test code was inspected for corresponding scenarios; this document does not claim a fresh test execution.",
+    "sources": [
+      "japz-backend/middleware/access.js",
+      "japz-backend/services/inventoryService.js",
+      "japz-backend/services/inventoryOrders.js",
+      "japz-backend/services/menuAvailability.js",
+      "japz-backend/tests/inventory.test.js"
+    ]
+  }
+]

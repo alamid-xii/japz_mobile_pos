@@ -1,0 +1,87 @@
+﻿[
+    {
+        "images":  1,
+        "page":  1,
+        "text":  "\rJAPZ ERP: JAPZ Grill Burger \u0026 Bistro\rInventory Management Module\rSystem Architecture Diagram\r/\rFigure 1. System Architecture of the JAPZ Inventory Module\rFigure 1 presents the Inventory module architecture verified from the supplied GitDiagram model and the implementation. App.tsx and InventoryLayout organize the Inventory routes inside the browser. Login and useAuth provide shared sign-in state, while ProtectedRoute checks frontend access. Inventory screens use InventoryData.tsx and data.ts for shared records and refresh helpers, then call the Axios client in api.ts. CSV downloads, visible stock alerts and refresh timers are browser responsibilities.\rThe Express runtime mounts shared routes and /api/inventory. Server middleware verifies the JWT, reloads an approved User and enforces the requested role. Stock, availability, settings and order-inventory services use Sequelize models and transactions to access MySQL. Cashier order creation and Kitchen status/waste requests are direct module boundaries, not independent services added to Inventory. Shared user, menu, order and payment records remain necessary because the original system is a modular monolith.\r\r"
+    },
+    {
+        "images":  1,
+        "page":  2,
+        "text":  "Class Diagram\r/\rFigure 2. Core Inventory Classes and Relationships\rFigure 2 illustrates the core Inventory record classes and their associations. Supplier can be associated with many StockItem and StockReceipt records; the supplier reference is optional. Each StockBatch belongs to one StockItem. A successfully recorded receipt contains one to 100 lines, and every StockReceiptLine identifies one receipt, one stock item and one batch. Its conversion and quantity fields retain the purchased and base-unit amounts.\rStockMovement records an action, quantity, reason and on-hand/reserved deltas. Its stock-item and batch references are optional because prepared-stock movements use the shared MenuItem instead. The diagram shows associations rather than unsupported lifecycle composition. Its receipt-line minimum describes the receiving workflow, not a separate SQL minimum-cardinality constraint. Counts, waste reports, recipes, allocations, settings and operation identity records are named as supporting models; they are not fictitious classes or methods.\r"
+    },
+    {
+        "images":  1,
+        "page":  3,
+        "text":  "Component Diagram\r/\rFigure 3. Components of the Inventory Module\rFigure 3 separates the Inventory web component, API routing, access middleware, domain services and Sequelize persistence. Dependency arrows point toward the component used. The frontend reaches backend functions through the JSON API; it does not bypass routing by calling an authorization component or the database directly. Authentication is enforced on the server as well as through the frontend route guard.\rThe domain service group contains the existing stock, recipe/availability, settings and order-inventory modules. Access middleware depends on the shared User model, while domain services depend on Inventory and directly shared persistence models. The web component performs CSV formatting, refresh scheduling and alert display. These are logical components of the implemented application, not separately deployed servers or newly introduced interfaces.\r"
+    },
+    {
+        "images":  1,
+        "page":  4,
+        "text":  "Deployment Diagram\r/\rFigure 4. Local Deployment of the Inventory Module\rFigure 4 shows the configured local deployment and its separate frontend and backend communication paths. The browser obtains React assets from Vite on port 5173 and sends Inventory HTTP/JSON calls to the Express API on port 3000. These are separate connections even when all execution environments are on one physical workstation. Vite serves and updates the frontend; Express performs protected backend operations.\rOnly the backend accesses MySQL through Sequelize and the MySQL driver. Port 3306 and the japz_pos schema describe the main project\u0027s local configuration. The separate GitDiagram repository is an extraction with its own configurable database name; that does not change the main system\u0027s deployment. No live cloud topology, production host, load balancer or backup service is implied by this diagram.\r"
+    },
+    {
+        "images":  1,
+        "page":  5,
+        "text":  "Object Diagram\r/\rFigure 5. Example Objects After Receiving Flour\rFigure 5 shows an illustrative flour-receiving snapshot linking a supplier, stock item, receipt, line, batch and movement. The illustrative line identifies receipt 20, item 10 and batch 30. Five kilograms multiplied by the configured conversion of 1,000 grams per kilogram produces a received quantity of 5,000 grams. The related item and batch therefore show the same on-hand quantity with no reservation in this example.\rThe receiving movement records a positive 5,000-gram change and links to the batch. Underlined object headings distinguish instances from the classes in Figure 2. The supplier, identifiers, receipt reference and quantities are illustrative teaching values, not a database export or verified business delivery. The snapshot is intentionally limited to one successful receipt line and does not imply that all receipts contain only one item.\r"
+    },
+    {
+        "images":  1,
+        "page":  6,
+        "text":  "Package Diagram\r/\rFigure 6. Packages of the Inventory Module\rFigure 6 organizes the implementation by its real source responsibilities. The features/inventory package contains screens, shared controls, InventoryData and data helpers. Client support represents the shared hooks, protected-route component, request-ID utility and Axios transport. Its connection to backend routes represents an HTTP contract rather than a JavaScript import across the browser/server boundary.\rThe backend routes use access middleware and domain services. Middleware reads User records, while Inventory services use stock and directly shared models through the models package. models/index.js registers associations and db.js supplies the Sequelize connection. MySQL is an external persistence service, not a source-code package. These package dependencies describe code organization without asserting separate deployment units.\r"
+    },
+    {
+        "images":  1,
+        "page":  7,
+        "text":  "Composite Structure Diagram\r/\rFigure 7. Internal Collaboration Within the Inventory API\rFigure 7 models the internal stock-receiving collaboration within the Inventory API. The HTTP port delegates a request through authentication and role checks to the protected Inventory handler. The stock-service part collaborates with model access, and the persistence port marks the database boundary. The connectors describe cooperation inside one API boundary.\rThe named parts are a documentation-level view of access.js, routes/inventory.js, inventoryService.js and Sequelize model access. They do not introduce a new InventoryAPI class or claim that the JavaScript modules are constructed as runtime objects. This figure is scoped to the stock-receiving path; other availability, settings and order-allocation collaborations are shown in the architecture and component views.\r"
+    },
+    {
+        "images":  1,
+        "page":  8,
+        "text":  "Profile Diagram\r/\rFigure 8. Inventory Documentation Profile\rFigure 8 defines an Inventory-specific UML documentation profile. InventoryRecord extends the Class metaclass, StockService extends Component, and StockOperation extends Operation. Each extension uses a solid line with a filled triangle directed at the UML metaclass. The BaseUnit and StockAction enumerations type stereotype properties; they are not targets of metaclass extensions.\rThe base-unit values match g, ml and pcs. StockAction now includes the movement actions defined by the model, including opening, reversal, hold and unhold. The constraints summarize non-negative balances, reservation protection and append-only history enforced by service logic. JAPZInventoryProfile is an illustrative modeling convention for this documentation, not an implemented profile engine or an additional application feature.\r"
+    },
+    {
+        "images":  1,
+        "page":  9,
+        "text":  "Data Flow Diagram (DFD)\r/\rFigure 9. Inventory Data Flow\rFigure 9 is a Level 1 data-flow view. Inventory Staff and Admin supply master details, receiving entries, counts, losses and review decisions. The first two processes maintain reference/policy data and stock transactions. Their outputs update balances, receipt/batch/count/waste records and movement history. Named arrows represent information transferred, rather than control flow or the chronological order of API calls.\rThe direct Cashier/Kitchen boundary provides order and status data for allocation, reservation, consumption and release; Kitchen waste reports enter the receiving/loss process. The reporting process reads master data, batches, allocations and movements to produce balances, availability and report data. CSV files are assembled in the frontend. The stores group related implemented tables for readability and do not assert a new physical database design.\r"
+    },
+    {
+        "images":  1,
+        "page":  10,
+        "text":  "Use Case Diagram\r/\rFigure 10. Inventory Staff Use Cases\rFigure 10 shows the Inventory Staff use cases and the direct Admin boundary. Staff can view records, maintain supplies/suppliers, receive stock, manage recipes/batch holds, record counts/losses, review Kitchen waste and edit alert/refresh settings. Admin can perform these Inventory functions and also approve physical counts, reverse movements and control count-approval/reorder policies. These additional permissions are not granted to Inventory Staff.\rKitchen waste submission and Cashier/Kitchen availability access are documented as direct interactions rather than complete additional modules. Receiving necessarily validates and converts delivery quantities, and CSV export is optional when viewing reports. The diagram avoids treating the act of queuing a count for review as permission for Staff to perform Admin approval. Actor associations describe goals, not a required sequence of screens.\r"
+    },
+    {
+        "images":  1,
+        "page":  11,
+        "text":  "Activity Diagram\r/\rFigure 11. Main Activity Flow of the Inventory Module\rFigure 11 models the main choice between stock-changing work and read-only reports. Approved-user and role checks precede protected actions. On the stock path, receiving, count, waste and return inputs are validated against quantity, version and reservation rules. Related writes commit together, or a physical count is recorded as pending when policy requires Admin review; queuing that count leaves its balance unchanged.\rInvalid input or a failed transactional write produces an error and rolls back pending changes. The user can correct the input and retry with the form\u0027s request identity. The report branch retrieves filtered data and may generate a browser CSV download. A merge node reunites successful branches before refreshing or leaving the workspace; denied access terminates the attempt without entering stock processing.\r"
+    },
+    {
+        "images":  1,
+        "page":  12,
+        "text":  "Sequence Diagram\r/\rFigure 12. Sequence of a Successful Stock Receipt\rFigure 12 places receiving messages in implementation order. Receiving.tsx submits delivery lines and a requestId. Middleware verifies the approved user\u0027s role before receiveStock enters inventoryOperation. The service validates the request identity, computes a payload fingerprint and starts a transaction. Its locked InventoryOperation lookup distinguishes a matching saved request from a new operation or a conflicting reuse of the identifier.\rFor a new request, the service creates the operation, locks supplies and creates one receipt. The loop validates and converts each line, creates its batch and movement, updates balances and creates the receipt line. The operation result is saved before commit. Matching retries return the original result; invalid input, mismatched identity or failed writes return an error and roll back. Only a successful response leads the interface to refresh stock and receipt history.\r"
+    },
+    {
+        "images":  1,
+        "page":  13,
+        "text":  "State Machine Diagram\r/\rFigure 13. Stock Count Status Changes\rFigure 13 models the implemented StockCount states pending, applied, rejected and stale. A valid submission is created as applied when review is unnecessary, or pending when the Inventory user\u0027s discrepancy requires approval. Admin submissions bypass the approval queue. A pending count preserves the current balance until an Admin review decision is made.\rRejecting a pending count records rejected without changing stock. Approving it first checks the item\u0027s expected version and whether the counted quantity still covers reservations. A conflict records stale and requires a new count; otherwise the service applies the difference and records applied. Initial submission failures return an error before a count exists and must not be drawn as a newly created stale record. Re-reviewing a completed count does not apply the change again.\r"
+    },
+    {
+        "images":  1,
+        "page":  14,
+        "text":  "Communication Diagram\r/\rFigure 14. Object Communication During Receiving\rFigure 14 shows the receiving collaboration as a communication diagram with numbered messages. Staff submit delivery data to the receiving interface, which posts to the Inventory router. The access-middleware participant verifies JWT identity, approved status and permitted role before the protected handler calls receiveStock. The middleware check must complete successfully before the protected service performs stock writes.\rThe service coordinates the transaction, operation-identity lookup, repeated line writes, stored result and commit through Sequelize/MySQL. The asterisk denotes repetition for each delivery line. Replies follow the same collaboration links back to the UI. Participant names are documentation roles for implemented modules and records, not newly added runtime classes. Figure 12 contains the more detailed replay and rollback alternatives.\r"
+    },
+    {
+        "images":  1,
+        "page":  15,
+        "text":  "Interaction Overview Diagram\r/\rFigure 15. Overview of Inventory Receiving Interactions\rFigure 15 coordinates the smaller receiving interactions using frames labeled ref and guarded activity decisions. Authorization is followed by an access decision. An authorized attempt invokes the receiving interaction expanded in Figure 12. A saved result, including a valid idempotent retry, is followed by retrieval of current stock and receipt history.\rDenied access ends the attempt. A receiving error is displayed for correction or retry, and does not enter the successful-refresh path. The overview keeps activity decisions separate from the detailed message sequence and transaction logic. Each referenced interaction corresponds to existing authentication, receiving or refresh behavior; the frames do not imply a new workflow engine.\r"
+    },
+    {
+        "images":  1,
+        "page":  16,
+        "text":  "Timing Diagram\r/\rFigure 16. Timing of the Stock Receiving Process\rFigure 16 shows an illustrative participant activity timing view: high means active and low means idle. Staff submission, UI transmission, access checks, stock processing and database work are placed in their causal order. Protected stock processing begins after authorization, and the UI displays the saved result after the persistence phase completes.\rThe zero-to-four-second axis is an illustrative teaching scale, not a measured response time, timeout, benchmark or performance requirement. Database activity includes the transaction and locking needed for receiving, while the service handles validation and related writes. The figure is a simplified successful interaction; duplicate-request, conflict and rollback alternatives are specified in Figure 12 rather than assigned invented durations here.\r"
+    },
+    {
+        "images":  1,
+        "page":  17,
+        "text":  "Requirement Diagram (SysML)\r/\rFigure 17. Requirements of the Inventory Module\rFigure 17 derives five requirements from Inventory\u0027s overall purpose and expresses each with an Id and Text property. They cover direct-write access control, atomic/idempotent receiving, safe availability and reservation handling, versioned count approval, and traceable movement history. The access wording distinguishes direct Inventory/Admin adjustments from stock changes legitimately initiated through Cashier/Kitchen order transitions.\rThe deriveReqt dependencies point toward the overall requirement, while satisfy dependencies point from named implementation artifacts to the rule they implement. These artifacts are the existing middleware, routes, domain services and model definitions. The requirements are reconstructed from code behavior for academic traceability, not evidence of a separately approved product specification. Source and existing-test mappings are provided in the review notes; the diagram does not claim a new test run or production acceptance.\r"
+    }
+]
