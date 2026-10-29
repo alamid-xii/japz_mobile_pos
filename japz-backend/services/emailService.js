@@ -15,7 +15,7 @@ const sendEmail = async (to, subject, htmlPart) => {
     try {
         const { data } = await axios.post('https://api.mailjet.com/v3.1/send', {
             Messages: [{
-                From: { Email: senderEmail, Name: 'JAPZ POS' },
+                From: { Email: senderEmail, Name: 'Japz Reservations' },
                 To: [{ Email: to }],
                 Subject: subject,
                 HTMLPart: htmlPart,
@@ -69,11 +69,11 @@ export const sendPasswordResetCode = async (email, name) => {
     const expiresAt = Date.now() + 15 * 60 * 1000;
     passwordResetCodes.set(email.toLowerCase(), { code, expiresAt, name });
 
-    await sendEmail(email, 'Password Reset - JAPZ POS', `
+    await sendEmail(email, 'Password Reset - Japz Reservations', `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px;"><h1 style="color: #1a1a1a;">JAPZ POS</h1></div>
             <div style="background-color: #f9f9f9; border-radius: 12px; padding: 30px; text-align: center;">
-                <h2 style="color: #333;">Password Reset</h2>
+                <h2 style="color: #333;">Japz Reservations — Password Reset</h2>
                 <p style="color: #666;">Hi ${name}, use the code below:</p>
                 <div style="background-color: #FFCE1B; border-radius: 8px; padding: 20px; margin: 20px 0;">
                     <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</span>

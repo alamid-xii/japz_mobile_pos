@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "scripts": {
+    "xian": "npm --prefix japz-backend run xian",
+    "dev": "node scripts/dev.mjs",
+    "build": "npm --prefix japz-web run build",
+    "test": "npm --prefix japz-backend test",
+    "docker:setup": "node scripts/docker.mjs setup",
+    "docker:up": "node scripts/docker.mjs up",
+    "docker:verify": "node scripts/docker.mjs verify",
+    "docker:status": "node scripts/docker.mjs status",
+    "docker:logs": "node scripts/docker.mjs logs",
+    "docker:down": "node scripts/docker.mjs down"
+  }
+}

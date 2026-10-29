@@ -1,22 +1,21 @@
 {
-    "name": "JAPZ POS",
-    "short_name": "JAPZ POS",
-    "description": "Complete POS and Communication System",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#FFCE1B",
-    "orientation": "portrait",
-    "icons": [
-        {
-            "src": "/logo.jpg",
-            "sizes": "192x192",
-            "type": "image/jpeg"
-        },
-        {
-            "src": "/logo.jpg",
-            "sizes": "512x512",
-            "type": "image/jpeg"
-        }
-    ]
+  "name": "Japz Grill Reservations",
+  "short_name": "Japz",
+  "description": "Online table reservations for Japz Grill — Burger & Bistro",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfaf6",
+  "theme_color": "#f5cc45",
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
 }

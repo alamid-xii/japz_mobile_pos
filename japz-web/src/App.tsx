@@ -1,102 +1,37 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './hooks/useAuth';
-import ProtectedRoute from './components/ProtectedRoute';
-import PublicRoute from './components/PublicRoute';
-import Welcome from './pages/Welcome';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import RoleSelection from './pages/RoleSelection';
-import AdminLayout from './layouts/AdminLayout';
-import CashierLayout from './layouts/CashierLayout';
-import KitchenLayout from './layouts/KitchenLayout';
-import Dashboard from './pages/admin/Dashboard';
-import Employees from './pages/admin/Employees';
-import MenuInventory from './pages/admin/MenuInventory';
-import Stocks from './pages/admin/Stocks';
-import Settings from './pages/admin/Settings';
-import FeedbackHub from './pages/admin/FeedbackHub';
-import SalesForecast from './pages/admin/SalesForecast';
-import DiscountsVouchers from './pages/admin/DiscountsVouchers';
-import POS from './pages/cashier/POS';
-import ActiveOrders from './pages/cashier/ActiveOrders';
-import OrderHistory from './pages/cashier/OrderHistory';
-import PaymentSelection from './pages/cashier/PaymentSelection';
-import CashPayment from './pages/cashier/CashPayment';
-import Receipt from './pages/cashier/Receipt';
-import MenuBoard from './pages/cashier/MenuBoard';
-import Profile from './pages/cashier/Profile';
-import KitchenIncoming from './pages/kitchen/Incoming';
-import KitchenCompleted from './pages/kitchen/Completed';
-import KitchenProfile from './pages/kitchen/Profile';
-import Feedback from './pages/public/Feedback';
-import './index.css';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./hooks/useAuth";
+import ReservationLayout from "./components/ReservationLayout";
+import Home from "./pages/Home";
+import Reserve from "./pages/Reserve";
+import ManageReservation from "./pages/ManageReservation";
+import ManagerLogin from "./pages/ManagerLogin";
+import ReservationAdmin from "./pages/ReservationAdmin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Public Routes - Redirect logged-in users to their dashboard */}
-          <Route path="/" element={<PublicRoute><Welcome /></PublicRoute>} />
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-          <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-          <Route path="/role-selection" element={<PublicRoute><RoleSelection /></PublicRoute>} />
-
-          {/* Customer Feedback - Fully Public (no auth check) */}
-          <Route path="/feedback" element={<Feedback />} />
-
-          {/* Admin Routes - Protected */}
-          <Route path="/admin" element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="employees" element={<Employees />} />
-            <Route path="menu" element={<MenuInventory />} />
-            <Route path="stocks" element={<Stocks />} />
-            <Route path="feedback" element={<FeedbackHub />} />
-            <Route path="sales" element={<SalesForecast />} />
-            <Route path="discounts-vouchers" element={<DiscountsVouchers />} />
-            <Route path="settings" element={<Settings />} />
+          <Route element={<ReservationLayout />}>
+            <Route index element={<Home />} />
+            <Route path="reserve" element={<Reserve />} />
+            <Route path="manage" element={<ManageReservation />} />
+            <Route path="login" element={<ManagerLogin />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password" element={<ResetPassword />} />
+            <Route path="admin/reservations" element={<ReservationAdmin />} />
+            <Route
+              path="admin"
+              element={<Navigate to="/admin/reservations" replace />}
+            />
+            <Route
+              path="admin/dashboard"
+              element={<Navigate to="/admin/reservations" replace />}
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
-
-          {/* Cashier Routes - Protected */}
-          <Route path="/cashier" element={
-            <ProtectedRoute allowedRoles={['cashier']}>
-              <CashierLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Navigate to="pos" replace />} />
-            <Route path="pos" element={<POS />} />
-            <Route path="orders" element={<ActiveOrders />} />
-            <Route path="history" element={<OrderHistory />} />
-            <Route path="payment" element={<PaymentSelection />} />
-            <Route path="cash-payment" element={<CashPayment />} />
-            <Route path="receipt" element={<Receipt />} />
-            <Route path="menuboard" element={<MenuBoard />} />
-            <Route path="profile" element={<Profile />} />
-          </Route>
-
-          {/* Kitchen Routes - Protected */}
-          <Route path="/kitchen" element={
-            <ProtectedRoute allowedRoles={['kitchen']}>
-              <KitchenLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Navigate to="incoming" replace />} />
-            <Route path="incoming" element={<KitchenIncoming />} />
-            <Route path="completed" element={<KitchenCompleted />} />
-            <Route path="profile" element={<KitchenProfile />} />
-          </Route>
-
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
