@@ -114,13 +114,11 @@ try {
     console.log('  ✓ Added preparedById column to OrderItems');
   } catch (e) { if (!e.message.includes('Duplicate')) console.log('  ✓ preparedById column exists in OrderItems'); }
 
-  // Re-enable foreign key checks
-  await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
-  console.log('  ✓ Foreign key checks re-enabled');
-
-  // Drop the old Employees table (consolidated into Users)
-  await sequelize.query('DROP TABLE IF EXISTS `Employees`');
-  console.log('  ✓ Old Employees table dropped');
+  // Add hourlyRate to Users table if it doesn't exist
+  try {
+    await sequelize.query(`ALTER TABLE Users ADD COLUMN hourlyRate DECIMAL(10, 2) NOT NULL DEFAULT 75.00`);
+    console.log('  ✓ Added hourlyRate column to Users');
+  } catch (e) { if (!e.message.includes('Duplicate')) console.log('  ✓ hourlyRate column exists in Users'); }
 
   // Ensure existing admin users have approved status
   await User.update({ status: 'approved' }, { where: { role: 'admin', status: 'pending' } });
@@ -162,6 +160,14 @@ try {
   } else {
     console.log('  ✓ Stock already reset for today');
   }
+
+  // Seed default payroll configuration values if table is empty
+  const { seedDefaultConfigs } = await import('./services/payrollConfigService.js');
+  await seedDefaultConfigs();
+
+  // Re-enable foreign key checks
+  await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+  console.log('  ✓ Foreign key checks re-enabled');
 
   console.log('✅ Database fully synced');
 } catch (syncError) {

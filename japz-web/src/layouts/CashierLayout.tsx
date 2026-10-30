@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useEffect, useState } from 'react';
-import { ShoppingCart, ClipboardList, History, BookOpen, UserCircle, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ShoppingCart, ClipboardList, History, BookOpen, UserCircle, ChevronsLeft, ChevronsRight, Clock, FileText } from 'lucide-react';
 
 export default function CashierLayout() {
     const { user, isInitialized } = useAuth();
@@ -39,6 +39,8 @@ export default function CashierLayout() {
         { path: '/cashier/orders', icon: ClipboardList, label: 'Orders' },
         { path: '/cashier/history', icon: History, label: 'History' },
         { path: '/cashier/menuboard', icon: BookOpen, label: 'Menu' },
+        { path: '/cashier/attendance', icon: Clock, label: 'Clock In' },
+        { path: '/cashier/payslips', icon: FileText, label: 'Payslips' },
         { path: '/cashier/profile', icon: UserCircle, label: 'Profile' },
     ];
 

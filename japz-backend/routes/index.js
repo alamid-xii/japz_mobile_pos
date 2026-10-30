@@ -8,6 +8,7 @@ import { sequelize } from "../models/db.js";
 import { homePage } from "../controllers/homeController.js";
 import { loginPage, registerPage, forgotPasswordPage, dashboardPage, loginUser, registerUser, logoutUser } from "../controllers/authController.js";
 import { User } from "../models/userModel.js";
+import { Employee } from "../models/employeeModel.js";
 
 import { createLog, getClientIp, getLogs } from "../utils/logger.js";
 import { KitchenStation } from "../models/kitchenStationModel.js";
@@ -23,8 +24,14 @@ import { Voucher } from "../models/voucherModel.js";
 import { BusinessHours } from "../models/businessHoursModel.js";
 import { analyzeWithKeywords } from "../services/gemmaService.js";
 import { sendVerificationCode, verifyCode, sendApprovalEmail, sendPasswordResetCode, verifyPasswordResetCode } from "../services/emailService.js";
+// ── PAYROLL MODULE ─────────────────────────────────────────────────────────
+import payrollRouter from './payrollRoutes.js';
+import employeeRouter from './employeeRoutes.js';
+import * as payrollController from '../controllers/payrollController.js';
+import { seedDefaultConfigs } from '../services/payrollConfigService.js';
 
 const router = express.Router();
+
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 // ========== WEB PAGES ==========
@@ -51,6 +58,17 @@ const verifyToken = (req, res, next) => {
     res.status(401).json({ error: 'Invalid token' });
   }
 };
+
+// ========== ADMIN MIDDLEWARE (GAP-02 Fix) ==========
+// requireAdmin does NOT exist in the original codebase — we created it for payroll.
+const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Forbidden: Admin access required' });
+  }
+  next();
+};
+
+
 
 // ========== API ENDPOINTS FOR MOBILE APP ==========
 
@@ -486,6 +504,30 @@ router.put("/api/users/:id/approve", verifyToken, async (req, res) => {
 
     await user.save();
 
+    // Auto-sync approved staff to Employee table for payroll
+    try {
+      let emp = await Employee.findOne({ where: { [Op.or]: [{ userId: user.id }, { email: user.email }] } });
+      if (!emp) {
+        await Employee.create({
+          name: user.name,
+          email: user.email,
+          phone: '',
+          password: user.password,
+          role: role === 'admin' ? 'cashier' : role,
+          status: 'active',
+          hourlyRate: user.hourlyRate || 75.00,
+          userId: user.id
+        });
+      } else {
+        emp.userId = user.id;
+        emp.role = role === 'admin' ? 'cashier' : role;
+        emp.status = 'active';
+        await emp.save();
+      }
+    } catch (syncErr) {
+      console.warn('Auto Employee sync warning:', syncErr.message);
+    }
+
     await createLog({
       userId: req.user.id,
       userName: req.user.name,
@@ -570,6 +612,17 @@ router.put("/api/users/:id/toggle-status", verifyToken, async (req, res) => {
     const newStatus = user.status === 'approved' ? 'inactive' : 'approved';
     user.status = newStatus;
     await user.save();
+
+    // Sync status to Employee table
+    try {
+      const emp = await Employee.findOne({ where: { [Op.or]: [{ userId: user.id }, { email: user.email }] } });
+      if (emp) {
+        emp.status = newStatus === 'approved' ? 'active' : 'inactive';
+        await emp.save();
+      }
+    } catch (syncErr) {
+      console.warn('Auto Employee status sync warning:', syncErr.message);
+    }
 
     await createLog({
       userId: req.user.id,
@@ -2886,5 +2939,17 @@ router.put("/api/business-hours", verifyToken, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// ========== PAYROLL ROUTES (sub-router, TD-04 fix) ==========
+// Seed default config on first run (safe to call every time)
+seedDefaultConfigs();
+
+// Staff Attendance Clock-In/Out & Employee Payslips (accessible by all authenticated staff)
+router.use('/api/employee', verifyToken, employeeRouter);
+router.post('/api/attendance/clock-in', verifyToken, payrollController.clockIn);
+router.post('/api/attendance/clock-out', verifyToken, payrollController.clockOut);
+
+// Admin-facing payroll management (requires admin)
+router.use('/api', verifyToken, requireAdmin, payrollRouter);
 
 export default router;

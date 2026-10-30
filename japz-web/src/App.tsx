@@ -19,6 +19,13 @@ import Settings from './pages/admin/Settings';
 import FeedbackHub from './pages/admin/FeedbackHub';
 import SalesForecast from './pages/admin/SalesForecast';
 import DiscountsVouchers from './pages/admin/DiscountsVouchers';
+// ── PAYROLL MODULE PAGES ───────────────────────────────────
+import PayrollDashboard from './pages/admin/PayrollDashboard';
+import PayrollPeriodDetail from './pages/admin/PayrollPeriodDetail';
+import AttendanceManagement from './pages/admin/AttendanceManagement';
+import PayrollSettings from './pages/admin/PayrollSettings';
+import PayrollReports from './pages/admin/PayrollReports';
+import StaffPayManagement from './pages/admin/StaffPayManagement';
 import POS from './pages/cashier/POS';
 import ActiveOrders from './pages/cashier/ActiveOrders';
 import OrderHistory from './pages/cashier/OrderHistory';
@@ -31,7 +38,11 @@ import KitchenIncoming from './pages/kitchen/Incoming';
 import KitchenCompleted from './pages/kitchen/Completed';
 import KitchenProfile from './pages/kitchen/Profile';
 import Feedback from './pages/public/Feedback';
+// ── EMPLOYEE PAGES ─────────────────────────────────────────
+import ClockInOut from './pages/employee/ClockInOut';
+import MyPayslips from './pages/employee/MyPayslips';
 import './index.css';
+
 
 export default function App() {
   return (
@@ -64,6 +75,13 @@ export default function App() {
             <Route path="sales" element={<SalesForecast />} />
             <Route path="discounts-vouchers" element={<DiscountsVouchers />} />
             <Route path="settings" element={<Settings />} />
+            {/* Payroll Module */}
+            <Route path="payroll" element={<PayrollDashboard />} />
+            <Route path="payroll/:id" element={<PayrollPeriodDetail />} />
+            <Route path="payroll-staff" element={<StaffPayManagement />} />
+            <Route path="attendance" element={<AttendanceManagement />} />
+            <Route path="payroll-settings" element={<PayrollSettings />} />
+            <Route path="payroll-reports" element={<PayrollReports />} />
           </Route>
 
           {/* Cashier Routes - Protected */}
@@ -81,6 +99,8 @@ export default function App() {
             <Route path="receipt" element={<Receipt />} />
             <Route path="menuboard" element={<MenuBoard />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="attendance" element={<ClockInOut />} />
+            <Route path="payslips" element={<MyPayslips />} />
           </Route>
 
           {/* Kitchen Routes - Protected */}
@@ -93,6 +113,8 @@ export default function App() {
             <Route path="incoming" element={<KitchenIncoming />} />
             <Route path="completed" element={<KitchenCompleted />} />
             <Route path="profile" element={<KitchenProfile />} />
+            <Route path="attendance" element={<ClockInOut />} />
+            <Route path="payslips" element={<MyPayslips />} />
           </Route>
 
           {/* Catch-all */}

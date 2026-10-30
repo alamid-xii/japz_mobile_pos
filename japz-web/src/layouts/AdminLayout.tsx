@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useEffect } from 'react';
-import { LayoutDashboard, Users, Package, Warehouse, MessageCircle, BarChart3, Settings, Ticket } from 'lucide-react';
+import { LayoutDashboard, Users, Package, Warehouse, MessageCircle, BarChart3, Settings, Ticket, Banknote, Clock, SlidersHorizontal, PieChart, UserCheck } from 'lucide-react';
 
 export default function AdminLayout() {
     const { user, isInitialized } = useAuth();
@@ -19,14 +19,21 @@ export default function AdminLayout() {
     }
 
     const tabs = [
-        { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { path: '/admin/employees', icon: Users, label: 'Users' },
-        { path: '/admin/menu', icon: Package, label: 'Menu' },
-        { path: '/admin/stocks', icon: Warehouse, label: 'Stocks' },
-        { path: '/admin/sales', icon: BarChart3, label: 'Sales' },
-        { path: '/admin/discounts-vouchers', icon: Ticket, label: 'Promotions' },
-        { path: '/admin/feedback', icon: MessageCircle, label: 'Feedback' },
-        { path: '/admin/settings', icon: Settings, label: 'Settings' },
+        { path: '/admin/dashboard',        icon: LayoutDashboard,   label: 'Dashboard' },
+        { path: '/admin/employees',         icon: Users,             label: 'Users' },
+        { path: '/admin/menu',              icon: Package,           label: 'Menu' },
+        { path: '/admin/stocks',            icon: Warehouse,         label: 'Stocks' },
+        { path: '/admin/sales',             icon: BarChart3,         label: 'Sales' },
+        { path: '/admin/discounts-vouchers',icon: Ticket,            label: 'Promotions' },
+        { path: '/admin/feedback',          icon: MessageCircle,     label: 'Feedback' },
+        // ── Payroll Module ────────────────────────────────────────
+        { path: '/admin/payroll',           icon: Banknote,          label: 'Payroll' },
+        { path: '/admin/payroll-staff',     icon: UserCheck,         label: 'Staff Rates' },
+        { path: '/admin/attendance',        icon: Clock,             label: 'Attendance' },
+        { path: '/admin/payroll-reports',   icon: PieChart,          label: 'Pay Reports' },
+        { path: '/admin/payroll-settings',  icon: SlidersHorizontal, label: 'Pay Config' },
+        // ─────────────────────────────────────────────────────────
+        { path: '/admin/settings',          icon: Settings,          label: 'Settings' },
     ];
 
     const isActive = (path: string) => location.pathname === path;

@@ -34,9 +34,18 @@ import { Feedback } from './feedbackModel.js';
 import { Discount } from './discountModel.js';
 import { Voucher } from './voucherModel.js';
 import { BusinessHours } from './businessHoursModel.js';
+import { Employee } from './employeeModel.js';
+import { Attendance } from './attendanceModel.js';
+import { Payroll } from './payrollModel.js'; // Legacy — kept for backward compat
 
-// Define associations
+// ── PAYROLL MODULE MODELS ──────────────────────────────────────────────────
+import { PayrollConfig } from './payrollConfigModel.js';
+import { PayrollPeriod } from './payrollPeriodModel.js';
+import { PayrollEntry } from './payrollEntryModel.js';
+import { PayrollAdjustment } from './payrollAdjustmentModel.js';
+import { Payslip } from './payslipModel.js';
 
+// ── EXISTING ASSOCIATIONS (unchanged) ────────────────────────────────────
 
 MenuCategory.hasMany(MenuItem, { foreignKey: 'categoryId', as: 'menuItems' });
 MenuItem.belongsTo(MenuCategory, { foreignKey: 'categoryId', as: 'category' });
@@ -59,4 +68,50 @@ MenuItem.hasMany(OrderItem, { foreignKey: 'menuItemId', as: 'orderItems' });
 Feedback.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 Order.hasMany(Feedback, { foreignKey: 'orderId', as: 'feedbacks' });
 
-export { User, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment, Log, Feedback, Discount, Voucher, BusinessHours };
+// Legacy Payroll associations (kept for backward compat)
+Employee.hasMany(Attendance, { foreignKey: 'employeeId', as: 'attendances' });
+Attendance.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
+
+Employee.hasMany(Payroll, { foreignKey: 'employeeId', as: 'payrolls' });
+Payroll.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
+
+// ── PAYROLL MODULE ASSOCIATIONS ───────────────────────────────────────────
+
+// PayrollPeriod → PayrollEntry (one period has many employee entries)
+PayrollPeriod.hasMany(PayrollEntry, { foreignKey: 'payrollPeriodId', as: 'entries' });
+PayrollEntry.belongsTo(PayrollPeriod, { foreignKey: 'payrollPeriodId', as: 'payrollPeriod' });
+PayrollEntry.belongsTo(PayrollPeriod, { foreignKey: 'payrollPeriodId', as: 'period' });
+
+// Employee → PayrollEntry (one employee has many entries across periods)
+Employee.hasMany(PayrollEntry, { foreignKey: 'employeeId', as: 'payrollEntries' });
+PayrollEntry.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
+
+// PayrollEntry → Payslip (1-to-1)
+PayrollEntry.hasOne(Payslip, { foreignKey: 'payrollEntryId', as: 'payslip' });
+Payslip.belongsTo(PayrollEntry, { foreignKey: 'payrollEntryId', as: 'payrollEntry' });
+Payslip.belongsTo(PayrollEntry, { foreignKey: 'payrollEntryId', as: 'entry' });
+
+// PayrollEntry → PayrollAdjustment (one entry can have many adjustments)
+PayrollEntry.hasMany(PayrollAdjustment, { foreignKey: 'payrollEntryId', as: 'adjustments' });
+PayrollAdjustment.belongsTo(PayrollEntry, { foreignKey: 'payrollEntryId', as: 'payrollEntry' });
+PayrollAdjustment.belongsTo(PayrollEntry, { foreignKey: 'payrollEntryId', as: 'entry' });
+
+// Employee → Payslip (for quick lookup without going through entry)
+Employee.hasMany(Payslip, { foreignKey: 'employeeId', as: 'payslips' });
+Payslip.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
+
+// User → PayrollPeriod (created by / approved by)
+User.hasMany(PayrollPeriod, { foreignKey: 'createdBy', as: 'createdPeriods' });
+PayrollPeriod.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
+// User ↔ Employee (link POS user accounts to payroll employee profiles)
+Employee.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasOne(Employee, { foreignKey: 'userId', as: 'employee' });
+
+export {
+  User, KitchenStation, MenuCategory, MenuItem, Order, OrderItem,
+  Payment, Log, Feedback, Discount, Voucher, BusinessHours,
+  Employee, Attendance, Payroll,
+  // Payroll Module
+  PayrollConfig, PayrollPeriod, PayrollEntry, PayrollAdjustment, Payslip
+};

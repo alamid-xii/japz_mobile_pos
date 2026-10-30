@@ -26,16 +26,7 @@ SOFTWARE.
 
 import { Sequelize } from "sequelize";
 import { sequelize } from "./models/db.js";
-import { User } from "./models/userModel.js";
-import { Employee } from "./models/employeeModel.js";
-import { KitchenStation } from "./models/kitchenStationModel.js";
-import { MenuCategory } from "./models/menuCategoryModel.js";
-import { MenuItem } from "./models/menuItemModel.js";
-import { Order } from "./models/orderModel.js";
-import { OrderItem } from "./models/orderItemModel.js";
-import { Payment } from "./models/paymentModel.js";
-import { Log } from "./models/logModel.js";
-import { BusinessHours } from "./models/businessHoursModel.js";
+import "./models/index.js";
 import { seed } from "./seed.js";
 import { seedMenu } from "./seedMenu.js";
 import inquirer from "inquirer";
@@ -49,14 +40,7 @@ const rootSequelize = new Sequelize("", process.env.DB_USER || "root", process.e
   logging: false,
 });
 
-const { createDb } = await inquirer.prompt([
-  {
-    type: "confirm",
-    name: "createDb",
-    message: `Database '${dbName}' may not exist. Create it?`,
-    default: true,
-  },
-]);
+const createDb = true;
 
 if (createDb) {
   await rootSequelize.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);

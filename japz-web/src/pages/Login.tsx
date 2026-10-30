@@ -2,24 +2,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Clock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { businessHoursAPI } from '../services/api';
 
 export default function Login() {
     const navigate = useNavigate();
-    const { login, loading, logout } = useAuth();
+    const { login, loading } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [businessHoursWarning, setBusinessHoursWarning] = useState('');
-
-    const isWithinBusinessHours = (openTime: string, closeTime: string): boolean => {
-        const now = new Date();
-        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        // Compare times as strings (HH:MM format)
-        return currentTime >= openTime && currentTime < closeTime;
-    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,47 +20,20 @@ export default function Login() {
             setBusinessHoursWarning('');
             setError('');
             
-            // Attempt login
+            // Attempt login (business hours verified before session is stored)
             const result = await login(email, password);
-            setError('');
-            
-            // Double-check business hours for non-admin roles after login
-            if (result?.role === 'cashier' || result?.role === 'kitchen') {
-                try {
-                    const hoursResponse = await businessHoursAPI.get();
-                    const businessHours = hoursResponse.data;
-                    
-                    const openTime = businessHours.openTime?.substring(0, 5) || '09:00';
-                    const closeTime = businessHours.closeTime?.substring(0, 5) || '22:00';
-                    
-                    const isOpen = isWithinBusinessHours(openTime, closeTime);
-                    const shouldCheckHours = (result.role === 'cashier' && businessHours.applyCashier) || 
-                                            (result.role === 'kitchen' && businessHours.applyKitchen);
-                    
-                    console.log('📅 Post-Login Business Hours Check:', {
-                        role: result.role,
-                        openTime,
-                        closeTime,
-                        isOpen,
-                        shouldCheckHours
-                    });
-                    
-                    if (!isOpen && shouldCheckHours) {
-                        // Block access and clear authenticated session
-                        try { await logout(); } catch {}
-                        setBusinessHoursWarning('Access is restricted at this time. Please contact your manager or try again during operating hours.');
-                        return;
-                    }
-                } catch (err) {
-                    console.error('Error checking business hours:', err);
-                }
-            }
             
             // Navigate based on role
             if (result?.role === 'cashier') navigate('/cashier/pos', { replace: true });
             else if (result?.role === 'kitchen') navigate('/kitchen/incoming', { replace: true });
             else navigate('/admin/dashboard', { replace: true });
-        } catch (err: any) { setError(err.message || 'Login failed'); }
+        } catch (err: any) {
+            if (err.message?.includes('Access is restricted')) {
+                setBusinessHoursWarning(err.message);
+            } else {
+                setError(err.message || 'Login failed');
+            }
+        }
     };
 
     return (

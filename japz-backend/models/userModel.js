@@ -33,6 +33,7 @@ export const User = sequelize.define("User", {
   password: { type: DataTypes.STRING, allowNull: false },
   role: { type: DataTypes.ENUM('admin', 'cashier', 'kitchen'), defaultValue: 'cashier', allowNull: false },
   status: { type: DataTypes.ENUM('pending', 'approved', 'rejected', 'inactive'), defaultValue: 'pending', allowNull: false },
-  assignedCategories: { type: DataTypes.JSON, defaultValue: [], allowNull: true } // For kitchen staff - array of category IDs
+  assignedCategories: { type: DataTypes.JSON, defaultValue: [], allowNull: true }, // For kitchen staff - array of category IDs
+  hourlyRate: { type: DataTypes.DECIMAL(10, 2), defaultValue: 75.00, allowNull: false }
 });
 export { sequelize }; 

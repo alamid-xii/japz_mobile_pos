@@ -1,5 +1,11 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { authAPI } from '../services/api';
+import { authAPI, businessHoursAPI } from '../services/api';
+
+const isWithinBusinessHours = (openTime: string, closeTime: string): boolean => {
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    return currentTime >= openTime && currentTime < closeTime;
+};
 
 export interface User {
     id: number;
@@ -53,12 +59,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const response = await authAPI.login(email, password);
             const { token, user: userData } = response.data;
+
+            // Check business hours BEFORE committing session and setting user
+            if (userData.role === 'cashier' || userData.role === 'kitchen') {
+                try {
+                    const hoursResponse = await businessHoursAPI.get();
+                    const businessHours = hoursResponse.data;
+                    const openTime = businessHours.openTime?.substring(0, 5) || '09:00';
+                    const closeTime = businessHours.closeTime?.substring(0, 5) || '22:00';
+                    const shouldCheckHours = (userData.role === 'cashier' && businessHours.applyCashier) ||
+                                            (userData.role === 'kitchen' && businessHours.applyKitchen);
+
+                    if (shouldCheckHours && !isWithinBusinessHours(openTime, closeTime)) {
+                        throw new Error(`Access is restricted at this time (operating hours: ${openTime} - ${closeTime}). Please contact your manager.`);
+                    }
+                } catch (bhErr: any) {
+                    if (bhErr.message?.includes('Access is restricted')) {
+                        throw bhErr;
+                    }
+                }
+            }
+
             localStorage.setItem('authToken', token);
             const userWithToken = { ...userData, token };
             setUser(userWithToken);
             return userWithToken;
         } catch (err: any) {
-            const errorMessage = err.response?.data?.error || 'Login failed';
+            const errorMessage = err.response?.data?.error || err.message || 'Login failed';
             setError(errorMessage);
             throw new Error(errorMessage);
         } finally {
