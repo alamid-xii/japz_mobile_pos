@@ -26,6 +26,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "./db.js";
 
 export const Order = sequelize.define("Order", {
+  clientRequestId: { type: DataTypes.STRING(128), allowNull: true, unique: true },
   orderNumber: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -84,7 +85,7 @@ export const Order = sequelize.define("Order", {
     defaultValue: 0.00,
   },
   status: {
-    type: DataTypes.ENUM('pending', 'preparing', 'ready', 'out-for-delivery', 'completed', 'cancelled'),
+    type: DataTypes.ENUM('awaiting-payment', 'pending', 'preparing', 'ready', 'out-for-delivery', 'completed', 'cancelled'),
     allowNull: false,
     defaultValue: 'pending',
   },

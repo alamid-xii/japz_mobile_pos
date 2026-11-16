@@ -1,14 +1,15 @@
-import jwt from 'jsonwebtoken';
+import "dotenv/config";
 import axios from 'axios';
 
-const API = 'http://localhost:3000';
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const API = process.env.API_URL || 'http://localhost:3000';
 
 (async () => {
   try {
-    // Create token for admin user id 1
-    const token = jwt.sign({ id: 1, name: 'Admin', email: 'admin@gmail.com', role: 'admin' }, JWT_SECRET);
-    console.log('Generated token (first 8 chars):', token.slice(0, 8));
+    const email = process.env.BOOTSTRAP_ADMIN_EMAIL;
+    const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;
+    if (!email || !password) throw new Error('Set private BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD before running this utility.');
+    const loginRes = await axios.post(`${API}/api/auth/login`, { email, password });
+    const token = loginRes.data.token;
 
     // Update hours
     const updateRes = await axios.put(`${API}/api/business-hours`, { openTime: '14:00', closeTime: '23:00', applyCashier: true, applyKitchen: true }, { headers: { Authorization: `Bearer ${token}` } });

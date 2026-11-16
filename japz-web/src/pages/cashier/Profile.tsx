@@ -1,20 +1,22 @@
+import { useFeedback } from '../../components/FeedbackProvider';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User } from 'lucide-react';
 import TimeClock from '../../components/TimeClock';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function Profile() {
+    const { confirmAction } = useFeedback();
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = async () => {
-        if (!confirm('Are you sure you want to logout?')) return;
+        if (!await confirmAction('Are you sure you want to logout?')) return;
         try { await logout(); } catch (e) { console.error(e); }
         navigate('/login', { replace: true });
     };
 
     return (
-        <div className="p-4 md:p-6 h-full overflow-y-auto">
+        <div className="app-page">
             <div className="max-w-2xl mx-auto">
                 <div className="mb-6"><TimeClock /></div>
                 <div className="flex justify-between items-center mb-6">
@@ -26,9 +28,9 @@ export default function Profile() {
                 </div>
 
                 {/* Profile Card */}
-                <div className="bg-white border border-gray-200 rounded-xl p-8 flex flex-col items-center shadow-sm">
-                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-brand flex items-center justify-center mb-5">
-                        <User size={48} className="text-white" />
+                <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-full bg-brand flex items-center justify-center mb-5">
+                        <User size={48} className="text-brand-dark" />
                     </div>
                     <h2 className="text-xl md:text-2xl font-bold">{user?.name || 'User'}</h2>
                     <p className="text-base text-gray-500 mt-2">{user?.email || 'user@example.com'}</p>

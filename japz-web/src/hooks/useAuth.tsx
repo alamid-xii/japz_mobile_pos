@@ -11,7 +11,7 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    role: 'admin' | 'cashier' | 'kitchen' | 'rider';
+    role: 'admin' | 'cashier' | 'kitchen' | 'rider' | 'inventory';
     token?: string;
     assignedCategories?: number[];
 }
@@ -44,7 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     setUser(response.data.user);
                 }
             } catch {
-                console.log('No valid token found');
                 localStorage.removeItem('authToken');
             } finally {
                 setIsInitialized(true);

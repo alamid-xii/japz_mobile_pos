@@ -1,3 +1,5 @@
+import Modal from '../../components/Modal';
+import { useFeedback } from '../../components/FeedbackProvider';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Minus, ShoppingCart, Speaker, Mic } from 'lucide-react';
@@ -10,7 +12,7 @@ interface Product {
     hasFlavor?: boolean; flavors?: string[];
     hasTemperature?: boolean; temperatures?: string[];
     status?: 'available' | 'unavailable';
-    trackStock?: boolean; stock?: number | null;
+    trackStock?: boolean; stock?: number | null; reorderLevel?: number; variants?: { size: string | null; flavor: string | null; temperature: string | null; available: number }[]; availabilityReason?: string;
 }
 interface CartItem extends Product {
     quantity: number; selectedSize?: string; selectedFlavor?: string; selectedTemperature?: string; itemPrice: number;
@@ -28,6 +30,7 @@ const getCategoryIcon = (name: string): string => {
 };
 
 export default function POS() {
+    const { notify } = useFeedback();
     const navigate = useNavigate();
     const [categories, setCategories] = useState<Category[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
@@ -35,6 +38,7 @@ export default function POS() {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [showCart, setShowCart] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [stockError, setStockError] = useState('');
     const [showOptionsModal, setShowOptionsModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [selectedSize, setSelectedSize] = useState('');
@@ -62,7 +66,7 @@ export default function POS() {
                         } else if (s?.name && s?.price) parsedSizes.push({ name: s.name, price: Number(s.price) });
                     });
                 }
-                return { id: item.id, name: item.name, price: Number(item.price || 0), categoryId: item.categoryId || item.MenuCategoryId, hasSize: item.hasSize || false, sizes: parsedSizes, hasFlavor: item.hasFlavor || false, flavors: item.flavors || [], hasTemperature: item.hasTemperature || false, temperatures: item.temperatures || [], status: item.status || 'available', trackStock: item.trackStock || false, stock: item.stock ?? null };
+                return { id: item.id, name: item.name, price: Number(item.price || 0), categoryId: item.categoryId || item.MenuCategoryId, hasSize: item.hasSize || false, sizes: parsedSizes, hasFlavor: item.hasFlavor || false, flavors: item.flavors || [], hasTemperature: item.hasTemperature || false, temperatures: item.temperatures || [], status: item.status || 'available', trackStock: item.trackStock || false, stock: item.stock ?? null, variants: item.variants || [], reorderLevel: item.reorderLevel ?? 10, availabilityReason: item.availabilityReason || '' };
             });
             setProducts(itms);
 
@@ -98,16 +102,18 @@ export default function POS() {
 
                 setCategories(catsWithSales);
                 if (catsWithSales.length > 0 && !selectedCategory) setSelectedCategory(catsWithSales[0].id);
-            } catch (err) {
+            } catch {
                 // If analytics call fails, fall back to original categories order
                 setCategories(cats);
                 if (cats.length > 0 && !selectedCategory) setSelectedCategory(cats[0].id);
             }
-        } catch (e) { console.error(e); }
+            setStockError('');
+        } catch { setStockError('Could not refresh menu stock. Retry before checking out.'); }
         finally { setLoading(false); }
     }, [selectedCategory]);
 
-    useEffect(() => { fetchData(true); }, []);
+    useEffect(() => { void fetchData(true); }, []);
+    useEffect(() => { const refresh = () => { if (document.visibilityState === 'visible') void fetchData(); }; const timer = setInterval(refresh, 15000); window.addEventListener('focus', refresh); return () => { clearInterval(timer); window.removeEventListener('focus', refresh); }; }, [fetchData]);
 
     const speakText = (text: string) => {
         try {
@@ -119,7 +125,7 @@ export default function POS() {
 
     const startListening = () => {
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        if (!SpeechRecognition) return alert('Speech recognition not supported in this browser');
+        if (!SpeechRecognition) return notify('Speech recognition not supported in this browser');
         try {
             const rec = new SpeechRecognition();
             rec.lang = 'en-US';
@@ -139,7 +145,7 @@ export default function POS() {
     };
 
     const stopListening = () => {
-        try { recognitionRef.current?.stop(); } catch (e) { }
+        try { recognitionRef.current?.stop(); } catch { /* Speech recognition may already be stopped. */ }
         setListening(false);
     };
 
@@ -175,7 +181,10 @@ export default function POS() {
     };
     const addWithOptions = () => {
         if (!selectedProduct) return;
-        if (hasInsufficientStock(selectedProduct)) return;
+        const variant = selectedProduct.variants?.find(variant => (variant.size || '') === selectedSize && (variant.flavor || '') === selectedFlavor && (variant.temperature || '') === selectedTemperature);
+        if (!variant || variant.available <= 0) { setStockError('This option is unavailable. Choose another option or ask Inventory to replenish it.'); return; }
+        const currentQty = cart.filter(item => item.id === selectedProduct.id && (item.selectedSize || '') === selectedSize && (item.selectedFlavor || '') === selectedFlavor && (item.selectedTemperature || '') === selectedTemperature).reduce((sum, item) => sum + item.quantity, 0);
+        if (currentQty + 1 > variant.available) { setStockError('This option has reached its available stock limit.'); return; }
         const price = selectedSize && selectedProduct.sizes ? (selectedProduct.sizes.find(s => s.name === selectedSize)?.price || selectedProduct.price) : selectedProduct.price;
         setCart(prev => {
             const currentQty = prev.filter(i => i.id === selectedProduct.id).reduce((sum, i) => sum + i.quantity, 0);
@@ -211,17 +220,18 @@ export default function POS() {
     };
     const total = cart.reduce((s, i) => s + (i.itemPrice || i.price) * i.quantity, 0);
 
-    if (loading) return <div className="spinner" />;
+    if (loading) return <div className="spinner" role="status" aria-label="Loading content" />;
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="pos-page flex flex-col h-full">
+            {stockError && <div role="alert" className="p-3 bg-red-50 text-red-800 border-b border-red-200 text-sm">{stockError}<button className="ml-3 underline min-h-11" onClick={() => void fetchData()}>Refresh stock</button></div>}
             {/* Mobile Header - hidden on desktop */}
             <div className="md:hidden flex items-center justify-between px-2 py-1 pt-[max(12px,env(safe-area-inset-top))] bg-brand shrink-0">
                 <div className="flex items-center gap-2">
                     <img src="/logo.jpg" alt="JAPZ" className="w-9 h-9 rounded-lg object-cover" />
-                    <span className="text-lg font-bold text-brand-dark">JAPZ POS</span>
+                    <h1 className="!text-lg font-bold text-brand-dark">JAPZ POS</h1>
                 </div>
-                <button className="relative bg-transparent border-none cursor-pointer p-1" onClick={() => setShowCart(!showCart)}>
+                <button aria-label={showCart ? 'View menu' : `View cart, ${cart.length} items`} aria-expanded={showCart} className="relative bg-transparent border-none cursor-pointer p-1" onClick={() => setShowCart(!showCart)}>
                     <ShoppingCart size={24} className="text-brand-dark" />
                     {cart.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center">{cart.length}</span>}
                 </button>
@@ -263,12 +273,12 @@ export default function POS() {
                                             <div className="text-[13px] text-brand-dark font-medium">₱{(item.itemPrice || item.price).toFixed(2)}</div>
                                         </div>
                                         <div className="flex items-center gap-1.5">
-                                            <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 bg-white cursor-pointer" onClick={() => updateQty(idx, item.quantity - 1)}><Minus size={14} /></button>
+                                            <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 bg-white cursor-pointer" aria-label={`Decrease ${item.name} quantity`} onClick={() => updateQty(idx, item.quantity - 1)}><Minus size={14} /></button>
                                             <span className="font-semibold min-w-[20px] text-center">{item.quantity}</span>
-                                            <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 bg-white cursor-pointer" onClick={() => updateQty(idx, item.quantity + 1)}><Plus size={14} /></button>
+                                            <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 bg-white cursor-pointer" aria-label={`Increase ${item.name} quantity`} onClick={() => updateQty(idx, item.quantity + 1)}><Plus size={14} /></button>
                                         </div>
                                         <span className="font-bold text-sm whitespace-nowrap">₱{((item.itemPrice || item.price) * item.quantity).toFixed(2)}</span>
-                                        <button className="bg-transparent border-none text-red-500 cursor-pointer text-base p-1" onClick={() => updateQty(idx, 0)}>✕</button>
+                                        <button className="bg-transparent border-none text-red-500 cursor-pointer text-base p-1" aria-label={`Remove ${item.name}`} onClick={() => updateQty(idx, 0)}>✕</button>
                                     </div>
                                 ))}
                                 <div className="flex justify-between items-center py-4 border-t-2 border-brand mt-2 font-bold text-lg">
@@ -315,7 +325,7 @@ export default function POS() {
                                         </div>
                                         <div className="px-1.5 pb-1.5">
                                             {item.trackStock && item.stock != null && (item.stock ?? 0) > 0 && (
-                                                <div className={`text-[10px] font-medium mb-1 text-center ${(item.stock ?? 0) <= 5 ? 'text-amber-500' : 'text-gray-500'}`}>
+                                                <div className={`text-[10px] font-medium mb-1 text-center ${(item.stock ?? 0) <= (item.reorderLevel ?? 10) ? 'text-amber-500' : 'text-gray-500'}`}>
                                                     {`${(item.stock ?? 0) - getCartQuantity(item.id)} left`}
                                                 </div>
                                             )}
@@ -353,7 +363,7 @@ export default function POS() {
                     {filtered.length === 0 ? (
                         <div className="flex flex-col items-center justify-center flex-1 text-gray-500 gap-2 py-8"><p>No items in this category</p></div>
                     ) : (
-                        <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 p-3 flex-1 overflow-y-auto content-start">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 p-3 flex-1 overflow-y-auto content-start">
                             {filtered.map(item => (
                                 <div key={item.id} className={`bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col transition hover:shadow-md ${item.status === 'unavailable' ? 'opacity-50' : ''}`}>
                                     <div className="h-14 flex items-center justify-center text-[32px] bg-yellow-50">{catIcon}</div>
@@ -365,7 +375,7 @@ export default function POS() {
                                     </div>
                                     <div className="px-2 pb-2">
                                         {item.trackStock && item.stock != null && (item.stock ?? 0) > 0 && (
-                                            <div className={`text-[10px] font-medium mb-1 text-center ${(item.stock ?? 0) <= 5 ? 'text-amber-500' : 'text-gray-500'}`}>
+                                            <div className={`text-[10px] font-medium mb-1 text-center ${(item.stock ?? 0) <= (item.reorderLevel ?? 10) ? 'text-amber-500' : 'text-gray-500'}`}>
                                                 {`${(item.stock ?? 0) - getCartQuantity(item.id)} left`}
                                             </div>
                                         )}
@@ -381,7 +391,7 @@ export default function POS() {
                 </div>
 
                 {/* Right: Cart Panel (always visible on desktop) */}
-                <div className="w-80 shrink-0 border-l border-gray-200 bg-white flex flex-col">
+                <div className="w-64 xl:w-80 shrink-0 border-l border-gray-200 bg-white flex flex-col">
                     {/* Cart Header */}
                     <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
                         <ShoppingCart size={18} className="text-brand-dark" />
@@ -409,13 +419,13 @@ export default function POS() {
                                                 {item.selectedFlavor && <div className="text-[10px] text-gray-500">Flavor: {item.selectedFlavor}</div>}
                                                 {item.selectedTemperature && <div className="text-[10px] text-gray-500">Temp: {item.selectedTemperature}</div>}
                                             </div>
-                                            <button className="bg-transparent border-none text-red-400 hover:text-red-600 cursor-pointer text-xs p-0.5 ml-1" onClick={() => updateQty(idx, 0)}>✕</button>
+                                            <button className="bg-transparent border-none text-red-400 hover:text-red-600 cursor-pointer text-xs p-0.5 ml-1" aria-label={`Remove ${item.name}`} onClick={() => updateQty(idx, 0)}>✕</button>
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-1">
-                                                <button className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 bg-white cursor-pointer text-gray-600 hover:bg-gray-100" onClick={() => updateQty(idx, item.quantity - 1)}><Minus size={12} /></button>
+                                                <button className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 bg-white cursor-pointer text-gray-600 hover:bg-gray-100" aria-label={`Decrease ${item.name} quantity`} onClick={() => updateQty(idx, item.quantity - 1)}><Minus size={12} /></button>
                                                 <span className="font-semibold text-[12px] min-w-[20px] text-center">{item.quantity}</span>
-                                                <button className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 bg-white cursor-pointer text-gray-600 hover:bg-gray-100" onClick={() => updateQty(idx, item.quantity + 1)}><Plus size={12} /></button>
+                                                <button className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 bg-white cursor-pointer text-gray-600 hover:bg-gray-100" aria-label={`Increase ${item.name} quantity`} onClick={() => updateQty(idx, item.quantity + 1)}><Plus size={12} /></button>
                                             </div>
                                             <span className="font-bold text-[13px] text-brand-dark">₱{((item.itemPrice || item.price) * item.quantity).toFixed(2)}</span>
                                         </div>
@@ -443,8 +453,7 @@ export default function POS() {
 
             {/* Options Modal */}
             {showOptionsModal && selectedProduct && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9990] p-4 animate-[fadeIn_0.2s]" onClick={() => setShowOptionsModal(false)}>
-                    <div className="bg-white rounded-xl p-6 w-full max-w-[400px] max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <Modal label="Item options" onClose={() => setShowOptionsModal(false)} className="bg-white rounded-xl p-6 w-full max-w-[400px] max-h-[80vh] overflow-y-auto">
                         <h2 className="text-lg font-bold mb-4">{selectedProduct.name}</h2>
                         {selectedProduct.hasSize && selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
                             <div className="mb-4">
@@ -502,8 +511,7 @@ export default function POS() {
                                 Add to Cart
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Modal>
             )}
         </div>
     );

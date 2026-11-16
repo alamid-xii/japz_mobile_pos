@@ -1,67 +1,88 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
-import Welcome from './pages/Welcome';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import RoleSelection from './pages/RoleSelection';
-import AdminLayout from './layouts/AdminLayout';
-import CashierLayout from './layouts/CashierLayout';
-import KitchenLayout from './layouts/KitchenLayout';
-import Dashboard from './pages/admin/Dashboard';
-import Employees from './pages/admin/Employees';
-import MenuInventory from './pages/admin/MenuInventory';
-import Stocks from './pages/admin/Stocks';
-import Settings from './pages/admin/Settings';
-import FeedbackHub from './pages/admin/FeedbackHub';
-import SalesForecast from './pages/admin/SalesForecast';
-import DiscountsVouchers from './pages/admin/DiscountsVouchers';
-import Reservations from './pages/admin/Reservations';
+const Welcome = lazy(() => import('./pages/Welcome'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const RoleSelection = lazy(() => import('./pages/RoleSelection'));
+const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
+const CashierLayout = lazy(() => import('./layouts/CashierLayout'));
+const KitchenLayout = lazy(() => import('./layouts/KitchenLayout'));
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
+const Employees = lazy(() => import('./pages/admin/Employees'));
+const MenuInventory = lazy(() => import('./pages/admin/MenuInventory'));
+const Stocks = lazy(() => import('./pages/admin/Stocks'));
+const Settings = lazy(() => import('./pages/admin/Settings'));
+const FeedbackHub = lazy(() => import('./pages/admin/FeedbackHub'));
+const SalesForecast = lazy(() => import('./pages/admin/SalesForecast'));
+const DiscountsVouchers = lazy(() => import('./pages/admin/DiscountsVouchers'));
+const Reservations = lazy(() => import('./pages/admin/Reservations'));
 // ── PAYROLL MODULE PAGES ───────────────────────────────────
-import PayrollDashboard from './pages/admin/PayrollDashboard';
-import PayrollPeriodDetail from './pages/admin/PayrollPeriodDetail';
-import AttendanceManagement from './pages/admin/AttendanceManagement';
-import PayrollSettings from './pages/admin/PayrollSettings';
-import PayrollReports from './pages/admin/PayrollReports';
-import StaffPayManagement from './pages/admin/StaffPayManagement';
-import POS from './pages/cashier/POS';
-import ActiveOrders from './pages/cashier/ActiveOrders';
-import OrderHistory from './pages/cashier/OrderHistory';
-import PaymentSelection from './pages/cashier/PaymentSelection';
-import CashPayment from './pages/cashier/CashPayment';
-import Receipt from './pages/cashier/Receipt';
-import MenuBoard from './pages/cashier/MenuBoard';
-import Profile from './pages/cashier/Profile';
-import KitchenIncoming from './pages/kitchen/Incoming';
-import KitchenCompleted from './pages/kitchen/Completed';
-import KitchenProfile from './pages/kitchen/Profile';
-import ReadyOrders from './pages/cashier/ReadyOrders';
-import PrepBoard from './pages/kitchen/PrepBoard';
-import RiderDeliveries from './pages/rider/Deliveries';
-import Feedback from './pages/public/Feedback';
-import StorefrontLayout from './pages/public/storefront/StorefrontLayout';
-import StorefrontHome from './pages/public/storefront/Home';
-import StorefrontMenu from './pages/public/storefront/MenuPage';
-import StorefrontCart from './pages/public/storefront/CartPage';
-import StorefrontTrack from './pages/public/storefront/TrackPage';
-import StorefrontAuth from './pages/public/storefront/AuthPage';
-import StorefrontProfile from './pages/public/storefront/ProfilePage';
-import StorefrontReserve from './pages/public/storefront/ReservePage';
-import StorefrontPayReturn from './pages/public/storefront/PayReturnPage';
+const PayrollDashboard = lazy(() => import('./pages/admin/PayrollDashboard'));
+const PayrollPeriodDetail = lazy(() => import('./pages/admin/PayrollPeriodDetail'));
+const AttendanceManagement = lazy(() => import('./pages/admin/AttendanceManagement'));
+const PayrollSettings = lazy(() => import('./pages/admin/PayrollSettings'));
+const PayrollReports = lazy(() => import('./pages/admin/PayrollReports'));
+const StaffPayManagement = lazy(() => import('./pages/admin/StaffPayManagement'));
+const POS = lazy(() => import('./pages/cashier/POS'));
+const ActiveOrders = lazy(() => import('./pages/cashier/ActiveOrders'));
+const OrderHistory = lazy(() => import('./pages/cashier/OrderHistory'));
+const PaymentSelection = lazy(() => import('./pages/cashier/PaymentSelection'));
+const CashPayment = lazy(() => import('./pages/cashier/CashPayment'));
+const Receipt = lazy(() => import('./pages/cashier/Receipt'));
+const MenuBoard = lazy(() => import('./pages/cashier/MenuBoard'));
+const Profile = lazy(() => import('./pages/cashier/Profile'));
+const KitchenIncoming = lazy(() => import('./pages/kitchen/Incoming'));
+const KitchenCompleted = lazy(() => import('./pages/kitchen/Completed'));
+const KitchenProfile = lazy(() => import('./pages/kitchen/Profile'));
+const ReadyOrders = lazy(() => import('./pages/cashier/ReadyOrders'));
+const PrepBoard = lazy(() => import('./pages/kitchen/PrepBoard'));
+const RiderDeliveries = lazy(() => import('./pages/rider/Deliveries'));
+const Feedback = lazy(() => import('./pages/public/Feedback'));
+const StorefrontLayout = lazy(() => import('./pages/public/storefront/StorefrontLayout'));
+const StorefrontHome = lazy(() => import('./pages/public/storefront/Home'));
+const StorefrontMenu = lazy(() => import('./pages/public/storefront/MenuPage'));
+const StorefrontCart = lazy(() => import('./pages/public/storefront/CartPage'));
+const StorefrontTrack = lazy(() => import('./pages/public/storefront/TrackPage'));
+const StorefrontAuth = lazy(() => import('./pages/public/storefront/AuthPage'));
+const StorefrontProfile = lazy(() => import('./pages/public/storefront/ProfilePage'));
+const StorefrontReserve = lazy(() => import('./pages/public/storefront/ReservePage'));
+const StorefrontPayReturn = lazy(() => import('./pages/public/storefront/PayReturnPage'));
 // ── EMPLOYEE PAGES ─────────────────────────────────────────
-import ClockInOut from './pages/employee/ClockInOut';
-import MyPayslips from './pages/employee/MyPayslips';
+const ClockInOut = lazy(() => import('./pages/employee/ClockInOut'));
+const MyPayslips = lazy(() => import('./pages/employee/MyPayslips'));
 import './index.css';
+const InventoryLayout = lazy(() => import('./features/inventory/InventoryLayout'));
+const InventoryOverview = lazy(() => import('./features/inventory/Overview'));
+const Supplies = lazy(() => import('./features/inventory/Supplies'));
+const Receiving = lazy(() => import('./features/inventory/Receiving'));
+const Counts = lazy(() => import('./features/inventory/CountsLosses').then(m => ({ default: m.Counts })));
+const Losses = lazy(() => import('./features/inventory/CountsLosses').then(m => ({ default: m.Losses })));
+const Suppliers = lazy(() => import('./features/inventory/Suppliers'));
+const PreparedStock = lazy(() => import('./features/inventory/MenuStock').then(m => ({ default: m.PreparedStock })));
+const MenuAvailability = lazy(() => import('./features/inventory/MenuStock').then(m => ({ default: m.MenuAvailability })));
+const Movements = lazy(() => import('./features/inventory/HistoryReports').then(m => ({ default: m.Movements })));
+const Reports = lazy(() => import('./features/inventory/HistoryReports').then(m => ({ default: m.Reports })));
+const InventoryGuide = lazy(() => import('./features/inventory/Guide'));
+const KitchenWaste = lazy(() => import('./features/inventory/KitchenWaste'));
+const InventoryProfile = lazy(() => import('./features/inventory/Profile'));
+const InventorySettingsPage = lazy(() => import('./features/inventory/Settings'));
+import { FeedbackProvider } from './components/FeedbackProvider';
+import RouteAnnouncement from './components/RouteAnnouncement';
+import NotFound from './pages/NotFound';
 
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
+        <FeedbackProvider>
+        <RouteAnnouncement />
+        <Suspense fallback={<div className="spinner" role="status" aria-label="Loading page" />}><Routes>
           {/* Public Routes - Redirect logged-in users to their dashboard */}
           <Route path="/" element={<PublicRoute><Welcome /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -89,6 +110,25 @@ export default function App() {
               <Route path="profile" element={<StorefrontProfile />} />
               <Route path="reserve" element={<StorefrontReserve />} />
               <Route path="pay/return" element={<StorefrontPayReturn />} />
+            </Route>
+          ))}
+
+          {['/inventory', '/admin/inventory'].map(path => (
+            <Route key={path} path={path} element={<ProtectedRoute allowedRoles={path.startsWith('/admin') ? ['admin'] : ['inventory', 'admin']}><InventoryLayout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<InventoryOverview />} />
+              <Route path="supplies" element={<Supplies />} />
+              <Route path="receiving" element={<Receiving />} />
+              <Route path="prepared" element={<PreparedStock />} />
+              <Route path="menu" element={<MenuAvailability />} />
+              <Route path="counts" element={<Counts />} />
+              <Route path="losses" element={<Losses />} />
+              <Route path="suppliers" element={<Suppliers />} />
+              <Route path="movements" element={<Movements />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="guide" element={<InventoryGuide />} />
+              <Route path="profile" element={<InventoryProfile />} />
+              <Route path="settings" element={<InventorySettingsPage />} />
             </Route>
           ))}
 
@@ -163,11 +203,13 @@ export default function App() {
             <Route path="profile" element={<KitchenProfile />} />
             <Route path="attendance" element={<ClockInOut />} />
             <Route path="payslips" element={<MyPayslips />} />
+            <Route path="waste" element={<KitchenWaste />} />
           </Route>
 
           {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          <Route path="*" element={<NotFound />} />
+        </Routes></Suspense>
+        </FeedbackProvider>
       </AuthProvider>
     </BrowserRouter>
   );

@@ -111,8 +111,8 @@ export default function Feedback() {
     // Loading state while validating key
     if (validatingKey) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+            <div className="auth-shell justify-start">
+                <div className="auth-panel text-center">
                     <div className="w-12 h-12 border-4 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin mx-auto mb-4" />
                     <p className="text-gray-600">Validating QR code...</p>
                 </div>
@@ -123,8 +123,8 @@ export default function Feedback() {
     // Invalid or expired QR code
     if (!keyValid) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+            <div className="auth-shell justify-start">
+                <div className="auth-panel text-center">
                     <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <XCircle size={48} className="text-red-500" />
                     </div>
@@ -144,8 +144,8 @@ export default function Feedback() {
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+            <div className="auth-shell justify-start">
+                <div className="auth-panel text-center">
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle size={48} className="text-green-500" />
                     </div>
@@ -164,25 +164,25 @@ export default function Feedback() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-md w-full">
+        <div className="auth-shell justify-start">
+            <div className="w-full max-w-md bg-white border border-gray-200 rounded-lg p-6 md:p-8 my-auto shrink-0">
                 {/* Header */}
                 <div className="text-center mb-6">
-                    <img src="/logo.jpg" alt="JAPZ GRILL" className="w-16 h-16 mx-auto rounded-xl mb-3 shadow-md" />
+                    <img src="/logo.jpg" alt="JAPZ GRILL" className="w-16 h-16 mx-auto rounded-lg mb-3" />
                     <h1 className="text-2xl font-bold text-gray-800">Rate Your Experience</h1>
                     <p className="text-gray-500 text-sm mt-1">at JAPZ GRILL Burger & Bistro</p>
                 </div>
 
                 {/* Order Number Input */}
                 <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="feedback-field-1" className="block text-sm font-medium text-gray-700 mb-2">
                         Order Number <span className="text-red-500">*</span>
                     </label>
                     <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-yellow-400 focus-within:border-yellow-400 transition">
                         <span className="px-3 py-3 bg-gray-100 text-gray-600 font-mono text-sm border-r border-gray-300 select-none whitespace-nowrap">
                             {datePrefix}-ORD-
                         </span>
-                        <input
+                        <input id="feedback-field-1"
                             type="text"
                             value={orderNumber}
                             onChange={(e) => {
@@ -190,7 +190,7 @@ export default function Feedback() {
                                 setError('');
                             }}
                             placeholder="12345678"
-                            className="flex-1 px-3 py-3 text-sm focus:outline-none"
+                            className="flex-1 min-w-0 px-3 py-3 text-base focus:outline-none"
                         />
                     </div>
                     <p className="text-xs text-gray-400 mt-1.5">
@@ -205,6 +205,7 @@ export default function Feedback() {
                         {[1, 2, 3, 4, 5].map((star) => (
                             <button
                                 key={star}
+                                aria-label={`Rate ${star} out of 5`} aria-pressed={rating === star}
                                 type="button"
                                 onClick={() => setRating(star)}
                                 onMouseEnter={() => setHoverRating(star)}
@@ -228,10 +229,10 @@ export default function Feedback() {
 
                 {/* Comment Field */}
                 <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="feedback-field-2" className="block text-sm font-medium text-gray-700 mb-2">
                         Share your thoughts (optional)
                     </label>
-                    <textarea
+                    <textarea id="feedback-field-2"
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         placeholder="Tell us about your experience... What did you enjoy? What can we improve?"

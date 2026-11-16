@@ -1,3 +1,5 @@
+import Modal from '../../components/Modal';
+import { useFeedback } from '../../components/FeedbackProvider';
 import { useState, useEffect, useCallback } from 'react';
 import { UserCheck, UserX, Clock, X, Power, ChefHat, Edit2, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { usersAPI, menuCategoryAPI } from '../../services/api';
@@ -9,10 +11,12 @@ interface Category { id: number; name: string; }
 const ITEMS_PER_PAGE = 10;
 
 export default function Employees() {
+    const { notify, confirmAction } = useFeedback();
     const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
     const [approvedUsers, setApprovedUsers] = useState<ApprovedUser[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [showApproveModal, setShowApproveModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
@@ -25,6 +29,7 @@ export default function Employees() {
     const [searchQuery, setSearchQuery] = useState('');
 
     const fetchData = useCallback(async () => {
+        setLoadError('');
         try {
             const [pendingRes, approvedRes, categoriesRes] = await Promise.all([
                 usersAPI.getPending(),
@@ -34,7 +39,7 @@ export default function Employees() {
             setPendingUsers(pendingRes.data || []);
             setApprovedUsers(approvedRes.data || []);
             setCategories(categoriesRes.data?.data || categoriesRes.data || []);
-        } catch (e) { console.error(e); }
+        } catch { setLoadError('Team members could not be loaded. Check your connection and try again.'); }
         finally { setLoading(false); }
     }, []);
 
@@ -68,7 +73,7 @@ export default function Employees() {
     const handleUpdateRole = async () => {
         if (!editingUser) return;
         if (selectedRole === 'kitchen' && selectedCategories.length === 0) {
-            alert('Please select at least one station/category for kitchen staff');
+            notify('Please select at least one station/category for kitchen staff');
             return;
         }
         setProcessing(true);
@@ -79,14 +84,14 @@ export default function Employees() {
             setSelectedCategories([]);
             setTempCategories([]);
             await fetchData();
-        } catch (e: any) { alert(e.response?.data?.error || 'Failed to update role'); }
+        } catch (e: any) { notify(e.response?.data?.error || 'Failed to update role'); }
         finally { setProcessing(false); }
     };
 
     const handleApprove = async () => {
         if (!selectedUser) return;
         if (selectedRole === 'kitchen' && selectedCategories.length === 0) {
-            alert('Please select at least one station/category for kitchen staff');
+            notify('Please select at least one station/category for kitchen staff');
             return;
         }
         setProcessing(true);
@@ -97,25 +102,25 @@ export default function Employees() {
             setSelectedCategories([]);
             setTempCategories([]);
             await fetchData();
-        } catch (e: any) { alert(e.response?.data?.error || 'Failed to approve'); }
+        } catch (e: any) { notify(e.response?.data?.error || 'Failed to approve'); }
         finally { setProcessing(false); }
     };
 
     const handleReject = async (userId: number) => {
-        if (!confirm('Are you sure you want to reject this user?')) return;
+        if (!await confirmAction('Are you sure you want to reject this user?')) return;
         try {
             await usersAPI.reject(userId);
             await fetchData();
-        } catch (e: any) { alert(e.response?.data?.error || 'Failed to reject'); }
+        } catch (e: any) { notify(e.response?.data?.error || 'Failed to reject'); }
     };
 
     const handleToggleStatus = async (user: ApprovedUser) => {
         const action = user.status === 'approved' ? 'deactivate' : 'activate';
-        if (!confirm(`Are you sure you want to ${action} ${user.name}'s account?`)) return;
+        if (!await confirmAction(`Are you sure you want to ${action} ${user.name}'s account?`)) return;
         try {
             await usersAPI.toggleStatus(user.id);
             await fetchData();
-        } catch (e: any) { alert(e.response?.data?.error || `Failed to ${action} user`); }
+        } catch (e: any) { notify(e.response?.data?.error || `Failed to ${action} user`); }
     };
 
     const getTimeAgo = (dateString: string) => {
@@ -126,9 +131,10 @@ export default function Employees() {
         return `${Math.floor(seconds / 86400)}d ago`;
     };
 
-    if (loading) return <div className="spinner" />;
+    if (loading) return <div className="spinner" role="status" aria-label="Loading content" />;
 
     const roleBg: Record<string, string> = {
+        inventory: 'bg-gray-100 text-gray-700',
         cashier: 'bg-blue-100 text-blue-700',
         kitchen: 'bg-amber-100 text-amber-700',
         admin: 'bg-emerald-100 text-emerald-700',
@@ -149,7 +155,8 @@ export default function Employees() {
     const handleNextPage = () => setCurrentPage(prev => Math.min(totalPages, prev + 1));
 
     return (
-        <div className="p-2 md:p-4 h-full overflow-y-auto bg-gradient-to-b from-white to-slate-100">
+        <div className="app-page">
+            {loadError && <div role="alert" className="app-form-error">{loadError} <button className="underline ml-2" onClick={() => void fetchData()}>Retry</button></div>}
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h1 className="text-2xl font-bold text-yellow-900">Users</h1>
@@ -210,36 +217,36 @@ export default function Employees() {
                     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                         {/* Table */}
                         <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="app-responsive-table w-full">
                                 <thead className="bg-yellow-100 border-b border-gray-200">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Name</th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Email</th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Role</th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Stations</th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
-                                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700">Actions</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Name</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Email</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Role</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Stations</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
+                                        <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-700">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {paginatedUsers.map(user => (
                                         <tr key={user.id} className={`hover:bg-yellow-50 transition ${user.status === 'inactive' ? 'bg-gray-50' : ''}`}>
-                                            <td className="px-6 py-3">
+                                            <td data-label="Name" className="px-6 py-3">
                                                 <div className={`font-medium text-sm ${user.status === 'inactive' ? 'text-gray-400' : 'text-gray-800'}`}>
                                                     {user.name}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td data-label="Email" className="px-6 py-3">
                                                 <div className={`text-sm ${user.status === 'inactive' ? 'text-gray-400' : 'text-gray-600'}`}>
                                                     {user.email}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td data-label="Role" className="px-6 py-3">
                                                 <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${user.status === 'inactive' ? 'bg-gray-200 text-gray-500' : (roleBg[user.role] || 'bg-gray-100 text-gray-600')}`}>
                                                     {user.role}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-3 text-sm">
+                                            <td data-label="Stations" className="px-6 py-3 text-sm">
                                                 {user.role === 'kitchen' && user.assignedCategories && user.assignedCategories.length > 0 ? (
                                                     <div className="flex flex-wrap gap-1">
                                                         {user.assignedCategories.map(catId => {
@@ -255,7 +262,7 @@ export default function Employees() {
                                                     <span className="text-gray-400 text-sm">-</span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td data-label="Status" className="px-6 py-3">
                                                 {user.status === 'inactive' ? (
                                                     <span className="inline-block px-2.5 py-1 rounded-full bg-gray-200 text-gray-600 text-xs font-semibold">
                                                         INACTIVE
@@ -266,7 +273,7 @@ export default function Employees() {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td data-label="Actions" className="px-6 py-3">
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <button 
                                                         onClick={() => openEditModal(user)}
@@ -341,11 +348,10 @@ export default function Employees() {
 
             {/* Approve Modal — Role Selection */}
             {showApproveModal && selectedUser && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9990] p-4 animate-[fadeIn_0.2s]" onClick={() => setShowApproveModal(false)}>
-                    <div className="bg-white rounded-xl p-6 w-full max-w-[400px] max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <Modal label="Manage team member" onClose={() => setShowApproveModal(false)} className="app-form-modal bg-white rounded-xl p-6 w-full max-w-[400px] max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold">Approve User</h2>
-                            <button onClick={() => setShowApproveModal(false)} className="border-none bg-transparent cursor-pointer"><X size={20} /></button>
+                            <button aria-label="Close dialog" onClick={() => setShowApproveModal(false)} className="border-none bg-transparent cursor-pointer"><X size={20} /></button>
                         </div>
 
                         <div className="bg-gray-50 rounded-lg p-3 mb-4">
@@ -356,6 +362,7 @@ export default function Employees() {
                         <label className="text-[13px] font-medium block mb-2">Assign Role</label>
                         <div className="flex flex-col gap-2 mb-4">
                             {[
+                                { value: 'inventory', label: 'Inventory', desc: 'Supplies, recipes and stock movements' },
                                 { value: 'cashier', label: '💰 Cashier', desc: 'Can process orders and handle payments' },
                                 { value: 'kitchen', label: '👨‍🍳 Kitchen Staff', desc: 'Can view and manage incoming orders' },
                                 { value: 'rider', label: '🛵 Rider', desc: 'Delivery only — sees just their assigned deliveries' },
@@ -424,17 +431,15 @@ export default function Employees() {
                                 {processing ? 'Approving...' : 'Approve'}
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Modal>
             )}
 
             {/* Edit Employee Modal */}
             {showEditModal && editingUser && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9990] p-4 animate-[fadeIn_0.2s]" onClick={() => setShowEditModal(false)}>
-                    <div className="bg-white rounded-xl p-6 w-full max-w-[400px] max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <Modal label="Manage team member" onClose={() => setShowEditModal(false)} className="app-form-modal bg-white rounded-xl p-6 w-full max-w-[400px] max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold">Edit Employee</h2>
-                            <button onClick={() => setShowEditModal(false)} className="border-none bg-transparent cursor-pointer"><X size={20} /></button>
+                            <button aria-label="Close dialog" onClick={() => setShowEditModal(false)} className="border-none bg-transparent cursor-pointer"><X size={20} /></button>
                         </div>
 
                         {/* Profile Info */}
@@ -470,6 +475,7 @@ export default function Employees() {
                         <label className="text-[13px] font-medium block mb-2">Change Role</label>
                         <div className="flex flex-col gap-2 mb-4">
                             {[
+                                { value: 'inventory', label: 'Inventory', desc: 'Supplies, recipes and stock movements' },
                                 { value: 'cashier', label: '💰 Cashier', desc: 'Can process orders and handle payments' },
                                 { value: 'kitchen', label: '👨‍🍳 Kitchen Staff', desc: 'Can view and manage incoming orders' },
                                 { value: 'rider', label: '🛵 Rider', desc: 'Delivery only — sees just their assigned deliveries' },
@@ -538,8 +544,7 @@ export default function Employees() {
                                 {processing ? 'Saving...' : 'Save Changes'}
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Modal>
             )}
         </div>
     );

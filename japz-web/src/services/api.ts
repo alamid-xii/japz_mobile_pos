@@ -4,7 +4,11 @@ import axios from 'axios';
 // Replace localhost with network IP for mobile device access
 const getBaseUrl = () => {
     const envUrl = import.meta.env.VITE_API_URL;
-    if (envUrl) return envUrl.replace(/\/$/, '');
+    if (envUrl) {
+        const configured = new URL(envUrl);
+        if (['localhost', '127.0.0.1'].includes(configured.hostname) && !['localhost', '127.0.0.1'].includes(window.location.hostname)) configured.hostname = window.location.hostname;
+        return configured.toString().replace(/\/$/, '');
+    }
     
     // Automatically detect hostname (works for localhost and network IP)
     const hostname = window.location.hostname;
@@ -135,11 +139,6 @@ export const menuItemAPI = {
     removeImage: (id: string | number) => api.delete(`/api/menu-items/${id}/image`),
 };
 
-export const stocksAPI = {
-    setGeneralDefault: (defaultStock: number) => api.put('/api/stocks/set-general-default', { defaultStock }),
-    restock: (id: number, quantity: number) => api.put(`/api/stocks/restock/${id}`, { quantity }),
-    resetNow: () => api.post('/api/stocks/reset-now'),
-};
 export const ordersAPI = {
     create: (data: any) => api.post('/api/orders', data),
     getAll: (status?: string) => api.get('/api/orders', { params: { status } }),

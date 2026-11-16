@@ -1,3 +1,5 @@
+import Modal from '../../components/Modal';
+import { useFeedback } from '../../components/FeedbackProvider';
 import { useState, useEffect, useCallback } from 'react';
 import { Star, AlertCircle, Download, X, Calendar, ChevronDown } from 'lucide-react';
 import { feedbackAPI } from '../../services/api';
@@ -26,6 +28,7 @@ const sentimentColors: Record<string, { bg: string; text: string }> = {
 };
 
 export default function FeedbackHub() {
+    const { notify } = useFeedback();
     const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -347,16 +350,16 @@ export default function FeedbackHub() {
             setShowExportModal(false);
         } catch (e) {
             console.error('Error generating feedback report:', e);
-            alert('Failed to generate report. Please try again.');
+            notify('Failed to generate report. Please try again.');
         } finally {
             setExportLoading(false);
         }
     };
 
-    if (loading) return <div className="spinner" />;
+    if (loading) return <div className="spinner" role="status" aria-label="Loading content" />;
 
     return (
-        <div className="p-2 md:p-4 h-full flex flex-col bg-gradient-to-b from-white to-slate-100">
+        <div className="app-page flex flex-col">
             {/* Header with Export Button */}
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4">
                 <div>
@@ -386,21 +389,20 @@ export default function FeedbackHub() {
 
             {/* Export Modal */}
             {showExportModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+                <Modal label="Export feedback report" onClose={() => setShowExportModal(false)} className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold text-gray-800">Export Feedback Report</h2>
-                            <button onClick={() => setShowExportModal(false)} className="p-1 hover:bg-gray-100 rounded-full">
+                            <button aria-label="Close dialog" onClick={() => setShowExportModal(false)} className="p-1 hover:bg-gray-100 rounded-full">
                                 <X size={20} className="text-gray-500" />
                             </button>
                         </div>
                         <p className="text-sm text-gray-600 mb-4">Select date range to export feedback as PDF</p>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                <label htmlFor="feedbackhub-field-1" className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                                 <div className="relative">
                                     <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                    <input
+                                    <input id="feedbackhub-field-1"
                                         type="date"
                                         value={exportStartDate}
                                         onChange={(e) => setExportStartDate(e.target.value)}
@@ -409,10 +411,10 @@ export default function FeedbackHub() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                <label htmlFor="feedbackhub-field-2" className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                                 <div className="relative">
                                     <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                    <input
+                                    <input id="feedbackhub-field-2"
                                         type="date"
                                         value={exportEndDate}
                                         onChange={(e) => setExportEndDate(e.target.value)}
@@ -446,8 +448,7 @@ export default function FeedbackHub() {
                                 )}
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Modal>
             )}
 
             {error && (

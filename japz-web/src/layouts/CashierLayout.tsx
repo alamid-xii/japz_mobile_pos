@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useEffect, useState } from 'react';
 import { PackageCheck, ShoppingCart, ClipboardList, History, BookOpen, UserCircle, ChevronsLeft, ChevronsRight, CalendarCheck, Clock, FileText } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function CashierLayout() {
     }, [user, isInitialized, navigate]);
 
     if (!isInitialized || !user || user.role !== 'cashier') {
-        return <div className="spinner" />;
+        return <div className="spinner" role="status" aria-label="Loading content" />;
     }
 
     const toggleCollapsed = () => {
@@ -49,7 +49,7 @@ export default function CashierLayout() {
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <div className="flex h-full overflow-hidden">
+        <div className="app-workspace flex h-full overflow-hidden"><a className="skip-link" href="#main-content">Skip to content</a>
             {/* Desktop Sidebar */}
             {!hideTabBar && (
                 <aside
@@ -82,7 +82,7 @@ export default function CashierLayout() {
                     </div>
 
                     {/* Nav links */}
-                    <nav className="flex-1 flex flex-col gap-0.5 py-3 overflow-y-auto"
+                    <nav aria-label="Workspace navigation" className="flex-1 flex flex-col gap-0.5 py-3 overflow-y-auto"
                         style={{
                             paddingLeft: collapsed ? '8px' : '12px',
                             paddingRight: collapsed ? '8px' : '12px',
@@ -90,12 +90,12 @@ export default function CashierLayout() {
                         }}
                     >
                         {tabs.map(({ path, icon: Icon, label }) => (
-                            <button
+                            <NavLink
                                 key={path}
-                                onClick={() => navigate(path)}
+                                to={path} aria-label={label}
                                 title={collapsed ? label : undefined}
                                 className={`flex items-center gap-3 py-2.5 rounded-lg text-[13px] font-medium transition-all border-none cursor-pointer font-[inherit] w-full ${isActive(path)
-                                    ? 'bg-brand text-brand-dark font-semibold shadow-sm shadow-yellow-300/30'
+                                    ? 'bg-brand text-brand-dark font-semibold '
                                     : 'bg-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     }`}
                                 style={{
@@ -115,7 +115,7 @@ export default function CashierLayout() {
                                 }}>
                                     {label}
                                 </span>
-                            </button>
+                            </NavLink>
                         ))}
                     </nav>
 
@@ -180,15 +180,15 @@ export default function CashierLayout() {
 
             {/* Main content */}
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-                <div className="flex-1 overflow-y-auto">
+                <main id="main-content" tabIndex={-1} className="app-main">
                     <Outlet />
-                </div>
+                </main>
 
                 {/* Mobile Bottom Nav */}
                 {!hideTabBar && (
-                    <nav className="md:hidden flex items-center justify-around bg-white border-t border-gray-200 py-1.5 pb-[max(6px,env(safe-area-inset-bottom))] shrink-0">
+                    <nav aria-label="Workspace navigation" className="md:hidden flex items-center justify-around bg-white border-t border-gray-200 py-1.5 pb-[max(6px,env(safe-area-inset-bottom))] shrink-0">
                         {tabs.map(({ path, icon: Icon, label }) => (
-                            <button key={path} onClick={() => navigate(path)} title={label}
+                            <NavLink key={path} to={path} aria-label={label} title={label}
                                 className={`flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-lg transition-colors text-[10px] font-medium border-none cursor-pointer font-[inherit] bg-transparent ${isActive(path)
                                     ? 'text-brand-dark'
                                     : 'text-gray-400'
@@ -197,7 +197,7 @@ export default function CashierLayout() {
                                     <Icon size={20} />
                                 </div>
                                 <span>{label}</span>
-                            </button>
+                            </NavLink>
                         ))}
                     </nav>
                 )}

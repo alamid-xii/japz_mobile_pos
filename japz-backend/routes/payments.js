@@ -1,3 +1,8 @@
+import { authenticate, allowRoles } from '../middleware/access.js';
+import { requireJwtSecret } from '../services/securityConfig.js';
+import { sequelize } from '../models/db.js';
+import { StockAllocation } from '../models/inventoryModels.js';
+import { applyOrderInventory } from '../services/inventoryOrders.js';
 import express from "express";
 import jwt from "jsonwebtoken";
 import QRCode from "qrcode";
@@ -11,22 +16,9 @@ import { verifyCustomer } from "./customerAuth.js";
 import * as paymongo from "../services/paymongoService.js";
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = requireJwtSecret();
 
-const requireRole = (...roles) => (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: 'No token provided' });
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (roles.length && !roles.includes(decoded.role)) {
-      return res.status(403).json({ error: 'You do not have access to this.' });
-    }
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-};
+const requireRole = (...roles) => [authenticate, allowRoles(...roles)];
 
 /** Where PayMongo sends the customer back to. */
 const appOrigin = (req) =>
@@ -90,16 +82,24 @@ const failSession = async (session, reason, status = 'failed') => {
   });
   if (stillOpen > 0) return false;
 
-  const items = await OrderItem.findAll({ where: { orderId: order.id } });
-  for (const it of items) {
-    if (!it.menuItemId) continue;
-    const menuItem = await MenuItem.findByPk(it.menuItemId);
-    if (menuItem?.trackStock && menuItem.stock !== null) {
-      await menuItem.update({ stock: menuItem.stock + it.quantity });
+  await sequelize.transaction(async transaction => {
+    const held = await Order.findByPk(order.id, { transaction, lock: transaction.LOCK.UPDATE });
+    if (!held || held.status !== 'awaiting-payment') return;
+    const allocation = await StockAllocation.findOne({ where: { orderId: held.id }, transaction });
+    if (allocation) {
+      await applyOrderInventory(held, 'cancelled', { id: held.customerUserId || held.cashierId }, transaction);
+    } else {
+      // Compatibility for orders created before allocation tracking was introduced.
+      const items = await OrderItem.findAll({ where: { orderId: held.id }, transaction });
+      for (const item of items) {
+        if (!item.menuItemId) continue;
+        const menu = await MenuItem.findByPk(item.menuItemId, { transaction, lock: transaction.LOCK.UPDATE });
+        if (menu?.trackStock && menu.stock !== null) await menu.increment('stock', { by: item.quantity, transaction });
+      }
     }
-  }
-  await order.update({ status: 'cancelled' });
-  await Payment.update({ status: 'failed' }, { where: { orderId: order.id } });
+    await held.update({ status: 'cancelled' }, { transaction });
+    await Payment.update({ status: 'failed' }, { where: { orderId: held.id }, transaction });
+  });
   return true;
 };
 

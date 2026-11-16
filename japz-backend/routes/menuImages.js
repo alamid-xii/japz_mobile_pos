@@ -1,3 +1,4 @@
+import { authenticate, allowRoles } from '../middleware/access.js';
 import express from "express";
 import multer from "multer";
 import path from "path";
@@ -7,7 +8,6 @@ import jwt from "jsonwebtoken";
 import { MenuItem } from "../models/menuItemModel.js";
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 // Uploads live under the folder index.js already serves statically, so an
 // uploaded photo is reachable at /uploads/menu/<file>.
@@ -15,20 +15,7 @@ const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "menu");
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 /** Staff only. Customers must never be able to write files to the server. */
-const verifyStaff = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: 'No token provided' });
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (!['admin', 'cashier', 'kitchen'].includes(decoded.role)) {
-      return res.status(403).json({ error: 'Staff access only.' });
-    }
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-};
+const verifyStaff = [authenticate, allowRoles('admin')];
 
 const ALLOWED = {
   'image/jpeg': '.jpg',

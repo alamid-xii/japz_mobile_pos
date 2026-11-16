@@ -1,4 +1,4 @@
-# Integration schema proposal ? approval required
+# Approved integration schema ? 2026-11-16
 
 Integration branch: `integration/all-branches-2026-11-16`.
 
@@ -95,6 +95,6 @@ Indexes: unique `code`, `(reservationDate, startTime)`, `(tableId, reservationDa
 7. Replace the destructive default migration path with an explicit, non-destructive integration path. Verification may use an isolated disposable database; no migration will be applied to the user's existing database without separate authorization.
 8. Make the approved migration repeatable: re-running it should validate the resulting layout and leave existing records unchanged.
 
-## Approval requested
+## Approval received
 
-Approve the canonical schemas above and the policy of preserving legacy online payroll tables intact rather than automatically converting financial history. Approval authorizes writing the integration migration; it does not authorize running migrations on an existing/live database.
+The user approved these canonical schemas and the policy of preserving legacy online payroll tables intact rather than automatically converting financial history. This approval authorizes writing the integration migration; it does not authorize running migrations on an existing/live database.

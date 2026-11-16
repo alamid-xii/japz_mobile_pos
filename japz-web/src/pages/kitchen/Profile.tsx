@@ -1,3 +1,4 @@
+import { useFeedback } from '../../components/FeedbackProvider';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User, ChefHat, Mail, Tag } from 'lucide-react';
@@ -11,6 +12,7 @@ interface Category {
 }
 
 export default function KitchenProfile() {
+    const { confirmAction } = useFeedback();
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [categories, setCategories] = useState<Category[]>([]);
@@ -45,7 +47,7 @@ export default function KitchenProfile() {
     };
 
     const handleLogout = async () => {
-        if (!confirm('Are you sure you want to logout?')) return;
+        if (!await confirmAction('Are you sure you want to logout?')) return;
         try {
             await logout();
         } catch (e) {
@@ -55,7 +57,7 @@ export default function KitchenProfile() {
     };
 
     return (
-        <div className="p-4 md:p-6 h-full overflow-y-auto">
+        <div className="app-page">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div>
@@ -79,7 +81,7 @@ export default function KitchenProfile() {
                     <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-24"></div>
                     <div className="px-6 pb-6 -mt-12">
                         <div className="w-24 h-24 rounded-full bg-brand border-4 border-white flex items-center justify-center mb-4 shadow-lg">
-                            <User size={48} className="text-white" />
+                            <User size={48} className="text-brand-dark" />
                         </div>
                         <h2 className="text-xl font-bold text-gray-800">{user?.name || 'Kitchen Staff'}</h2>
                         
@@ -113,7 +115,7 @@ export default function KitchenProfile() {
 
                     {loading ? (
                         <div className="flex justify-center py-4">
-                            <div className="spinner" />
+                            <div className="spinner" role="status" aria-label="Loading content" />
                         </div>
                     ) : user?.assignedCategories && user.assignedCategories.length > 0 ? (
                         <div className="flex flex-wrap gap-2">

@@ -1,3 +1,5 @@
+import { requireJwtSecret } from '../services/securityConfig.js';
+import { reserveOrder } from '../services/inventoryOrders.js';
 import express from "express";
 import axios from "axios";
 import jwt from "jsonwebtoken";
@@ -18,7 +20,7 @@ import { Feedback } from "../models/feedbackModel.js";
 import { buildFeedbackAnalysis } from "../services/feedbackService.js";
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = requireJwtSecret();
 
 // ========== ONLINE (CUSTOMER SELF-SERVICE) ORDERING ==========
 // Menu and status are open; placing and viewing orders requires a customer account.
@@ -590,14 +592,10 @@ router.post("/api/public/orders", verifyCustomer, throttle, async (req, res) => 
       modifiers: l.modifiers,
     }, { transaction })));
 
-    for (const l of priced) {
-      if (l.menuItem.trackStock && l.menuItem.stock !== null) {
-        await l.menuItem.update(
-          { stock: Math.max(0, l.menuItem.stock - l.quantity) },
-          { transaction }
-        );
-      }
-    }
+    // Use the same locked allocation ledger as counter orders; consume on preparation.
+    await reserveOrder(order, priced.map(line => ({
+      menuItemId: line.menuItem.id, quantity: line.quantity, modifiers: line.modifiers,
+    })), account, transaction);
 
     // Unpaid until a human confirms it: cash and card are settled on handover,
     // and a GCash reference still has to be checked against the store's own app.

@@ -1,3 +1,5 @@
+import Modal from '../../components/Modal';
+import { useFeedback } from '../../components/FeedbackProvider';
 import { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, TrendingDown, Download, DollarSign, ShoppingCart, Package, Calendar, Clock, BarChart3, ArrowUp, ArrowDown, X, FileText, User, ChefHat, Timer, Table, LineChart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { salesAPI, ordersAPI } from '../../services/api';
@@ -68,6 +70,7 @@ interface DetailedOrder {
 }
 
 export default function SalesForecast() {
+    const { notify } = useFeedback();
     const [salesData, setSalesData] = useState<SalesData | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month'>('week');
@@ -450,7 +453,7 @@ export default function SalesForecast() {
             setShowExportModal(false);
         } catch (e) {
             console.error('Error generating detailed report:', e);
-            alert('Failed to generate report. Please try again.');
+            notify('Failed to generate report. Please try again.');
         } finally {
             setExportLoading(false);
         }
@@ -459,7 +462,7 @@ export default function SalesForecast() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
-                <div className="spinner" />
+                <div className="spinner" role="status" aria-label="Loading content" />
             </div>
         );
     }
@@ -480,7 +483,7 @@ export default function SalesForecast() {
     const maxRevenue = Math.max(...dailyData.map(d => d.revenue), 1);
 
     return (
-        <div className="p-2 md:p-4 h-full overflow-y-auto bg-gradient-to-b from-white to-slate-100">
+        <div className="app-page">
             {/* Header */}
             <div className="mb-4">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -519,14 +522,13 @@ export default function SalesForecast() {
 
             {/* Export Modal */}
             {showExportModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                <Modal label="Export detailed report" onClose={() => setShowExportModal(false)} className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
                         <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <FileText className="text-white" size={24} />
                                 <h2 className="text-xl font-bold text-white">Export Detailed Report</h2>
                             </div>
-                            <button 
+                            <button aria-label="Close dialog"
                                 onClick={() => setShowExportModal(false)}
                                 className="text-white/80 hover:text-white transition"
                             >
@@ -541,11 +543,11 @@ export default function SalesForecast() {
                             
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label htmlFor="salesforecast-field-1" className="block text-sm font-medium text-gray-700 mb-2">
                                         <Calendar size={14} className="inline mr-2" />
                                         Start Date
                                     </label>
-                                    <input
+                                    <input id="salesforecast-field-1"
                                         type="date"
                                         value={exportStartDate}
                                         onChange={(e) => setExportStartDate(e.target.value)}
@@ -555,11 +557,11 @@ export default function SalesForecast() {
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label htmlFor="salesforecast-field-2" className="block text-sm font-medium text-gray-700 mb-2">
                                         <Calendar size={14} className="inline mr-2" />
                                         End Date
                                     </label>
-                                    <input
+                                    <input id="salesforecast-field-2"
                                         type="date"
                                         value={exportEndDate}
                                         onChange={(e) => setExportEndDate(e.target.value)}
@@ -606,8 +608,7 @@ export default function SalesForecast() {
                                 )}
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Modal>
             )}
 
             {/* Summary Cards */}
@@ -705,11 +706,11 @@ export default function SalesForecast() {
                                     <div className="w-28 text-sm text-gray-600 shrink-0">{day.dayLabel}</div>
                                     <div className="flex-1 bg-gray-100 rounded-full h-8 overflow-hidden relative">
                                         <div
-                                            className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all duration-500 flex items-center px-3"
+                                            className="h-full bg-brand rounded transition-[width] duration-300 flex items-center"
                                             style={{ width: `${Math.max((day.revenue / maxRevenue) * 100, day.revenue > 0 ? 10 : 0)}%` }}
                                         >
                                             {day.revenue > 0 && (
-                                                <span className="text-xs font-bold text-brand-dark whitespace-nowrap">
+                                                <span className="text-xs font-bold text-brand-dark whitespace-nowrap px-2">
                                                     {formatCurrency(day.revenue)}
                                                 </span>
                                             )}
@@ -740,8 +741,9 @@ export default function SalesForecast() {
                             <TrendingUp size={20} className="text-green-500" />
                             Performance Highlights
                         </h3>
+                        {summary.totalRevenue === 0 && <p className="text-sm text-gray-500">No sales recorded for this period.</p>}
                         
-                        {summary.bestDay && (
+                        {summary.totalRevenue > 0 && summary.bestDay && (
                             <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
                                 <div className="flex items-center gap-2 text-green-700 text-sm font-medium mb-1">
                                     <TrendingUp size={14} />
@@ -771,14 +773,14 @@ export default function SalesForecast() {
                     {/* Peak Hours & Top Items Stack */}
                     <div className="flex flex-col gap-4 flex-1 min-h-0">
                         {/* Peak Hours */}
-                        {peakHours.length > 0 && (
+                        {peakHours.some(hour => hour.revenue > 0) && (
                             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col min-h-0">
                                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 shrink-0">
                                     <Clock size={20} className="text-blue-500" />
                                     Peak Hours
                                 </h3>
                                 <div className="space-y-2 overflow-y-auto flex-1">
-                                    {peakHours.map((hour, idx) => (
+                                    {peakHours.filter(hour => hour.revenue > 0).map((hour, idx) => (
                                         <div key={hour.hour} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                                             <div className="flex items-center gap-3">
                                                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
@@ -826,7 +828,7 @@ export default function SalesForecast() {
             /* Orders Table View */
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 {ordersLoading ? (
-                    <div className="flex items-center justify-center py-20"><div className="spinner" /></div>
+                    <div className="flex items-center justify-center py-20"><div className="spinner" role="status" aria-label="Loading content" /></div>
                 ) : paginatedOrders.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-gray-400">
                         <FileText size={48} className="mb-2" />

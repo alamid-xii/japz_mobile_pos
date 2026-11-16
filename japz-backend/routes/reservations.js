@@ -1,3 +1,5 @@
+import { authenticate, allowRoles } from '../middleware/access.js';
+import { requireJwtSecret } from '../services/securityConfig.js';
 import express from "express";
 import jwt from "jsonwebtoken";
 import { Op } from "sequelize";
@@ -7,26 +9,13 @@ import { RestaurantTable, Reservation, ReservationEvent } from "../models/reserv
 import { verifyCustomer } from "./customerAuth.js";
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = requireJwtSecret();
 
 const STAFF_ROLES = ['admin', 'cashier'];
 /** A table is only held once a booking is confirmed or the party is seated. */
 const HOLDING_STATUSES = ['confirmed', 'seated'];
 
-const requireRole = (...roles) => (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: 'No token provided' });
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (roles.length && !roles.includes(decoded.role)) {
-      return res.status(403).json({ error: 'You do not have access to this.' });
-    }
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-};
+const requireRole = (...roles) => [authenticate, allowRoles(...roles)];
 
 const logEvent = async (reservationId, actor, event, detail = null) => {
   try {

@@ -1,3 +1,6 @@
+import { authenticate, allowRoles } from '../middleware/access.js';
+import { requireJwtSecret } from '../services/securityConfig.js';
+import { applyOrderInventory } from '../services/inventoryOrders.js';
 import express from "express";
 import multer from "multer";
 import path from "path";
@@ -13,25 +16,12 @@ import { Payment } from "../models/paymentModel.js";
 import { Delivery, DeliveryEvent } from "../models/deliveryModel.js";
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = requireJwtSecret();
 
 // ========== KITCHEN → CASHIER → RIDER WORKFLOW ==========
 
 /** Verifies a staff token and, optionally, that the role is allowed here. */
-const requireRole = (...roles) => (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: 'No token provided' });
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (roles.length && !roles.includes(decoded.role)) {
-      return res.status(403).json({ error: 'You do not have access to this.' });
-    }
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-};
+const requireRole = (...roles) => [authenticate, allowRoles(...roles)];
 
 /** Append-only audit trail. Never updated, never deleted. */
 const logEvent = async (orderId, deliveryId, actor, event, detail = null) => {
@@ -66,7 +56,12 @@ const recomputeOrderReadiness = async (order, actor) => {
 
   if (next !== order.status) {
     const from = order.status;
-    await order.update({ status: next });
+    await sequelize.transaction(async transaction => {
+      const locked = await Order.findByPk(order.id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (['out-for-delivery', 'completed', 'cancelled'].includes(locked.status)) return;
+      await applyOrderInventory(locked, next, actor, transaction);
+      await locked.update({ status: next }, { transaction });
+    });
     await logEvent(order.id, null, actor, `order:${next}`, `from ${from}`);
   }
   return order;
@@ -126,7 +121,7 @@ router.put("/api/kitchen/items/:itemId/status", requireRole('kitchen', 'admin'),
 
     const order = await Order.findByPk(item.orderId);
     if (!order) return res.status(404).json({ error: 'Order not found.' });
-    if (['completed', 'cancelled', 'out-for-delivery'].includes(order.status)) {
+    if (['awaiting-payment', 'completed', 'cancelled', 'out-for-delivery'].includes(order.status)) {
       return res.status(409).json({ error: 'That order has already left the kitchen.' });
     }
 

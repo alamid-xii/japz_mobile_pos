@@ -49,8 +49,8 @@ const LineChart: React.FC<{
   const periods: Array<'today' | 'week' | 'month' | 'year'> = ['today', 'week', 'month', 'year'];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-      <div className="flex items-center justify-between gap-2 mb-6">
+    <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-2">
           <TrendingUp size={20} className="text-yellow-500" />
           <h3 className="text-lg font-semibold">{title}</h3>
@@ -60,10 +60,11 @@ const LineChart: React.FC<{
             {periods.map((period) => (
               <button
                 key={period}
+                aria-pressed={selectedPeriod === period}
                 onClick={() => onPeriodChange(period as 'today' | 'week' | 'month' | 'year')}
                 disabled={loading}
                 className={`px-3 py-1 text-xs font-medium rounded capitalize transition-colors disabled:opacity-50 ${selectedPeriod === period
-                    ? 'bg-yellow-500 text-white'
+                    ? 'bg-brand text-brand-dark'
                     : 'bg-transparent text-gray-600 hover:text-gray-900'
                   }`}
               >
@@ -75,11 +76,11 @@ const LineChart: React.FC<{
       </div>
       {loading ? (
         <div className="flex items-center justify-center h-80 text-gray-500">
-          <div className="animate-spin">⏳</div>
+          <div className="animate-spin"></div>
           <span className="ml-2">Loading...</span>
         </div>
       ) : (
-        <svg width={width} height={height} className="w-full" viewBox={`0 0 ${width} ${height}`}>
+        <svg role="img" aria-label={title} width={width} height={height} className="w-full h-auto" viewBox={`0 0 ${width} ${height}`}>
           {/* Grid lines */}
           {[0, 1, 2, 3, 4].map((i) => (
             <line
@@ -151,11 +152,10 @@ const DoughnutChart: React.FC<{
   const outerRadius = 80;
   const innerRadius = 50;
 
-  let currentAngle = -Math.PI / 2;
   const slices = data.values.map((value, idx) => {
-    const sliceAngle = (value / total) * 2 * Math.PI;
-    const startAngle = currentAngle;
-    const endAngle = currentAngle + sliceAngle;
+    const sliceAngle = total ? (value / total) * 2 * Math.PI : 0;
+    const startAngle = -Math.PI / 2 + (total ? data.values.slice(0, idx).reduce((sum, part) => sum + part, 0) / total * 2 * Math.PI : 0);
+    const endAngle = startAngle + sliceAngle;
 
     const x1 = centerX + outerRadius * Math.cos(startAngle);
     const y1 = centerY + outerRadius * Math.sin(startAngle);
@@ -177,14 +177,13 @@ const DoughnutChart: React.FC<{
       Z
     `;
 
-    const percentage = ((value / total) * 100).toFixed(1);
-    currentAngle = endAngle;
+    const percentage = (total ? (value / total) * 100 : 0).toFixed(1);
 
     return { pathData, color: colors[idx % colors.length], percentage, label: data.labels[idx] };
   });
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
       <div className="flex items-center gap-2 mb-6">
         <TrendingUp size={20} className="text-green-500" />
         <h3 className="text-lg font-semibold">{title}</h3>
@@ -222,7 +221,7 @@ const DashboardCharts: React.FC<DashboardChartsProps> & {
   },
 }) => {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:p-6 w-full">
         <LineChart data={salesData} title="Sales Trend" color="#fbbf24" />
         <DoughnutChart data={paymentMethodData} title="Revenue by Payment" />
       </div>
@@ -317,14 +316,14 @@ DashboardCharts.DoughnutChartOnly = function DoughnutChartOnly() {
     <div className="relative">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl z-10">
-          <div className="animate-spin">⏳</div>
+          <div className="animate-spin"></div>
           <span className="ml-2">Loading...</span>
         </div>
       )}
       {displayData.labels.length > 0 ? (
         <DoughnutChart data={displayData} title="Top 5 Selling Items" />
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex items-center justify-center h-64 text-gray-500">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 flex items-center justify-center h-64 text-gray-500">
           <p>No sales data available</p>
         </div>
       )}

@@ -1,7 +1,7 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useEffect } from 'react';
-import { Utensils, ClipboardList, CheckSquare, User, Clock, FileText } from 'lucide-react';
+import { Utensils, ClipboardList, CheckSquare, User, Clock, FileText, PackageMinus } from 'lucide-react';
 
 export default function KitchenLayout() {
     const { user, isInitialized } = useAuth();
@@ -15,7 +15,7 @@ export default function KitchenLayout() {
     }, [user, isInitialized, navigate]);
 
     if (!isInitialized || !user || user.role !== 'kitchen') {
-        return <div className="spinner" />;
+        return <div className="spinner" role="status" aria-label="Loading content" />;
     }
 
     const tabs = [
@@ -24,13 +24,14 @@ export default function KitchenLayout() {
         { path: '/kitchen/completed', icon: CheckSquare, label: 'Completed' },
         { path: '/kitchen/attendance', icon: Clock, label: 'Clock In' },
         { path: '/kitchen/payslips', icon: FileText, label: 'Payslips' },
+        { path: '/kitchen/waste', icon: PackageMinus, label: 'Waste' },
         { path: '/kitchen/profile', icon: User, label: 'Profile' },
     ];
 
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <div className="flex h-full overflow-hidden">
+        <div className="app-workspace flex h-full overflow-hidden"><a className="skip-link" href="#main-content">Skip to content</a>
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex flex-col w-56 bg-white border-r border-gray-200 shrink-0">
                 {/* Logo / Brand */}
@@ -43,16 +44,16 @@ export default function KitchenLayout() {
                 </div>
 
                 {/* Nav links */}
-                <nav className="flex-1 flex flex-col gap-0.5 px-3 py-3 overflow-y-auto">
+                <nav aria-label="Workspace navigation" className="flex-1 flex flex-col gap-0.5 px-3 py-3 overflow-y-auto">
                     {tabs.map(({ path, icon: Icon, label }) => (
-                        <button key={path} onClick={() => navigate(path)}
+                        <NavLink key={path} to={path} aria-label={label}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all border-none cursor-pointer font-[inherit] w-full text-left ${isActive(path)
-                                ? 'bg-brand text-brand-dark font-semibold shadow-sm shadow-yellow-300/30'
+                                ? 'bg-brand text-brand-dark font-semibold '
                                 : 'bg-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}>
                             <Icon size={18} className={isActive(path) ? 'text-brand-dark' : 'text-gray-400'} />
                             {label}
-                        </button>
+                        </NavLink>
                     ))}
                 </nav>
 
@@ -72,14 +73,14 @@ export default function KitchenLayout() {
 
             {/* Main content */}
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-                <div className="flex-1 overflow-y-auto bg-gray-50">
+                <main id="main-content" tabIndex={-1} className="app-main bg-gray-50">
                     <Outlet />
-                </div>
+                </main>
 
                 {/* Mobile Bottom Nav */}
-                <nav className="md:hidden flex items-center justify-around bg-white border-t border-gray-200 py-1.5 pb-[max(6px,env(safe-area-inset-bottom))] shrink-0">
+                <nav aria-label="Workspace navigation" className="md:hidden flex items-center justify-around bg-white border-t border-gray-200 py-1.5 pb-[max(6px,env(safe-area-inset-bottom))] shrink-0">
                     {tabs.map(({ path, icon: Icon, label }) => (
-                        <button key={path} onClick={() => navigate(path)} title={label}
+                        <NavLink key={path} to={path} aria-label={label} title={label}
                             className={`flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-lg transition-colors text-[10px] font-medium border-none cursor-pointer font-[inherit] bg-transparent ${isActive(path)
                                 ? 'text-brand-dark'
                                 : 'text-gray-400'
@@ -88,7 +89,7 @@ export default function KitchenLayout() {
                                 <Icon size={20} />
                             </div>
                             <span>{label}</span>
-                        </button>
+                        </NavLink>
                     ))}
                 </nav>
             </div>

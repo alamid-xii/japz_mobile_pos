@@ -1,3 +1,5 @@
+import { authenticate, allowRoles } from '../middleware/access.js';
+import { requireJwtSecret } from '../services/securityConfig.js';
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -9,7 +11,7 @@ import { CustomerAddress } from "../models/customerAddressModel.js";
 import { sendVerificationCode, verifyCode } from "../services/emailService.js";
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = requireJwtSecret();
 
 // ========== STOREFRONT CUSTOMER ACCOUNTS ==========
 // Separate from staff auth on purpose. Staff sign-up creates a 'pending'
@@ -18,22 +20,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-producti
 // reach the POS, kitchen or admin areas.
 
 /** Rejects any token that is not a storefront customer. */
-export const verifyCustomer = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: 'Please sign in to continue.' });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded.role !== 'customer') {
-      // A staff token must not act as a customer, and vice versa.
-      return res.status(403).json({ error: 'This account cannot be used for online ordering.' });
-    }
-    req.customer = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Your session has expired. Please sign in again.' });
-  }
-};
+export const verifyCustomer = (req, res, next) => authenticate(req, res, error => {
+  if (error) return next(error);
+  return allowRoles('customer')(req, res, () => { req.customer = req.user; next(); });
+});
 
 const publicUser = (u) => ({
   id: u.id,

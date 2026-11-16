@@ -24,18 +24,20 @@ export default function Dashboard() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [activities, setActivities] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
 
     useEffect(() => { fetchDashboardData(); }, []);
 
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
+            setLoadError('');
             const [ordersRes, usersRes, logsRes] = await Promise.all([
                 ordersAPI.getAll(), usersAPI.getApproved(), logsAPI.getAll({ limit: 10, offset: 0 }),
             ]);
-            const orders = ordersRes.data || [];
+            const orders = (ordersRes.data || []).filter((order: { status: string }) => order.status !== 'cancelled');
             const employees = usersRes.data || [];
-            // Filter out admin users - only count cashier and kitchen staff
+            // Filter out admin users - count approved operational staff, including Inventory
             const activeStaff = employees.filter((emp: any) => emp.role !== 'admin');
             const logs = logsRes.data?.logs || (Array.isArray(logsRes.data) ? logsRes.data : []);
             setActivities(logs);
@@ -60,34 +62,35 @@ export default function Dashboard() {
                 monthlyTrend: lastMonthRevenue > 0 ? Math.round(((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100) : 0,
                 ordersTrend: lastMonthOrders.length > 0 ? Math.round(((monthOrders.length - lastMonthOrders.length) / lastMonthOrders.length) * 100) : 0,
             });
-        } catch (error) { console.error('Error fetching dashboard data:', error); }
+        } catch { setLoadError('Dashboard data could not be loaded. Check your connection and try again.'); }
         finally { setLoading(false); }
     };
 
-    if (loading) return <div className="spinner" />;
+    if (loading) return <div className="spinner" role="status" aria-label="Loading content" />;
 
     const statCards = [
-        { label: 'Monthly Revenue', value: `₱${stats?.monthlyRevenue.toLocaleString()}`, trend: `${(stats?.monthlyTrend ?? 0) >= 0 ? '+' : ''}${stats?.monthlyTrend}%`, trendUp: (stats?.monthlyTrend ?? 0) >= 0, icon: TrendingUp, border: 'border-l-brand' },
-        { label: 'Monthly Orders', value: stats?.monthlyOrders, trend: `${(stats?.ordersTrend ?? 0) >= 0 ? '+' : ''}${stats?.ordersTrend}%`, trendUp: (stats?.ordersTrend ?? 0) >= 0, icon: Package, border: 'border-l-blue-500' },
-        { label: 'Active Employees', value: stats?.activeEmployees, trend: 'Staff', trendUp: true, icon: Users, border: 'border-l-violet-500' },
-        { label: "Today's Sales", value: `₱${stats?.todaysSales.toLocaleString()}`, trend: 'Today', trendUp: true, icon: BarChart3, border: 'border-l-amber-500' },
+        { label: 'Monthly Revenue', value: `₱${stats?.monthlyRevenue.toLocaleString()}`, trend: `${(stats?.monthlyTrend ?? 0) >= 0 ? '+' : ''}${stats?.monthlyTrend}%`, trendUp: (stats?.monthlyTrend ?? 0) >= 0, icon: TrendingUp },
+        { label: 'Monthly Orders', value: stats?.monthlyOrders, trend: `${(stats?.ordersTrend ?? 0) >= 0 ? '+' : ''}${stats?.ordersTrend}%`, trendUp: (stats?.ordersTrend ?? 0) >= 0, icon: Package },
+        { label: 'Active Employees', value: stats?.activeEmployees, trend: 'Staff', trendUp: true, icon: Users },
+        { label: "Today's Sales", value: `₱${stats?.todaysSales.toLocaleString()}`, trend: 'Today', trendUp: true, icon: BarChart3 },
     ];
 
     return (
-        <div className="p-2 md:p-4 h-full overflow-y-auto bg-gradient-to-b from-white to-slate-100">
+        <div className="app-page">
+            {loadError && <div role="alert" className="app-form-error">{loadError} <button className="underline ml-2" onClick={() => void fetchDashboardData()}>Retry</button></div>}
             <div className="">
-                <h1 className="text-2xl font-bold text-yellow-900">Dashboard</h1>
-                <p className="text-gray-500 text-sm">Welcome back, {user?.name || 'Admin'}. Here&apos;s what&apos;s happening today</p>
+                <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-gray-500 text-sm">Sales and staff activity for {user?.name || 'Admin'}.</p>
             </div>
 
             {stats && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
-                    {statCards.map(({ label, value, trend, trendUp, icon: Icon, border }) => (
-                        <div key={label} className={`bg-yellow-50 rounded-lg p-3.5 border-l-4 ${border} flex justify-between items-start`}>
+                    {statCards.map(({ label, value, trend, trendUp, icon: Icon }) => (
+                        <div key={label} className={`bg-white rounded-lg p-4 border border-gray-200 flex justify-between items-start`}>
                             <div>
-                                <div className="text-[11px] text-gray-500 mb-1.5">{label}</div>
+                                <div className="text-xs text-gray-500 mb-1.5">{label}</div>
                                 <div className="text-base font-bold mb-1">{value}</div>
-                                <div className={`text-[11px] font-semibold ${trendUp ? 'text-emerald-500' : 'text-red-500'}`}>{trend}</div>
+                                <div className={`text-[11px] font-semibold ${trendUp ? 'text-gray-600' : 'text-gray-600'}`}>{trend}</div>
                             </div>
                             <Icon size={22} className="text-brand-dark" />
                         </div>
@@ -98,9 +101,9 @@ export default function Dashboard() {
             {/* Charts Section */}
             <div className="mt-4">
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
                     {/* Left: Line Chart (spans 2 columns) */}
-                    <div className="col-span-2">
+                    <div className="lg:col-span-2 xl:col-span-2 min-w-0">
                         <DashboardCharts.LineChartOnly />
                     </div>
                     
@@ -108,7 +111,7 @@ export default function Dashboard() {
                     <DashboardCharts.DoughnutChartOnly />
                     
                     {/* Right: Recent Activity */}
-                    <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3.5 overflow-y-auto">
+                    <div className="bg-white border border-gray-200 rounded-lg p-3.5 overflow-y-auto">
                         <h2 className="text-base font-bold mb-3">Recent Activity</h2>
                         {activities.length > 0 ? (
                             activities.slice(0, 5).map((item, idx) => (

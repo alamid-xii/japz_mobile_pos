@@ -26,6 +26,7 @@ export default function PublicRoute({ children }: PublicRouteProps) {
             cashier: '/cashier/pos',
             kitchen: '/kitchen/incoming',
             rider: '/rider/deliveries',
+            inventory: '/inventory/overview',
         };
         const from = (location.state as any)?.from?.pathname || roleRedirects[user.role];
         return <Navigate to={from} replace />;

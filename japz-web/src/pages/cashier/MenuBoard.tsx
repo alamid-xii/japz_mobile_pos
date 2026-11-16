@@ -1,3 +1,4 @@
+import { useFeedback } from '../../components/FeedbackProvider';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Download, Maximize2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
@@ -48,6 +49,7 @@ function getFeatureImage(name: string): string | null {
 }
 
 export default function MenuBoard() {
+    const { notify } = useFeedback();
     const menuBoardRef = useRef<HTMLDivElement>(null);
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [categories, setCategories] = useState<MenuCategory[]>([]);
@@ -88,7 +90,7 @@ export default function MenuBoard() {
             link.click();
         } catch (error) {
             console.error('Error downloading image:', error);
-            alert('Failed to download menu image — check console for details');
+            notify('Failed to download menu image — check console for details');
         }
     };
 
@@ -98,7 +100,6 @@ export default function MenuBoard() {
             if (!el) return;
             if (!document.fullscreenElement) {
                 // Request fullscreen for the board element
-                // @ts-ignore
                 await el.requestFullscreen();
             } else {
                 await document.exitFullscreen();
@@ -176,7 +177,7 @@ export default function MenuBoard() {
         columns[minIdx].push(group);
     });
 
-    if (loading) return <div className="flex items-center justify-center h-full bg-gray-950"><div className="spinner" /></div>;
+    if (loading) return <div className="flex items-center justify-center h-full bg-gray-950"><div className="spinner" role="status" aria-label="Loading content" /></div>;
 
     const boardBackground = '/burgers.jpg';
 

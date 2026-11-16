@@ -1,7 +1,9 @@
+import { useFeedback } from '../../components/FeedbackProvider';
 import { useState, useEffect, useRef } from 'react';
 import { Clock, ChefHat, CheckCircle, UtensilsCrossed, User, StickyNote, Play, Check, MapPin, Speaker, Mic } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
+import { isAxiosError } from 'axios';
 
 type StatusFilter = 'pending' | 'preparing' | 'ready';
 
@@ -27,8 +29,10 @@ interface KitchenOrder {
 }
 
 export default function KitchenIncoming() {
+    const { notify } = useFeedback();
     const { user } = useAuth();
     const [speakerEnabled, setSpeakerEnabled] = useState(true);
+    const [inventoryError, setInventoryError] = useState('');
     const [listening, setListening] = useState(false);
     const recognitionRef = useRef<any>(null);
     const prevOrderIdsRef = useRef<number[]>([]);
@@ -80,13 +84,13 @@ export default function KitchenIncoming() {
             o.connect(g); g.connect(ctx.destination);
             o.start();
             setTimeout(() => { o.stop(); ctx.close(); }, 150);
-        } catch (e) { /* ignore audio errors */ }
+        } catch { /* Audio may be blocked until user interaction. */ }
         speakText(message);
     };
 
     const startListening = () => {
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        if (!SpeechRecognition) return alert('Speech recognition not supported in this browser');
+        if (!SpeechRecognition) return notify('Speech recognition not supported in this browser');
         try {
             const rec = new SpeechRecognition();
             rec.lang = 'en-US';
@@ -106,7 +110,7 @@ export default function KitchenIncoming() {
     };
 
     const stopListening = () => {
-        try { recognitionRef.current?.stop(); } catch (e) { }
+        try { recognitionRef.current?.stop(); } catch { /* Speech recognition may already be stopped. */ }
         setListening(false);
     };
 
@@ -123,10 +127,12 @@ export default function KitchenIncoming() {
         
         setProcessingOrders(prev => new Set(prev).add(orderId));
         try {
+            setInventoryError('');
             await ordersAPI.updateOrderStatus(orderId, newStatus);
             await fetchOrders();
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
+            const message = isAxiosError<{ error?: string }>(error) ? error.response?.data?.error : undefined;
+            setInventoryError(message || 'Order status could not be changed. Try again.');
         } finally {
             setProcessingOrders(prev => {
                 const next = new Set(prev);
@@ -236,15 +242,16 @@ export default function KitchenIncoming() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
-                <div className="spinner" />
+                <div className="spinner" role="status" aria-label="Loading content" />
             </div>
         );
     }
 
     return (
-        <div className="p-4 md:p-6">
+        <div className="app-page kitchen-page">
+            {inventoryError && <div role="alert" className="p-3 m-3 bg-red-50 border border-red-200 rounded-md text-red-800">{inventoryError}</div>}
             {/* Header */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">Kitchen Orders</h1>
                     <p className="text-gray-500 text-sm mt-1">Manage incoming orders for your assigned stations</p>
@@ -262,13 +269,13 @@ export default function KitchenIncoming() {
             </div>
 
             {/* Status Filter Tabs */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+            <div className="order-filters flex gap-2 mb-6" aria-label="Order status">
                 <button
-                    onClick={() => setStatusFilter('pending')}
+                    aria-pressed={statusFilter === 'pending'} onClick={() => setStatusFilter('pending')}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all whitespace-nowrap ${
                         statusFilter === 'pending'
-                            ? 'bg-yellow-500 text-white shadow-md'
-                            : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                            ? 'bg-brand text-brand-dark'
+                            : 'bg-white text-gray-600 hover:bg-gray-100'
                     }`}
                 >
                     <Clock size={18} />
@@ -282,11 +289,11 @@ export default function KitchenIncoming() {
                     )}
                 </button>
                 <button
-                    onClick={() => setStatusFilter('preparing')}
+                    aria-pressed={statusFilter === 'preparing'} onClick={() => setStatusFilter('preparing')}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all whitespace-nowrap ${
                         statusFilter === 'preparing'
-                            ? 'bg-blue-500 text-white shadow-md'
-                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                            ? 'bg-brand text-brand-dark'
+                            : 'bg-white text-gray-600 hover:bg-gray-100'
                     }`}
                 >
                     <ChefHat size={18} />
@@ -300,11 +307,11 @@ export default function KitchenIncoming() {
                     )}
                 </button>
                 <button
-                    onClick={() => setStatusFilter('ready')}
+                    aria-pressed={statusFilter === 'ready'} onClick={() => setStatusFilter('ready')}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all whitespace-nowrap ${
                         statusFilter === 'ready'
-                            ? 'bg-green-500 text-white shadow-md'
-                            : 'bg-green-100 text-green-700 hover:bg-green-200'
+                            ? 'bg-brand text-brand-dark'
+                            : 'bg-white text-gray-600 hover:bg-gray-100'
                     }`}
                 >
                     <CheckCircle size={18} />

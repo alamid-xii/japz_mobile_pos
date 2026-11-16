@@ -14,7 +14,7 @@ export default function OrderHistory() {
             try {
                 setLoading(true);
                 const res = await ordersAPI.getAll();
-                let all = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+                const all = Array.isArray(res.data) ? res.data : (res.data?.data || []);
                 
                 // Only show completed orders in history
                 const completed = all.filter((o: any) => o.status === 'completed');
@@ -74,10 +74,10 @@ export default function OrderHistory() {
         return filteredByTime.slice(start, start + perPage);
     }, [filteredByTime, page]);
 
-    if (loading) return <div className="p-6"><div className="spinner" /></div>;
+    if (loading) return <div className="p-6"><div className="spinner" role="status" aria-label="Loading content" /></div>;
 
     return (
-        <div className="p-2 md:p-4 h-full overflow-y-auto bg-gradient-to-b from-white to-slate-100">
+        <div className="app-page">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
                     <h1 className="text-2xl font-bold text-yellow-900">Order History</h1>
@@ -117,7 +117,7 @@ export default function OrderHistory() {
                             <DollarSign size={16} className="text-emerald-600" />
                         </div>
                     </div>
-                    <p className="text-2xl font-black text-gray-900">₱{stats.totalRevenue.toFixed(2)}</p>
+                    <p className="text-2xl font-semibold text-gray-900">₱{stats.totalRevenue.toFixed(2)}</p>
                     <p className="text-xs text-gray-400 mt-1">{timeSlot === 'today' ? 'Today' : 'This week'}</p>
                 </div>
 
@@ -129,7 +129,7 @@ export default function OrderHistory() {
                             <ShoppingCart size={16} className="text-blue-600" />
                         </div>
                     </div>
-                    <p className="text-2xl font-black text-gray-900">{stats.orderCount}</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats.orderCount}</p>
                     <p className="text-xs text-gray-400 mt-1">Total transactions</p>
                 </div>
 
@@ -141,7 +141,7 @@ export default function OrderHistory() {
                             <TrendingUp size={16} className="text-brand" />
                         </div>
                     </div>
-                    <p className="text-2xl font-black text-gray-900">₱{stats.avgOrder.toFixed(2)}</p>
+                    <p className="text-2xl font-semibold text-gray-900">₱{stats.avgOrder.toFixed(2)}</p>
                     <p className="text-xs text-gray-400 mt-1">Per transaction</p>
                 </div>
 
@@ -153,7 +153,7 @@ export default function OrderHistory() {
                             <ShoppingCart size={16} className="text-purple-600" />
                         </div>
                     </div>
-                    <p className="text-2xl font-black text-gray-900">{stats.totalItems}</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats.totalItems}</p>
                     <p className="text-xs text-gray-400 mt-1">Total units</p>
                 </div>
             </div>
@@ -163,12 +163,12 @@ export default function OrderHistory() {
                     <table className="min-w-full divide-y divide-gray-100 table-fixed">
                         <thead className="bg-yellow-50">
                             <tr>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-yellow-700 uppercase tracking-widest w-24">Order #</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-yellow-700 uppercase tracking-widest w-40">Customer</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-yellow-700 uppercase tracking-widest">Items Purchased</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-yellow-700 uppercase tracking-widest w-32">Type</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black text-yellow-700 uppercase tracking-widest w-32">Total</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-yellow-700 uppercase tracking-widest w-32">Time</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-semibold text-yellow-700 uppercase tracking-widest w-24">Order #</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-semibold text-yellow-700 uppercase tracking-widest w-40">Customer</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-semibold text-yellow-700 uppercase tracking-widest">Items Purchased</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-semibold text-yellow-700 uppercase tracking-widest w-32">Type</th>
+                                <th className="px-6 py-4 text-right text-[10px] font-semibold text-yellow-700 uppercase tracking-widest w-32">Total</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-semibold text-yellow-700 uppercase tracking-widest w-32">Time</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
@@ -183,17 +183,17 @@ export default function OrderHistory() {
                                 </tr>
                             ) : paginated.map((o: any) => (
                                 <tr key={o.id} className="hover:bg-yellow-50 transition-colors group">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-black text-gray-900">#{o.orderNumber}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">#{o.orderNumber}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">{o.customerName || <span className="text-gray-300 italic">Walk-in</span>}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 truncate max-w-0">
                                         {Array.isArray(o.items) ? o.items.map((it: any) => `${it.name} (x${it.quantity})`).join(', ') : (o.items || '')}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter bg-gray-100 text-gray-600`}>
+                                        <span className={`px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-tighter bg-gray-100 text-gray-600`}>
                                             {o.orderType?.replace('-', ' ') || 'Walk-in'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-emerald-600 text-right font-black">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-emerald-600 text-right font-semibold">
                                         ₱{Number(o.total || 0).toFixed(2)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-400">
@@ -212,7 +212,7 @@ export default function OrderHistory() {
                             Showing <span className="text-gray-900 font-bold">{Math.min((page - 1) * perPage + 1, filteredByTime.length)}</span> to <span className="text-gray-900 font-bold">{Math.min(page * perPage, filteredByTime.length)}</span> of <span className="text-gray-900 font-bold">{filteredByTime.length}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button
+                            <button aria-label="Previous page"
                                 className={`p-2 rounded-lg border-none shadow-sm transition-all cursor-pointer ${page === 1 ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
@@ -232,7 +232,7 @@ export default function OrderHistory() {
                                 })}
                             </div>
 
-                            <button
+                            <button aria-label="Next page"
                                 className={`p-2 rounded-lg border-none shadow-sm transition-all cursor-pointer ${page === totalPages ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
                                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                 disabled={page === totalPages}

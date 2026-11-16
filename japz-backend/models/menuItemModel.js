@@ -83,6 +83,9 @@ export const MenuItem = sequelize.define(
       defaultValue: 'available',
       allowNull: false,
     },
+    inventoryMode: { type: DataTypes.ENUM('prepared', 'recipe'), allowNull: false, defaultValue: 'prepared' },
+    reservedStock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    reorderLevel: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 10 },
     trackStock: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,

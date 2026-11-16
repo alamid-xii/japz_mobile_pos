@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+import { StockMovement, StockAllocation, MenuRecipe, StockReceipt, StockCount, WasteReport } from './inventoryModels.js';
 import { User } from './userModel.js';
 import { KitchenStation } from './kitchenStationModel.js';
 import { MenuCategory } from './menuCategoryModel.js';
@@ -47,6 +48,8 @@ import { Payslip } from './payslipModel.js';
 
 import { RestaurantTable, Reservation, ReservationEvent } from './reservationModel.js';
 import { PaymentSession } from './paymentSessionModel.js';
+import { CustomerAddress } from './customerAddressModel.js';
+import { Delivery } from './deliveryModel.js';
 
 // ── EXISTING ASSOCIATIONS (unchanged) ────────────────────────────────────
 
@@ -86,8 +89,8 @@ PayrollEntry.belongsTo(PayrollPeriod, { onDelete: 'RESTRICT', foreignKey: 'payro
 PayrollEntry.belongsTo(PayrollPeriod, { onDelete: 'RESTRICT', foreignKey: 'payrollPeriodId', as: 'period' });
 
 // Employee → PayrollEntry (one employee has many entries across periods)
-Employee.hasMany(PayrollEntry, { foreignKey: 'employeeId', as: 'payrollEntries' });
-PayrollEntry.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
+Employee.hasMany(PayrollEntry, { onDelete: 'RESTRICT', foreignKey: 'employeeId', as: 'payrollEntries' });
+PayrollEntry.belongsTo(Employee, { onDelete: 'RESTRICT', foreignKey: 'employeeId', as: 'employee' });
 
 // PayrollEntry → Payslip (1-to-1)
 PayrollEntry.hasOne(Payslip, { onDelete: 'RESTRICT', foreignKey: 'payrollEntryId', as: 'payslip' });
@@ -100,12 +103,12 @@ PayrollAdjustment.belongsTo(PayrollEntry, { onDelete: 'RESTRICT', foreignKey: 'p
 PayrollAdjustment.belongsTo(PayrollEntry, { onDelete: 'RESTRICT', foreignKey: 'payrollEntryId', as: 'entry' });
 
 // Employee → Payslip (for quick lookup without going through entry)
-Employee.hasMany(Payslip, { foreignKey: 'employeeId', as: 'payslips' });
-Payslip.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
+Employee.hasMany(Payslip, { onDelete: 'RESTRICT', foreignKey: 'employeeId', as: 'payslips' });
+Payslip.belongsTo(Employee, { onDelete: 'RESTRICT', foreignKey: 'employeeId', as: 'employee' });
 
 // User → PayrollPeriod (created by / approved by)
-User.hasMany(PayrollPeriod, { foreignKey: 'createdBy', as: 'createdPeriods' });
-PayrollPeriod.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+User.hasMany(PayrollPeriod, { onDelete: 'RESTRICT', foreignKey: 'createdBy', as: 'createdPeriods' });
+PayrollPeriod.belongsTo(User, { onDelete: 'RESTRICT', foreignKey: 'createdBy', as: 'creator' });
 
 // User ↔ Employee (link POS user accounts to payroll employee profiles)
 Employee.belongsTo(User, { foreignKey: 'userId', as: 'user' });
@@ -123,10 +126,18 @@ PaymentSession.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 Order.hasMany(PaymentSession, { foreignKey: 'orderId', as: 'paymentSessions' });
 
 
+StockMovement.belongsTo(MenuItem, { as: 'menuItem', foreignKey: 'menuItemId', onDelete: 'RESTRICT' });
+StockMovement.belongsTo(User, { as: 'user', foreignKey: 'userId', onDelete: 'RESTRICT' });
+StockMovement.belongsTo(Order, { as: 'order', foreignKey: 'orderId', onDelete: 'RESTRICT' });
+StockAllocation.belongsTo(Order, { foreignKey: 'orderId', onDelete: 'RESTRICT' });
+MenuRecipe.belongsTo(MenuItem, { as: 'menuItem', foreignKey: 'menuItemId', onDelete: 'RESTRICT' });
+for (const model of [StockReceipt, StockCount, WasteReport]) model.belongsTo(User, { as: 'user', foreignKey: 'userId', onDelete: 'RESTRICT' });
+
+
 export {
   User, KitchenStation, MenuCategory, MenuItem, Order, OrderItem,
   Payment, Log, Feedback, Discount, Voucher, BusinessHours,
-  Employee, Attendance, Payroll, RestaurantTable, Reservation, ReservationEvent, PaymentSession,
+  Employee, Attendance, Payroll, RestaurantTable, Reservation, ReservationEvent, PaymentSession, CustomerAddress, Delivery,
   // Payroll Module
   PayrollConfig, PayrollPeriod, PayrollEntry, PayrollAdjustment, Payslip
-};
+};
