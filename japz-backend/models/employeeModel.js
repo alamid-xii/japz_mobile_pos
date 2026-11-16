@@ -21,7 +21,7 @@ export const Employee = sequelize.define("Employee", {
     allowNull: false
   },
   role: {
-    type: DataTypes.ENUM('cashier', 'kitchen'),
+    type: DataTypes.ENUM('admin', 'cashier', 'kitchen', 'rider', 'inventory'),
     allowNull: false,
     defaultValue: 'cashier'
   },
@@ -43,6 +43,55 @@ export const Employee = sequelize.define("Employee", {
     type: DataTypes.ENUM('active', 'inactive'),
     defaultValue: 'active',
     allowNull: false
+  },
+  hourlyRate: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0.00
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  dailyAllowance: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0.00
+  },
+  monthlyAllowance: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0.00
+  },
+  overtimeAllowed: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true
+  },
+  sssExempt: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  philhealthExempt: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  pagibigExempt: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  taxExempt: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  customDeduction: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0.00
   }
 });
 

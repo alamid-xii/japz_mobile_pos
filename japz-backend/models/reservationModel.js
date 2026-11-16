@@ -52,7 +52,7 @@ export const Reservation = sequelize.define(
     seatedAt: { type: DataTypes.DATE, allowNull: true, defaultValue: null },
     closedAt: { type: DataTypes.DATE, allowNull: true, defaultValue: null },
   },
-  { tableName: "reservations", timestamps: true },
+  { tableName: "reservations", timestamps: true, indexes: [{ fields: ["reservationDate", "startTime"] }, { fields: ["tableId", "reservationDate"] }, { fields: ["customerUserId"] }] },
 );
 
 /** Append-only trail of who changed a booking, and when. */

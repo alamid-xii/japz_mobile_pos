@@ -344,36 +344,7 @@ export const businessHoursAPI = {
 // ===== PAYROLL =====
 // Attendance is the staff's own record; everything else is admin-only and the
 // server enforces that regardless of what the UI shows.
-export const attendanceAPI = {
-    me: () => api.get('/api/attendance/me'),
-    clockIn: () => api.post('/api/attendance/clock-in'),
-    clockOut: () => api.post('/api/attendance/clock-out'),
-    myPayslips: () => api.get('/api/payroll/my-payslips'),
-};
 
-export const payrollAPI = {
-    getSettings: () => api.get('/api/payroll/settings'),
-    saveSettings: (data: Record<string, number>) => api.put('/api/payroll/settings', data),
-
-    staff: () => api.get('/api/payroll/staff'),
-    setRate: (userId: number, payType: 'hourly' | 'monthly', payRate: number) =>
-        api.put(`/api/payroll/staff/${userId}/rate`, { payType, payRate }),
-
-    attendance: (params?: { from?: string; to?: string; userId?: number }) =>
-        api.get('/api/payroll/attendance', { params }),
-    closeShift: (logId: number, clockOutAt?: string) =>
-        api.put(`/api/payroll/attendance/${logId}/close`, { clockOutAt }),
-
-    periods: () => api.get('/api/payroll/periods'),
-    createPeriod: (data: { label: string; startDate: string; endDate: string }) =>
-        api.post('/api/payroll/periods', data),
-    period: (id: number) => api.get(`/api/payroll/periods/${id}`),
-    generate: (id: number) => api.post(`/api/payroll/periods/${id}/generate`),
-    finalize: (id: number) => api.post(`/api/payroll/periods/${id}/finalize`),
-    deletePeriod: (id: number) => api.delete(`/api/payroll/periods/${id}`),
-    updatePayslip: (id: number, data: { otherDeductionLabel?: string | null; otherDeductionAmount: number; notes?: string }) =>
-        api.put(`/api/payroll/payslips/${id}`, data),
-};
 
 // ===== RESERVATIONS =====
 export const reservationAPI = {
@@ -432,5 +403,83 @@ export const posPaymentAPI = {
         api.post(`/api/payments/pos/cancel/${encodeURIComponent(orderNumber)}`),
     sessions: () => api.get('/api/payments/sessions'),
 };
+
+export const payrollConfigAPI = {
+    getAll: () => api.get('/api/payroll/config'),
+    update: (configKey: string, configValue: string | number) =>
+        api.put(`/api/payroll/config/${configKey}`, { configValue }),
+};
+
+export const payrollAPI = {
+    // Periods
+    getPeriods:      ()                              => api.get('/api/payroll/periods'),
+    getPeriodById:   (id: number | string)           => api.get(`/api/payroll/periods/${id}`),
+    createPeriod:    (data: { periodStart: string; periodEnd: string; description?: string }) =>
+        api.post('/api/payroll/periods', data),
+    calculate:       (id: number | string)           => api.post(`/api/payroll/periods/${id}/calculate`),
+    markReview:      (id: number | string)           => api.put(`/api/payroll/periods/${id}/review`),
+    approve:         (id: number | string)           => api.put(`/api/payroll/periods/${id}/approve`),
+    markPaid:        (id: number | string)           => api.put(`/api/payroll/periods/${id}/paid`),
+    lock:            (id: number | string)           => api.put(`/api/payroll/periods/${id}/lock`),
+    reopen:          (id: number | string, reason: string) =>
+        api.put(`/api/payroll/periods/${id}/reopen`, { reason }),
+    cancel:          (id: number | string, reason: string) =>
+        api.put(`/api/payroll/periods/${id}/cancel`, { reason }),
+    generatePayslips: (id: number | string)          => api.post(`/api/payroll/periods/${id}/payslips`),
+    validateAttendance: (id?: number | string, params?: { periodStart?: string; periodEnd?: string }) => {
+        if (id) return api.get(`/api/payroll/periods/${id}/validate`, { params });
+        return api.get('/api/payroll/attendance/validate', { params });
+    },
+
+    // Entries
+    getEntry:        (id: number | string)           => api.get(`/api/payroll/entries/${id}`),
+    addAdjustment:   (id: number | string, data: {
+        adjustmentType: 'earning' | 'deduction';
+        description: string;
+        amount: number;
+        reason: string;
+    }) => api.post(`/api/payroll/entries/${id}/adjust`, data),
+
+    // Reports & Exports
+    getAnalytics:    (params?: { periodId?: number | string; year?: number }) =>
+        api.get('/api/payroll/reports/analytics', { params }),
+    exportCSV:       (periodId: number | string) =>
+        api.get(`/api/payroll/periods/${periodId}/export/csv`, { responseType: 'blob' }),
+
+    // Employee Pay Management
+    getEmployees: () => api.get('/api/payroll/employees'),
+    updateEmployeePayConfig: (id: number | string, data: {
+        hourlyRate?: number;
+        dailyAllowance?: number;
+        monthlyAllowance?: number;
+        overtimeAllowed?: boolean;
+        sssExempt?: boolean;
+        philhealthExempt?: boolean;
+        pagibigExempt?: boolean;
+        taxExempt?: boolean;
+        customDeduction?: number;
+        status?: 'active' | 'inactive';
+    }) => api.put(`/api/payroll/employees/${id}/pay-config`, data),
+    syncEmployees: () => api.post('/api/payroll/employees/sync'),
+};
+
+export const attendanceAPI = {
+    getRecords: (params?: { startDate?: string; endDate?: string; month?: string; employeeId?: number }) =>
+        api.get('/api/attendance/records', { params }),
+    clockIn:  (employeeId: number, clockInTime?: string) =>
+        api.post('/api/attendance/clock-in', { employeeId, clockInTime }),
+    clockOut: (employeeId: number, clockOutTime?: string) =>
+        api.post('/api/attendance/clock-out', { employeeId, clockOutTime }),
+    correct:  (id: number | string, data: { clockIn?: string; clockOut?: string; notes?: string }) =>
+        api.put(`/api/attendance/${id}/correct`, data),
+};
+
+export const employeeAPI = {
+    getMyTodayAttendance: () => api.get('/api/employee/today'),
+    getMyPayslips: () => api.get('/api/employee/payslips'),
+    clockIn: () => api.post('/api/employee/clock-in', { employeeId: undefined }), // Just uses token
+    clockOut: () => api.post('/api/employee/clock-out', { employeeId: undefined }),
+};
+
 
 export default api;

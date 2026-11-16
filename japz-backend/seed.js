@@ -108,6 +108,8 @@ async function seed() {
 
 export { seed };
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { fileURLToPath } from 'url';
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   seed().finally(() => process.exit());
 }

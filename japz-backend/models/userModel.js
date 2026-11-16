@@ -40,6 +40,7 @@ export const User = sequelize.define("User", {
   // zero payslip rather than a guessed one.
   payType: { type: DataTypes.ENUM('hourly', 'monthly'), defaultValue: 'hourly', allowNull: false },
   payRate: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0, allowNull: false },
-  assignedCategories: { type: DataTypes.JSON, defaultValue: [], allowNull: true } // For kitchen staff - array of category IDs
+  assignedCategories: { type: DataTypes.JSON, defaultValue: [], allowNull: true }, // For kitchen staff - array of category IDs
+  hourlyRate: { type: DataTypes.DECIMAL(10, 2), defaultValue: 75.00, allowNull: false }
 });
 export { sequelize }; 

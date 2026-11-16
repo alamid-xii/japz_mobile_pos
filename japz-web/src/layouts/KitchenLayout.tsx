@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useEffect } from 'react';
-import { Utensils, ClipboardList, CheckSquare, User } from 'lucide-react';
+import { Utensils, ClipboardList, CheckSquare, User, Clock, FileText } from 'lucide-react';
 
 export default function KitchenLayout() {
     const { user, isInitialized } = useAuth();
@@ -22,6 +22,8 @@ export default function KitchenLayout() {
         { path: '/kitchen/incoming', icon: ClipboardList, label: 'Incoming' },
         { path: '/kitchen/prep', icon: Utensils, label: 'Prep Board' },
         { path: '/kitchen/completed', icon: CheckSquare, label: 'Completed' },
+        { path: '/kitchen/attendance', icon: Clock, label: 'Clock In' },
+        { path: '/kitchen/payslips', icon: FileText, label: 'Payslips' },
         { path: '/kitchen/profile', icon: User, label: 'Profile' },
     ];
 

@@ -29,11 +29,12 @@ import path from "path";
 import session from "express-session";
 import flash from "connect-flash";
 import router from "./routes/index.js";
+import { assertProtectedSchemaReady } from "./services/integrationSchema.js";
+import { seedDefaultConfigs } from "./services/payrollConfigService.js";
 import publicOrdersRouter from "./routes/publicOrders.js";
 import customerAuthRouter from "./routes/customerAuth.js";
 import menuImagesRouter from "./routes/menuImages.js";
 import deliveryRouter from "./routes/delivery.js";
-import payrollRouter from "./routes/payroll.js";
 import reservationsRouter from "./routes/reservations.js";
 import paymentsRouter from "./routes/payments.js";
 import fs from 'fs';
@@ -61,6 +62,9 @@ app.use(session({
   saveUninitialized: false
 }));
 app.use(flash());
+
+// Stop before automatic sync if a reviewed legacy conversion is required.
+await assertProtectedSchemaReady(sequelize);
 
 // Sync database with proper handling for local dev & Railway MySQL
 console.log('🔧 Starting database sync...');
@@ -121,13 +125,11 @@ try {
     console.log('  ✓ Added preparedById column to OrderItems');
   } catch (e) { if (!e.message.includes('Duplicate')) console.log('  ✓ preparedById column exists in OrderItems'); }
 
-  // Re-enable foreign key checks
-  await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
-  console.log('  ✓ Foreign key checks re-enabled');
-
-  // Drop the old Employees table (consolidated into Users)
-  await sequelize.query('DROP TABLE IF EXISTS `Employees`');
-  console.log('  ✓ Old Employees table dropped');
+  // Add hourlyRate to Users table if it doesn't exist
+  try {
+    await sequelize.query(`ALTER TABLE Users ADD COLUMN hourlyRate DECIMAL(10, 2) NOT NULL DEFAULT 75.00`);
+    console.log('  ✓ Added hourlyRate column to Users');
+  } catch (e) { if (!e.message.includes('Duplicate')) console.log('  ✓ hourlyRate column exists in Users'); }
 
   // Ensure existing admin users have approved status
   await User.update({ status: 'approved' }, { where: { role: 'admin', status: 'pending' } });
@@ -170,6 +172,14 @@ try {
     console.log('  ✓ Stock already reset for today');
   }
 
+  // Seed default payroll configuration values if table is empty
+  const { seedDefaultConfigs } = await import('./services/payrollConfigService.js');
+  await seedDefaultConfigs();
+
+  // Re-enable foreign key checks
+  await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+  console.log('  ✓ Foreign key checks re-enabled');
+
   console.log('✅ Database fully synced');
 } catch (syncError) {
   console.error('⚠️ Database sync error:', syncError.message);
@@ -207,6 +217,9 @@ try {
     console.log('⚠️ Server will continue despite sync issues');
   }
 }
+
+// Initialize existing payroll configuration only after database setup has completed.
+await seedDefaultConfigs();
 
 app.engine("xian", async (filePath, options, callback) => {
   try {
@@ -260,7 +273,6 @@ fs.readdir(partialsDir, (err, files) => {
 });
 
 app.use("/", deliveryRouter);
-app.use("/", payrollRouter);
 app.use("/", reservationsRouter);
 app.use("/", paymentsRouter);
 app.use("/", menuImagesRouter);
