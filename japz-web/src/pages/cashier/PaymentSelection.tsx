@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Banknote, CreditCard, Smartphone, Check, User, UtensilsCrossed, ShoppingBag, Truck, Gift, Receipt, QrCode } from 'lucide-react';
+import { ChevronLeft, Banknote, CreditCard, Smartphone, Check, User, UtensilsCrossed, ShoppingBag, Truck, Gift, Receipt } from 'lucide-react';
 import { discountsVouchersAPI, paymentAPI } from '../../services/api';
 
 type PaymentMethod = 'cash' | 'card' | 'digital' | 'gateway';
