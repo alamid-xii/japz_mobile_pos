@@ -27,8 +27,10 @@
     "hbs": "^4.2.0",
     "inquirer": "^9.2.15",
     "jsonwebtoken": "^9.0.0",
+    "multer": "^2.3.0",
     "mysql2": "^3.9.2",
     "nodemailer": "^6.9.9",
+    "qrcode": "^1.5.4",
     "resend": "^6.12.3",
     "sequelize": "^6.37.3"
   }

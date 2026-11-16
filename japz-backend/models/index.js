@@ -34,6 +34,9 @@ import { Feedback } from './feedbackModel.js';
 import { Discount } from './discountModel.js';
 import { Voucher } from './voucherModel.js';
 import { BusinessHours } from './businessHoursModel.js';
+import { AttendanceLog, PayrollPeriod, Payslip, PayrollSetting } from './payrollModel.js';
+import { RestaurantTable, Reservation, ReservationEvent } from './reservationModel.js';
+import { PaymentSession } from './paymentSessionModel.js';
 
 // Define associations
 
@@ -55,8 +58,32 @@ Payment.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 OrderItem.belongsTo(MenuItem, { foreignKey: 'menuItemId', as: 'menuItem' });
 MenuItem.hasMany(OrderItem, { foreignKey: 'menuItemId', as: 'orderItems' });
 
+// Payroll associations
+AttendanceLog.belongsTo(User, { foreignKey: 'userId', as: 'employee' });
+User.hasMany(AttendanceLog, { foreignKey: 'userId', as: 'attendance' });
+Payslip.belongsTo(PayrollPeriod, { foreignKey: 'periodId', as: 'period' });
+PayrollPeriod.hasMany(Payslip, { foreignKey: 'periodId', as: 'payslips' });
+Payslip.belongsTo(User, { foreignKey: 'userId', as: 'employee' });
+
+// Reservation associations
+Reservation.belongsTo(RestaurantTable, { foreignKey: 'tableId', as: 'table' });
+RestaurantTable.hasMany(Reservation, { foreignKey: 'tableId', as: 'reservations' });
+Reservation.belongsTo(User, { foreignKey: 'customerUserId', as: 'customer' });
+ReservationEvent.belongsTo(Reservation, { foreignKey: 'reservationId', as: 'reservation' });
+Reservation.hasMany(ReservationEvent, { foreignKey: 'reservationId', as: 'events' });
+
+// Gateway payment sessions
+PaymentSession.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+Order.hasMany(PaymentSession, { foreignKey: 'orderId', as: 'paymentSessions' });
+
 // Feedback associations
 Feedback.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 Order.hasMany(Feedback, { foreignKey: 'orderId', as: 'feedbacks' });
 
-export { User, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment, Log, Feedback, Discount, Voucher, BusinessHours };
+export {
+  User, KitchenStation, MenuCategory, MenuItem, Order, OrderItem, Payment, Log, Feedback,
+  Discount, Voucher, BusinessHours,
+  AttendanceLog, PayrollPeriod, Payslip, PayrollSetting,
+  RestaurantTable, Reservation, ReservationEvent,
+  PaymentSession,
+};

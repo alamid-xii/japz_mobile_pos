@@ -19,6 +19,8 @@ import Settings from './pages/admin/Settings';
 import FeedbackHub from './pages/admin/FeedbackHub';
 import SalesForecast from './pages/admin/SalesForecast';
 import DiscountsVouchers from './pages/admin/DiscountsVouchers';
+import Payroll from './pages/admin/Payroll';
+import Reservations from './pages/admin/Reservations';
 import POS from './pages/cashier/POS';
 import ActiveOrders from './pages/cashier/ActiveOrders';
 import OrderHistory from './pages/cashier/OrderHistory';
@@ -30,7 +32,19 @@ import Profile from './pages/cashier/Profile';
 import KitchenIncoming from './pages/kitchen/Incoming';
 import KitchenCompleted from './pages/kitchen/Completed';
 import KitchenProfile from './pages/kitchen/Profile';
+import ReadyOrders from './pages/cashier/ReadyOrders';
+import PrepBoard from './pages/kitchen/PrepBoard';
+import RiderDeliveries from './pages/rider/Deliveries';
 import Feedback from './pages/public/Feedback';
+import StorefrontLayout from './pages/public/storefront/StorefrontLayout';
+import StorefrontHome from './pages/public/storefront/Home';
+import StorefrontMenu from './pages/public/storefront/MenuPage';
+import StorefrontCart from './pages/public/storefront/CartPage';
+import StorefrontTrack from './pages/public/storefront/TrackPage';
+import StorefrontAuth from './pages/public/storefront/AuthPage';
+import StorefrontProfile from './pages/public/storefront/ProfilePage';
+import StorefrontReserve from './pages/public/storefront/ReservePage';
+import StorefrontPayReturn from './pages/public/storefront/PayReturnPage';
 import './index.css';
 
 export default function App() {
@@ -49,6 +63,25 @@ export default function App() {
           {/* Customer Feedback - Fully Public (no auth check) */}
           <Route path="/feedback" element={<Feedback />} />
 
+          {/* ---------------------------------------------------------------
+              CUSTOMER STOREFRONT - separate public entry point with its own
+              top/bottom navigation shell. /japz is canonical; /order/* stays
+              mounted so QR codes already in the wild keep working.
+          ---------------------------------------------------------------- */}
+          {['/japz', '/order'].map(prefix => (
+            <Route key={prefix} path={prefix} element={<StorefrontLayout />}>
+              <Route index element={<StorefrontHome />} />
+              <Route path="menu" element={<StorefrontMenu />} />
+              <Route path="cart" element={<StorefrontCart />} />
+              <Route path="track" element={<StorefrontTrack />} />
+              <Route path="track/:orderNumber" element={<StorefrontTrack />} />
+              <Route path="auth" element={<StorefrontAuth />} />
+              <Route path="profile" element={<StorefrontProfile />} />
+              <Route path="reserve" element={<StorefrontReserve />} />
+              <Route path="pay/return" element={<StorefrontPayReturn />} />
+            </Route>
+          ))}
+
           {/* Admin Routes - Protected */}
           <Route path="/admin" element={
             <ProtectedRoute allowedRoles={['admin']}>
@@ -63,6 +96,8 @@ export default function App() {
             <Route path="feedback" element={<FeedbackHub />} />
             <Route path="sales" element={<SalesForecast />} />
             <Route path="discounts-vouchers" element={<DiscountsVouchers />} />
+            <Route path="payroll" element={<Payroll />} />
+            <Route path="reservations" element={<Reservations />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 
@@ -75,13 +110,27 @@ export default function App() {
             <Route index element={<Navigate to="pos" replace />} />
             <Route path="pos" element={<POS />} />
             <Route path="orders" element={<ActiveOrders />} />
+            <Route path="ready" element={<ReadyOrders />} />
             <Route path="history" element={<OrderHistory />} />
             <Route path="payment" element={<PaymentSelection />} />
             <Route path="cash-payment" element={<CashPayment />} />
             <Route path="receipt" element={<Receipt />} />
             <Route path="menuboard" element={<MenuBoard />} />
+            <Route path="reservations" element={<Reservations />} />
             <Route path="profile" element={<Profile />} />
           </Route>
+
+          {/* Rider Routes - Protected. Riders reach nothing else in the app. */}
+          <Route path="/rider" element={
+            <ProtectedRoute allowedRoles={['rider']}>
+              <RiderDeliveries />
+            </ProtectedRoute>
+          } />
+          <Route path="/rider/deliveries" element={
+            <ProtectedRoute allowedRoles={['rider']}>
+              <RiderDeliveries />
+            </ProtectedRoute>
+          } />
 
           {/* Kitchen Routes - Protected */}
           <Route path="/kitchen" element={
@@ -91,6 +140,7 @@ export default function App() {
           }>
             <Route index element={<Navigate to="incoming" replace />} />
             <Route path="incoming" element={<KitchenIncoming />} />
+            <Route path="prep" element={<PrepBoard />} />
             <Route path="completed" element={<KitchenCompleted />} />
             <Route path="profile" element={<KitchenProfile />} />
           </Route>

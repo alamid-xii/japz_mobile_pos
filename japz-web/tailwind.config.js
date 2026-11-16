@@ -12,6 +12,14 @@ export default {
                     dark: '#030213',
                     light: '#FFFDE7',
                 },
+                // Dark surfaces for the customer storefront only.
+                // The staff app (POS/kitchen/admin) keeps its light theme.
+                ink: {
+                    DEFAULT: '#131510',
+                    soft: '#1E2118',
+                    lift: '#282C20',
+                    line: '#313526',
+                },
             },
             fontFamily: {
                 sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],

@@ -46,10 +46,35 @@ export const Payment = sequelize.define("Payment", {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: true,
   },
+  provider: {
+    type: DataTypes.STRING(32),
+    allowNull: true,
+    defaultValue: null,
+    comment: "Wallet or scheme used, e.g. 'GCash'. Null for plain cash.",
+  },
+  // Set only once the gateway confirms; never written from a client.
+  gatewayPaymentId: {
+    type: DataTypes.STRING(64),
+    allowNull: true,
+    defaultValue: null,
+    comment: "PayMongo payment id (pay_...), for reconciliation",
+  },
+  paidAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: null,
+  },
+  reference: {
+    type: DataTypes.STRING(64),
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Customer-entered transfer reference, for staff to verify manually',
+  },
   status: {
-    type: DataTypes.ENUM('completed', 'failed'),
+    type: DataTypes.ENUM('pending', 'completed', 'failed'),
     allowNull: false,
     defaultValue: 'completed',
+    comment: "'pending' = online order awaiting settlement at the counter or by a gateway",
   },
 });
 

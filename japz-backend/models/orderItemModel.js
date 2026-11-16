@@ -55,6 +55,24 @@ export const OrderItem = sequelize.define("OrderItem", {
     type: DataTypes.JSON,
     allowNull: true,
   },
+  // Per-item preparation state. An order's readiness is derived from these
+  // rather than stored twice.
+  status: {
+    type: DataTypes.ENUM('pending', 'preparing', 'ready'),
+    allowNull: false,
+    defaultValue: 'pending',
+  },
+  preparedById: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Kitchen staff who marked this item ready',
+  },
+  readyAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: null,
+  },
 });
 
 export { sequelize };

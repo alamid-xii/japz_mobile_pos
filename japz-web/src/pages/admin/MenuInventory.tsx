@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, X, Search, Edit2, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight, Power, Archive, RotateCcw } from 'lucide-react';
 import { menuCategoryAPI, menuItemAPI } from '../../services/api';
+import { resolveImageUrl } from '../../utils/menuImages';
 
 interface Category { id: number; name: string; description?: string; icon?: string; status?: 'available' | 'unavailable'; }
 interface SizeWithPrice { name: string; price: number; }
@@ -148,6 +149,11 @@ export default function MenuInventory() {
     const [itemTemperatures, setItemTemperatures] = useState({ hot: true, cold: true });
     const [itemTrackStock, setItemTrackStock] = useState(false);
     const [itemStock, setItemStock] = useState('');
+    // Storefront presentation: photo and the staff "featured" pick.
+    const [itemImageUrl, setItemImageUrl] = useState<string | null>(null);
+    const [itemFeatured, setItemFeatured] = useState(false);
+    const [itemFeaturedLabel, setItemFeaturedLabel] = useState('');
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [hasCombo, setHasCombo] = useState(false);
     const [comboSuffix, setComboSuffix] = useState('Combo');
     const [comboPrice, setComboPrice] = useState('');
@@ -219,6 +225,7 @@ export default function MenuInventory() {
     };
     const openAddItem = (catId?: number) => {
         setEditingItem(null); setItemName(''); setItemPrice(''); setItemCatId(catId || '');
+        setItemImageUrl(null); setItemFeatured(false); setItemFeaturedLabel('');
         setItemHasSize(false); setItemSizesData([{ name: '', price: 0 }]); setItemHasFlavor(false); setItemFlavors('');
         setItemHasTemperature(false); setItemTemperatures({ hot: true, cold: true });
         setItemTrackStock(false); setItemStock('');
@@ -227,6 +234,9 @@ export default function MenuInventory() {
     };
     const openEditItem = (item: MenuItem) => {
         setEditingItem(item); setItemName(item.name); setItemPrice(String(item.price));
+        setItemImageUrl((item as any).imageUrl ?? null);
+        setItemFeatured(!!(item as any).featured);
+        setItemFeaturedLabel((item as any).featuredLabel || '');
         setItemCatId(item.categoryId); setItemHasSize(item.hasSize || false);
         // Handle sizes - can be array of objects or legacy string array
         if (item.sizes && item.sizes.length > 0) {
@@ -253,6 +263,44 @@ export default function MenuInventory() {
         setHasCombo(false); setComboSuffix('Combo'); setComboPrice(''); // Combo only for new items
         setShowItemModal(true);
     };
+    /**
+     * Photos upload immediately against an existing item, because the endpoint
+     * needs an id. New items must be created first, so the control tells the
+     * user that rather than silently doing nothing.
+     */
+    const handleImagePick = async (file: File) => {
+        if (!editingItem) {
+            showAlert('error', 'Save first', 'Create the item first, then reopen it to add a photo.');
+            return;
+        }
+        setUploadingImage(true);
+        try {
+            const res = await menuItemAPI.uploadImage(editingItem.id, file);
+            setItemImageUrl(res.data.imageUrl);
+            showAlert('success', 'Uploaded', 'Photo updated. It appears on the online ordering page.');
+            fetchData();
+        } catch (err: any) {
+            showAlert('error', 'Upload failed', err?.response?.data?.error || 'Could not upload that image.');
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
+    const handleImageRemove = async () => {
+        if (!editingItem) { setItemImageUrl(null); return; }
+        setUploadingImage(true);
+        try {
+            await menuItemAPI.removeImage(editingItem.id);
+            setItemImageUrl(null);
+            showAlert('success', 'Removed', 'Photo removed. The category image will be used instead.');
+            fetchData();
+        } catch (err: any) {
+            showAlert('error', 'Error', err?.response?.data?.error || 'Could not remove the photo.');
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
     const handleSaveItem = async () => {
         // Validate base fields
         if (!itemName.trim() || !itemCatId) return;
@@ -296,6 +344,8 @@ export default function MenuInventory() {
             temperatures: itemHasTemperature ? temps : [],
             trackStock: itemTrackStock,
             stock: itemTrackStock && itemStock ? Number(itemStock) : null,
+            featured: itemFeatured,
+            featuredLabel: itemFeatured ? itemFeaturedLabel.trim() : null,
         };
         try {
             if (editingItem) {
@@ -887,6 +937,83 @@ export default function MenuInventory() {
                                 </div>
                             </div>
                         )}
+                        {/* ---- Online ordering: photo + featured pick ---- */}
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                            <label className="text-[13px] font-semibold mb-2 block">Online ordering page</label>
+
+                            <div className="flex items-start gap-3">
+                                <div className="w-20 h-20 rounded-lg overflow-hidden bg-white border border-yellow-200 shrink-0 flex items-center justify-center">
+                                    {itemImageUrl ? (
+                                        <img src={resolveImageUrl(itemImageUrl) || ''} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-[10px] text-gray-400 text-center px-1">No photo</span>
+                                    )}
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <label className={`inline-block text-xs font-semibold rounded-md px-3 py-2 cursor-pointer ${
+                                        editingItem ? 'bg-brand text-brand-dark' : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    }`}>
+                                        {uploadingImage ? 'Uploading...' : itemImageUrl ? 'Replace photo' : 'Upload photo'}
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            className="hidden"
+                                            disabled={!editingItem || uploadingImage}
+                                            onChange={e => {
+                                                const f = e.target.files?.[0];
+                                                if (f) handleImagePick(f);
+                                                e.target.value = '';
+                                            }}
+                                        />
+                                    </label>
+
+                                    {itemImageUrl && (
+                                        <button
+                                            type="button"
+                                            onClick={handleImageRemove}
+                                            disabled={uploadingImage}
+                                            className="ml-2 text-xs font-semibold text-red-500 underline"
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
+
+                                    <p className="text-[11px] text-gray-500 mt-1.5">
+                                        {editingItem
+                                            ? 'JPG, PNG or WebP, up to 4MB. Without a photo the category image is used.'
+                                            : 'Create the item first, then reopen it to add a photo.'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mt-3 pt-3 border-t border-yellow-200">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={itemFeatured}
+                                        onChange={e => setItemFeatured(e.target.checked)}
+                                        className="w-4 h-4"
+                                    />
+                                    <span className="text-sm font-medium">Feature this item in the storefront banner</span>
+                                </label>
+
+                                {itemFeatured && (
+                                    <input
+                                        type="text"
+                                        value={itemFeaturedLabel}
+                                        onChange={e => setItemFeaturedLabel(e.target.value.slice(0, 40))}
+                                        placeholder="Badge wording, e.g. Today's Pick (optional)"
+                                        className={inputCls + ' mt-2'}
+                                    />
+                                )}
+
+                                <p className="text-[11px] text-gray-500 mt-1.5">
+                                    The separate BEST SELLER badge stays automatic and reflects real sales.
+                                </p>
+                            </div>
+                        </div>
+
                         <div className="flex items-center gap-2 mb-2">
                             <input type="checkbox" id="hasSize" checked={itemHasSize} onChange={e => setItemHasSize(e.target.checked)} />
                             <label htmlFor="hasSize" className="text-sm font-medium">Has Sizes</label>

@@ -18,9 +18,16 @@ const api = axios.create({
     timeout: 15000,
 });
 
-// Add token to requests
+export const CUSTOMER_TOKEN_KEY = 'japz.customerToken';
+
+// Two independent identities share this client: staff (POS/kitchen/admin) and
+// storefront customers. They must never borrow each other's token, so the
+// customer token is used only for /api/public/* and the staff token elsewhere.
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('authToken');
+    const isStorefront = (config.url || '').startsWith('/api/public/');
+    const token = isStorefront
+        ? localStorage.getItem(CUSTOMER_TOKEN_KEY)
+        : localStorage.getItem('authToken');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -115,6 +122,17 @@ export const menuItemAPI = {
     }) => api.post('/api/menu-items', data),
     update: (id: string | number, data: any) => api.put(`/api/menu-items/${id}`, data),
     delete: (id: string | number) => api.delete(`/api/menu-items/${id}`),
+
+    /** Uploads a photo for one item. Staff token only. */
+    uploadImage: (id: string | number, file: File) => {
+        const form = new FormData();
+        form.append('image', file);
+        return api.post(`/api/menu-items/${id}/image`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 60000,
+        });
+    },
+    removeImage: (id: string | number) => api.delete(`/api/menu-items/${id}/image`),
 };
 
 export const stocksAPI = {
@@ -136,12 +154,128 @@ export const ordersAPI = {
         api.put(`/api/orders/${id}/status`, { status }),
 };
 
+// ---- Kitchen → Cashier → Rider delivery workflow ----
+export const workflowAPI = {
+    kitchenOrders: () => api.get('/api/kitchen/orders'),
+    setItemStatus: (itemId: number, status: 'pending' | 'preparing' | 'ready') =>
+        api.put(`/api/kitchen/items/${itemId}/status`, { status }),
+
+    readyOrders: () => api.get('/api/cashier/ready-orders'),
+    availableRiders: () => api.get('/api/cashier/available-riders'),
+    assignRider: (orderId: number, riderId: number) =>
+        api.post(`/api/cashier/orders/${orderId}/assign-rider`, { riderId }),
+    completeOrder: (orderId: number) =>
+        api.post(`/api/cashier/orders/${orderId}/complete`),
+
+    myDeliveries: () => api.get('/api/rider/deliveries'),
+    startDelivery: (deliveryId: number) =>
+        api.post(`/api/rider/deliveries/${deliveryId}/start`),
+    /** Proof photo is mandatory; the server rejects the call without it. */
+    markDelivered: (deliveryId: number, proof: File, coords?: { lat: number; lng: number }, notes?: string) => {
+        const form = new FormData();
+        form.append('proof', proof);
+        if (coords) { form.append('lat', String(coords.lat)); form.append('lng', String(coords.lng)); }
+        if (notes) form.append('notes', notes);
+        return api.post(`/api/rider/deliveries/${deliveryId}/deliver`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 60000,
+        });
+    },
+    setRiderAvailability: (availability: 'available' | 'offline') =>
+        api.put('/api/rider/availability', { availability }),
+
+    receipt: (orderNumber: string) => api.get(`/api/receipts/${encodeURIComponent(orderNumber)}`),
+    adminDeliveries: () => api.get('/api/admin/deliveries'),
+    orderEvents: (orderId: number) => api.get(`/api/admin/orders/${orderId}/events`),
+    riders: () => api.get('/api/admin/riders'),
+    updateRider: (id: number, data: { name?: string; phone?: string; status?: string; availability?: string }) =>
+        api.put(`/api/admin/riders/${id}`, data),
+};
+
 export const salesAPI = {
     getAnalytics: (period?: 'today' | 'week' | 'month' | 'year', startDate?: string, endDate?: string) =>
         api.get('/api/sales/analytics', { params: { period, startDate, endDate } }),
     getSummary: () => api.get('/api/sales/summary'),
     getDetailedReport: (startDate: string, endDate: string) =>
         api.get('/api/sales/detailed-report', { params: { startDate, endDate } }),
+};
+
+export interface PublicOrderLine {
+    id: number;
+    quantity: number;
+    modifiers?: Record<string, string> | null;
+}
+
+export interface PublicOrderPayload {
+    items: PublicOrderLine[];
+    orderType: 'dine-in' | 'take-out' | 'delivery';
+    customerName: string;
+    customerPhone: string;
+    tableNumber?: string;
+    deliveryAddress?: string;
+    deliveryLat?: number;
+    deliveryLng?: number;
+    deliveryAddressId?: number;
+    saveAddress?: boolean;
+    addressLabel?: string;
+    notes?: string;
+    paymentMethod?: string;
+    paymentReference?: string;
+}
+
+export interface PaymentMethodOption {
+    key: 'cash' | 'card' | 'gcash';
+    label: string;
+    hint: string;
+    account?: string;
+    accountName?: string | null;
+}
+
+export interface SavedAddress {
+    id: number;
+    label: string | null;
+    address: string;
+    lat: number | null;
+    lng: number | null;
+    isDefault: boolean;
+    lastUsedAt: string | null;
+}
+
+// Customer-facing endpoints. No auth token is required or sent; prices and
+// totals are computed by the server, so nothing here is trusted client-side.
+export const customerAuthAPI = {
+    sendOtp: (data: { name: string; email: string; phone: string }) =>
+        api.post('/api/public/auth/send-otp', data),
+    register: (data: { name: string; email: string; phone: string; password: string; verificationCode: string }) =>
+        api.post('/api/public/auth/register', data),
+    login: (email: string, password: string) =>
+        api.post('/api/public/auth/login', { email, password }),
+    me: () => api.get('/api/public/auth/me'),
+    updateProfile: (data: { name?: string; phone?: string; currentPassword?: string; newPassword?: string }) =>
+        api.put('/api/public/auth/profile', data),
+    myOrders: () => api.get('/api/public/my-orders'),
+    notifications: () => api.get('/api/public/notifications'),
+    markRead: () => api.post('/api/public/notifications/read'),
+    addresses: () => api.get('/api/public/addresses'),
+    addAddress: (data: { label?: string; address: string; lat?: number | null; lng?: number | null; isDefault?: boolean }) =>
+        api.post('/api/public/addresses', data),
+    updateAddress: (id: number, data: Partial<{ label: string; address: string; lat: number | null; lng: number | null; isDefault: boolean }>) =>
+        api.put(`/api/public/addresses/${id}`, data),
+    deleteAddress: (id: number) => api.delete(`/api/public/addresses/${id}`),
+};
+
+export const publicOrderAPI = {
+    getStatus: () => api.get('/api/public/status'),
+    getPopular: () => api.get('/api/public/popular'),
+    getPromos: () => api.get('/api/public/promos'),
+    reverseGeocode: (lat: number, lng: number) =>
+        api.get('/api/public/reverse-geocode', { params: { lat, lng } }),
+    route: (fromLat: number, fromLng: number, toLat: number, toLng: number) =>
+        api.get('/api/public/route', { params: { fromLat, fromLng, toLat, toLng } }),
+    place: (payload: PublicOrderPayload) => api.post('/api/public/orders', payload),
+    track: (orderNumber: string) => api.get(`/api/public/orders/${encodeURIComponent(orderNumber)}`),
+    rateOrder: (orderNumber: string, rating: number, comment?: string) =>
+        api.post(`/api/public/orders/${encodeURIComponent(orderNumber)}/feedback`, { rating, comment }),
 };
 
 export const paymentsAPI = {
@@ -205,6 +339,98 @@ export const businessHoursAPI = {
     get: () => api.get('/api/business-hours'),
     update: (data: { openTime: string; closeTime: string; applyCashier: boolean; applyKitchen: boolean }) =>
         api.put('/api/business-hours', data),
+};
+
+// ===== PAYROLL =====
+// Attendance is the staff's own record; everything else is admin-only and the
+// server enforces that regardless of what the UI shows.
+export const attendanceAPI = {
+    me: () => api.get('/api/attendance/me'),
+    clockIn: () => api.post('/api/attendance/clock-in'),
+    clockOut: () => api.post('/api/attendance/clock-out'),
+    myPayslips: () => api.get('/api/payroll/my-payslips'),
+};
+
+export const payrollAPI = {
+    getSettings: () => api.get('/api/payroll/settings'),
+    saveSettings: (data: Record<string, number>) => api.put('/api/payroll/settings', data),
+
+    staff: () => api.get('/api/payroll/staff'),
+    setRate: (userId: number, payType: 'hourly' | 'monthly', payRate: number) =>
+        api.put(`/api/payroll/staff/${userId}/rate`, { payType, payRate }),
+
+    attendance: (params?: { from?: string; to?: string; userId?: number }) =>
+        api.get('/api/payroll/attendance', { params }),
+    closeShift: (logId: number, clockOutAt?: string) =>
+        api.put(`/api/payroll/attendance/${logId}/close`, { clockOutAt }),
+
+    periods: () => api.get('/api/payroll/periods'),
+    createPeriod: (data: { label: string; startDate: string; endDate: string }) =>
+        api.post('/api/payroll/periods', data),
+    period: (id: number) => api.get(`/api/payroll/periods/${id}`),
+    generate: (id: number) => api.post(`/api/payroll/periods/${id}/generate`),
+    finalize: (id: number) => api.post(`/api/payroll/periods/${id}/finalize`),
+    deletePeriod: (id: number) => api.delete(`/api/payroll/periods/${id}`),
+    updatePayslip: (id: number, data: { otherDeductionLabel?: string | null; otherDeductionAmount: number; notes?: string }) =>
+        api.put(`/api/payroll/payslips/${id}`, data),
+};
+
+// ===== RESERVATIONS =====
+export const reservationAPI = {
+    list: (params?: { date?: string; status?: string }) => api.get('/api/reservations', { params }),
+    create: (data: Record<string, unknown>) => api.post('/api/reservations', data),
+    confirm: (id: number, tableId?: number, message?: string) =>
+        api.put(`/api/reservations/${id}/confirm`, { tableId, message }),
+    decline: (id: number, message?: string) => api.put(`/api/reservations/${id}/decline`, { message }),
+    setStatus: (id: number, status: 'seated' | 'completed' | 'no-show' | 'cancelled', message?: string) =>
+        api.put(`/api/reservations/${id}/status`, { status, message }),
+    freeTables: (id: number) => api.get(`/api/reservations/${id}/free-tables`),
+    /** Free tables for a slot that has no booking yet (walk-in entry). */
+    freeTablesForSlot: (date: string, time: string, partySize: number, durationMinutes = 90) =>
+        api.get('/api/reservations-free-tables', { params: { date, time, partySize, durationMinutes } }),
+
+    tables: () => api.get('/api/reservations-tables'),
+    createTable: (data: { name: string; capacity: number; area?: string }) =>
+        api.post('/api/reservations-tables', data),
+    updateTable: (id: number, data: Record<string, unknown>) =>
+        api.put(`/api/reservations-tables/${id}`, data),
+    deleteTable: (id: number) => api.delete(`/api/reservations-tables/${id}`),
+};
+
+/** Storefront side. Availability is open; booking needs a customer session. */
+export const publicReservationAPI = {
+    availability: (date: string, time: string, partySize: number, durationMinutes = 90) =>
+        api.get('/api/public/reservations/availability', { params: { date, time, partySize, durationMinutes } }),
+    book: (data: { reservationDate: string; startTime: string; partySize: number; durationMinutes?: number; customerPhone?: string; notes?: string }) =>
+        api.post('/api/public/reservations', data),
+    mine: () => api.get('/api/public/reservations/mine'),
+    cancel: (code: string) => api.post(`/api/public/reservations/${encodeURIComponent(code)}/cancel`),
+};
+
+// ===== PAYMONGO =====
+// Nothing here confirms a payment. Confirmation always comes from the server
+// asking PayMongo, so a customer cannot mark their own order paid.
+export const paymentAPI = {
+    /** Whether card/GCash are actually live. Safe to call signed out. */
+    config: () => api.get('/api/public/payments/config'),
+    /** Returns the hosted checkout URL to send the customer to. */
+    checkout: (orderNumber: string, method?: 'card' | 'gcash') =>
+        api.post('/api/public/payments/checkout', { orderNumber, method }),
+    status: (orderNumber: string) =>
+        api.get(`/api/public/payments/status/${encodeURIComponent(orderNumber)}`),
+    cancel: (orderNumber: string) =>
+        api.post(`/api/public/payments/cancel/${encodeURIComponent(orderNumber)}`),
+};
+
+/** Counter payments: the cashier shows a QR, the customer pays on their phone. */
+export const posPaymentAPI = {
+    checkout: (orderNumber: string, method?: 'card' | 'gcash') =>
+        api.post('/api/payments/pos/checkout', { orderNumber, method }),
+    status: (orderNumber: string) =>
+        api.get(`/api/payments/pos/status/${encodeURIComponent(orderNumber)}`),
+    cancel: (orderNumber: string) =>
+        api.post(`/api/payments/pos/cancel/${encodeURIComponent(orderNumber)}`),
+    sessions: () => api.get('/api/payments/sessions'),
 };
 
 export default api;

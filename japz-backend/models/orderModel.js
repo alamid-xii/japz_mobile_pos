@@ -44,6 +44,30 @@ export const Order = sequelize.define("Order", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  customerUserId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Storefront account that placed this order',
+  },
+  customerSeenStatus: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Last order status the customer has acknowledged, for notifications',
+  },
+  customerPhone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Contact number for guest online orders',
+  },
+  source: {
+    type: DataTypes.ENUM('pos', 'online'),
+    allowNull: false,
+    defaultValue: 'pos',
+    comment: 'Where the order originated: in-store POS or customer self-service',
+  },
   subtotal: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
@@ -60,7 +84,7 @@ export const Order = sequelize.define("Order", {
     defaultValue: 0.00,
   },
   status: {
-    type: DataTypes.ENUM('pending', 'preparing', 'ready', 'completed', 'cancelled'),
+    type: DataTypes.ENUM('pending', 'preparing', 'ready', 'out-for-delivery', 'completed', 'cancelled'),
     allowNull: false,
     defaultValue: 'pending',
   },
@@ -81,6 +105,40 @@ export const Order = sequelize.define("Order", {
   },
   deliveryAddress: {
     type: DataTypes.TEXT,
+    allowNull: true,
+    defaultValue: null,
+  },
+  deliveryAddressId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Saved address this order was delivered to, if one was picked',
+  },
+  deliveryLat: {
+    type: DataTypes.DECIMAL(10, 7),
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Customer-pinned latitude, captured at checkout',
+  },
+  deliveryLng: {
+    type: DataTypes.DECIMAL(10, 7),
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Customer-pinned longitude, captured at checkout',
+  },
+  outForDeliveryAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Dispatch time; the delivery estimate counts from here',
+  },
+  riderName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: null,
+  },
+  riderPhone: {
+    type: DataTypes.STRING,
     allowNull: true,
     defaultValue: null,
   },

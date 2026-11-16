@@ -358,6 +358,7 @@ export default function Employees() {
                             {[
                                 { value: 'cashier', label: '💰 Cashier', desc: 'Can process orders and handle payments' },
                                 { value: 'kitchen', label: '👨‍🍳 Kitchen Staff', desc: 'Can view and manage incoming orders' },
+                                { value: 'rider', label: '🛵 Rider', desc: 'Delivery only — sees just their assigned deliveries' },
                                 { value: 'admin', label: '🔑 Admin', desc: 'Full access to all features' },
                             ].map(role => (
                                 <button key={role.value} onClick={() => {
@@ -471,6 +472,7 @@ export default function Employees() {
                             {[
                                 { value: 'cashier', label: '💰 Cashier', desc: 'Can process orders and handle payments' },
                                 { value: 'kitchen', label: '👨‍🍳 Kitchen Staff', desc: 'Can view and manage incoming orders' },
+                                { value: 'rider', label: '🛵 Rider', desc: 'Delivery only — sees just their assigned deliveries' },
                                 { value: 'admin', label: '🔑 Admin', desc: 'Full access to all features' },
                             ].map(role => (
                                 <button key={role.value} onClick={() => {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User, ChefHat, Mail, Tag } from 'lucide-react';
+import TimeClock from '../../components/TimeClock';
 import { useAuth } from '../../hooks/useAuth';
 import { menuCategoryAPI } from '../../services/api';
 
@@ -69,6 +70,8 @@ export default function KitchenProfile() {
                     <span className="hidden md:inline">Logout</span>
                 </button>
             </div>
+
+            <div className="mb-6 max-w-md"><TimeClock /></div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Profile Card */}

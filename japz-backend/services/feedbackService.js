@@ -76,6 +76,62 @@ const getRatingIssues = (rating) => {
  * @param {string} comment - The feedback comment to analyze
  * @returns {Promise<Object>} Analysis result with themes, sentiment, summary, and keyPoints
  */
+/**
+ * Derives sentiment, themes and the AI-analysis blob from a rating and an
+ * optional comment.
+ *
+ * Extracted so the storefront's in-app feedback lands in exactly the same shape
+ * as feedback from the QR form — otherwise the admin Feedback Hub would show
+ * two subtly different kinds of record.
+ */
+export const buildFeedbackAnalysis = (rating, comment) => {
+  const r = parseInt(rating, 10);
+  let sentiment;
+  let themes;
+  let aiAnalysis;
+
+  if (comment && comment.trim().length > 0) {
+    const analysis = analyzeWithKeywords(comment);
+    themes = getRatingThemes(r);
+
+    // Rating carries 60% of the weight, the comment 40%.
+    const ratingScore = r <= 2 ? -1 : (r >= 4 ? 1 : 0);
+    const commentScore = analysis.sentiment === 'negative' ? -1 : (analysis.sentiment === 'positive' ? 1 : 0);
+    const combined = (ratingScore * 0.6) + (commentScore * 0.4);
+
+    if (combined > 0.2) sentiment = 'positive';
+    else if (combined < -0.2) sentiment = 'negative';
+    else sentiment = 'neutral';
+
+    // Stars and words disagreeing is itself worth flagging.
+    if ((r <= 2 && analysis.sentiment === 'positive') || (r >= 4 && analysis.sentiment === 'negative')) {
+      sentiment = 'mixed';
+    }
+
+    aiAnalysis = {
+      ...analysis,
+      sentiment,
+      ratingFeedback: getRatingFeedback(r),
+      keyPraises: getRatingPraises(r),
+      keyIssues: getRatingIssues(r),
+    };
+  } else {
+    sentiment = r <= 2 ? 'negative' : (r >= 4 ? 'positive' : 'neutral');
+    themes = getRatingThemes(r);
+    aiAnalysis = {
+      source: 'rating',
+      sentiment,
+      themes,
+      summary: getRatingFeedback(r),
+      keyPraises: getRatingPraises(r),
+      keyIssues: getRatingIssues(r),
+      ratingFeedback: getRatingFeedback(r),
+    };
+  }
+
+  return { sentiment, themes, aiAnalysis };
+};
+
 export const analyzeFeedbackWithGemma = async (comment) => {
     try {
         // If no comment, return basic structure

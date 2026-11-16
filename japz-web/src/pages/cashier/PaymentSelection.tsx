@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Banknote, CreditCard, Smartphone, Check, User, UtensilsCrossed, ShoppingBag, Truck, Gift, Receipt } from 'lucide-react';
-import { discountsVouchersAPI } from '../../services/api';
+import { ChevronLeft, Banknote, CreditCard, Smartphone, Check, User, UtensilsCrossed, ShoppingBag, Truck, Gift, Receipt, QrCode } from 'lucide-react';
+import { discountsVouchersAPI, paymentAPI } from '../../services/api';
 
-type PaymentMethod = 'cash' | 'card' | 'digital';
+type PaymentMethod = 'cash' | 'card' | 'digital' | 'gateway';
 type OrderType = 'dine-in' | 'take-out' | 'delivery';
 
 export default function PaymentSelection() {
@@ -22,6 +22,8 @@ export default function PaymentSelection() {
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [notes, setNotes] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
+    // Card/GCash through PayMongo is only offered when a key is configured.
+    const [gatewayLive, setGatewayLive] = useState(false);
 
     useEffect(() => {
         const fetchDiscounts = async () => {
@@ -92,6 +94,12 @@ export default function PaymentSelection() {
         }
     };
 
+    useEffect(() => {
+        paymentAPI.config()
+            .then(r => setGatewayLive(!!r.data.enabled))
+            .catch(() => setGatewayLive(false));
+    }, []);
+
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
         if (!customerName.trim()) newErrors.customerName = 'Customer name is required';
@@ -104,6 +112,12 @@ export default function PaymentSelection() {
 
     const handleProceed = () => {
         if (!validate()) return;
+
+        // When PayMongo is live, Card and Digital go through the gateway.
+        const useGateway = gatewayLive && (paymentMethod === 'card' || paymentMethod === 'digital');
+        const resolvedMethod = useGateway ? 'gateway' : paymentMethod;
+        const gatewayMethod = paymentMethod === 'card' ? 'card' : paymentMethod === 'digital' ? 'gcash' : undefined;
+
         navigate('/cashier/cash-payment', {
             state: {
                 total: finalTotal.toFixed(2),
@@ -115,7 +129,8 @@ export default function PaymentSelection() {
                 voucherAmount: appliedVoucher ? appliedVoucher.amount : undefined,
                 items,
                 itemCount,
-                paymentMethod,
+                paymentMethod: resolvedMethod,
+                gatewayMethod: useGateway ? gatewayMethod : undefined,
                 customerName: customerName.trim(),
                 orderType,
                 tableNumber: orderType === 'dine-in' ? tableNumber.trim() : undefined,
