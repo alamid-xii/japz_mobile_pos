@@ -170,8 +170,8 @@ router.get("/api/public/popular", async (req, res) => {
 
     const [rows] = await sequelize.query(`
       SELECT oi.menuItemId AS id, SUM(oi.quantity) AS sold
-      FROM orderitems oi
-      JOIN orders o ON o.id = oi.orderId
+      FROM ${sequelize.getQueryInterface().queryGenerator.quoteTable(OrderItem.getTableName())} oi
+      JOIN ${sequelize.getQueryInterface().queryGenerator.quoteTable(Order.getTableName())} o ON o.id = oi.orderId
       WHERE o.status = 'completed'
         AND o.createdAt >= :since
         AND oi.menuItemId IS NOT NULL

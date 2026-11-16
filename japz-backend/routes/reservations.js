@@ -1,3 +1,5 @@
+import { findFreeTables, confirmTableBooking } from '../services/tableReservations.js';
+import { localDate, isCalendarDate } from '../services/reservationRules.js';
 import { authenticate, allowRoles } from '../middleware/access.js';
 import { requireJwtSecret } from '../services/securityConfig.js';
 import express from "express";
@@ -45,42 +47,13 @@ const toMinutes = (t) => {
 const toTime = (mins) =>
   `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}:00`;
 
-const localDate = (d = new Date()) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 /** Two bookings clash when their time ranges overlap at all. */
-const overlaps = (aStart, aDur, bStart, bDur) =>
-  aStart < bStart + bDur && bStart < aStart + aDur;
 
 /**
  * Tables that can seat this party, free for the whole slot.
  * `ignoreId` lets an existing booking be re-checked without clashing with itself.
  */
-const findFreeTables = async (date, startMinutes, durationMinutes, partySize, ignoreId = null) => {
-  const tables = await RestaurantTable.findAll({
-    where: { status: 'active', capacity: { [Op.gte]: partySize } },
-    order: [['capacity', 'ASC'], ['name', 'ASC']],
-  });
-  if (!tables.length) return [];
-
-  const where = {
-    reservationDate: date,
-    status: { [Op.in]: HOLDING_STATUSES },
-    tableId: { [Op.ne]: null },
-  };
-  if (ignoreId) where.id = { [Op.ne]: ignoreId };
-  const booked = await Reservation.findAll({ where });
-
-  const busy = new Set();
-  for (const b of booked) {
-    const bStart = toMinutes(b.startTime);
-    if (bStart == null) continue;
-    if (overlaps(startMinutes, durationMinutes, bStart, b.durationMinutes)) {
-      busy.add(b.tableId);
-    }
-  }
-  return tables.filter(t => !busy.has(t.id));
-};
 
 /** Bookings must sit inside opening hours. */
 const withinHours = async (startMinutes, durationMinutes) => {
@@ -129,14 +102,14 @@ const validateSlot = async (body) => {
   const partySize = Number(body.partySize);
   const date = String(body.reservationDate || '');
   const startMinutes = toMinutes(body.startTime);
-  const durationMinutes = Number(body.durationMinutes) || 90;
+  const durationMinutes = body.durationMinutes == null || body.durationMinutes === '' ? 90 : Number(body.durationMinutes);
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: 'Pick a date for the booking.' };
+  if (!isCalendarDate(date)) return { error: 'Pick a date for the booking.' };
   if (startMinutes == null) return { error: 'Pick a time for the booking.' };
   if (!Number.isInteger(partySize) || partySize < 1 || partySize > 50) {
     return { error: 'Party size must be between 1 and 50.' };
   }
-  if (durationMinutes < 30 || durationMinutes > 360) {
+  if (!Number.isInteger(durationMinutes) || durationMinutes < 30 || durationMinutes > 360) {
     return { error: 'Duration must be between 30 minutes and 6 hours.' };
   }
   if (date < localDate()) return { error: 'That date has already passed.' };
@@ -157,12 +130,12 @@ const validateSlot = async (body) => {
 /** Whether a slot has room, without revealing the table layout. */
 router.get("/api/public/reservations/availability", async (req, res) => {
   try {
-    const partySize = Number(req.query.partySize) || 2;
+    const partySize = req.query.partySize == null ? 2 : Number(req.query.partySize);
     const date = String(req.query.date || '');
     const startMinutes = toMinutes(req.query.time);
-    const durationMinutes = Number(req.query.durationMinutes) || 90;
+    const durationMinutes = req.query.durationMinutes == null ? 90 : Number(req.query.durationMinutes);
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || startMinutes == null) {
+    if (!isCalendarDate(date) || startMinutes == null || !Number.isInteger(partySize) || partySize < 1 || partySize > 50 || !Number.isInteger(durationMinutes) || durationMinutes < 30 || durationMinutes > 360) {
       return res.status(400).json({ error: 'A date and time are required.' });
     }
 
@@ -286,71 +259,24 @@ router.get("/api/reservations", requireRole(...STAFF_ROLES), async (req, res) =>
 });
 
 /** Staff record a phone-in or walk-in booking. Confirmed straight away. */
-router.post("/api/reservations", requireRole(...STAFF_ROLES), async (req, res) => {
+router.post('/api/reservations', requireRole(...STAFF_ROLES), async (req, res) => {
   try {
-    const v = await validateSlot(req.body);
-    if (v.error) return res.status(400).json({ error: v.error });
-    if (!req.body.customerName) return res.status(400).json({ error: 'A name is required.' });
-
-    const free = await findFreeTables(v.date, v.startMinutes, v.durationMinutes, v.partySize);
-    if (!free.length) return res.status(409).json({ error: 'No table is free for that slot.' });
-
-    const wanted = req.body.tableId ? free.find(t => t.id === Number(req.body.tableId)) : free[0];
-    if (!wanted) return res.status(409).json({ error: 'That table is not free for the slot.' });
-
-    const reservation = await Reservation.create({
-      code: makeCode(),
-      customerName: String(req.body.customerName).slice(0, 128),
-      customerPhone: req.body.customerPhone ? String(req.body.customerPhone).slice(0, 32) : null,
-      partySize: v.partySize,
-      reservationDate: v.date,
-      startTime: toTime(v.startMinutes),
-      durationMinutes: v.durationMinutes,
-      tableId: wanted.id,
-      status: 'confirmed',
-      source: 'staff',
-      notes: req.body.notes ? String(req.body.notes).slice(0, 255) : null,
-      createdByUserId: req.user.id,
-      confirmedByUserId: req.user.id,
-      confirmedAt: new Date(),
-    });
-    await logEvent(reservation.id, req.user, 'reservation:created', `walk-in / phone, table ${wanted.name}`);
-    res.json({ ok: true, reservation: shape(reservation, wanted) });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+    const slot = await validateSlot(req.body);
+    if (slot.error) return res.status(400).json({ error: slot.error });
+    if (!String(req.body.customerName || '').trim()) return res.status(400).json({ error: 'A name is required.' });
+    const { reservation, table } = await confirmTableBooking({ slot, payload: req.body, actor: req.user });
+    await logEvent(reservation.id, req.user, 'reservation:created', `walk-in / phone, table ${table.name}`);
+    res.json({ ok: true, reservation: shape(reservation, table) });
+  } catch (error) { res.status(error.status || 500).json({ error: error.message }); }
 });
 
 /** Confirms a pending request and holds a table for it. */
-router.put("/api/reservations/:id/confirm", requireRole(...STAFF_ROLES), async (req, res) => {
+router.put('/api/reservations/:id/confirm', requireRole(...STAFF_ROLES), async (req, res) => {
   try {
-    const r = await Reservation.findByPk(req.params.id);
-    if (!r) return res.status(404).json({ error: 'Booking not found.' });
-    if (r.status !== 'pending') {
-      return res.status(409).json({ error: `That booking is already ${r.status}.` });
-    }
-
-    const startMinutes = toMinutes(r.startTime);
-    const free = await findFreeTables(r.reservationDate, startMinutes, r.durationMinutes, r.partySize, r.id);
-    if (!free.length) {
-      return res.status(409).json({ error: 'No table is free any more for that slot. Decline it, or move the time.' });
-    }
-
-    const wanted = req.body.tableId ? free.find(t => t.id === Number(req.body.tableId)) : free[0];
-    if (!wanted) return res.status(409).json({ error: 'That table is not free for the slot.' });
-
-    await r.update({
-      status: 'confirmed',
-      tableId: wanted.id,
-      confirmedByUserId: req.user.id,
-      confirmedAt: new Date(),
-      staffMessage: req.body.message ? String(req.body.message).slice(0, 255) : null,
-    });
-    await logEvent(r.id, req.user, 'reservation:confirmed', `table ${wanted.name}`);
-    res.json({ ok: true, table: { id: wanted.id, name: wanted.name } });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+    const { reservation, table } = await confirmTableBooking({ bookingId: req.params.id, payload: req.body, actor: req.user });
+    await logEvent(reservation.id, req.user, 'reservation:confirmed', `table ${table.name}`);
+    res.json({ ok: true, table: { id: table.id, name: table.name } });
+  } catch (error) { res.status(error.status || 500).json({ error: error.message }); }
 });
 
 router.put("/api/reservations/:id/decline", requireRole(...STAFF_ROLES), async (req, res) => {
@@ -410,12 +336,12 @@ router.put("/api/reservations/:id/status", requireRole(...STAFF_ROLES), async (r
  */
 router.get("/api/reservations-free-tables", requireRole(...STAFF_ROLES), async (req, res) => {
   try {
-    const partySize = Number(req.query.partySize) || 2;
+    const partySize = req.query.partySize == null ? 2 : Number(req.query.partySize);
     const date = String(req.query.date || '');
     const startMinutes = toMinutes(req.query.time);
-    const durationMinutes = Number(req.query.durationMinutes) || 90;
+    const durationMinutes = req.query.durationMinutes == null ? 90 : Number(req.query.durationMinutes);
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || startMinutes == null) {
+    if (!isCalendarDate(date) || startMinutes == null || !Number.isInteger(partySize) || partySize < 1 || partySize > 50 || !Number.isInteger(durationMinutes) || durationMinutes < 30 || durationMinutes > 360) {
       return res.status(400).json({ error: 'A date and time are required.' });
     }
 

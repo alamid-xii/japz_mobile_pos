@@ -15,12 +15,17 @@
     "seed:menu": "node seedMenu.js",
     "create:model": "node create.js model",
     "create:controller": "node create.js controller",
-    "test": "vitest run",
+    "test": "vitest run && node --test tests/security.test.js tests/integrationSchema.test.js tests/integrationModels.test.js tests/reservationRules.test.js",
     "test:watch": "vitest",
     "test:payroll": "vitest run __tests__/payrollCalculator.test.js",
     "test:inventory": "node --test tests/inventory.test.js",
     "test:security": "node --test tests/security.test.js",
-    "create:inventory-user": "node scripts/create-inventory-user.js"
+    "create:inventory-user": "node scripts/create-inventory-user.js",
+    "db:create": "node create-database.js",
+    "test:integration": "node --test tests/integrationSchema.test.js tests/integrationModels.test.js tests/integrationMigration.test.js",
+    "test:reservations": "node --test tests/reservationRules.test.js tests/reservationApi.test.js",
+    "test:unit": "vitest run",
+    "test:db": "node --test tests/inventory.test.js tests/integrationMigration.test.js tests/reservationApi.test.js tests/appSmoke.test.js"
   },
   "dependencies": {
     "axios": "^1.13.2",
@@ -41,7 +46,8 @@
   },
   "devDependencies": {
     "vitest": "4.0.18",
-    "vite": "7.3.1"
+    "vite": "7.3.1",
+    "nodemon": "^3.1.11"
   },
   "overrides": {
     "sequelize": {

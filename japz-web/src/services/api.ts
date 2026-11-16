@@ -4,6 +4,8 @@ import axios from 'axios';
 // Replace localhost with network IP for mobile device access
 const getBaseUrl = () => {
     const envUrl = import.meta.env.VITE_API_URL;
+    // Docker/Nginx uses the same origin; undefined still selects local port 3000.
+    if (envUrl === '') return '';
     if (envUrl) {
         const configured = new URL(envUrl);
         if (['localhost', '127.0.0.1'].includes(configured.hostname) && !['localhost', '127.0.0.1'].includes(window.location.hostname)) configured.hostname = window.location.hostname;

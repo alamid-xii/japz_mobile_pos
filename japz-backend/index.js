@@ -57,6 +57,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = requireJwtSecret();
 
+if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY));
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use(cors());
 app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } }));
 app.use(express.urlencoded({ extended: true }));

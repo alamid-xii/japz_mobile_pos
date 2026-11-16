@@ -15,6 +15,7 @@ let fixture: {
   ids: Record<string, number>;
 };
 test.beforeAll(async () => {
+  test.setTimeout(120000);
   mkdirSync(screenshotPath, { recursive: true });
   child = spawn(process.execPath, ["tests/ui-server.js"], {
     cwd: path.resolve("../japz-backend"),
@@ -25,7 +26,7 @@ test.beforeAll(async () => {
     let buffer = "";
     const timeout = setTimeout(
       () => reject(new Error("Test database fixture did not start")),
-      30000,
+      90000,
     );
     child.stdout.on("data", (data) => {
       buffer += data.toString();
@@ -591,4 +592,21 @@ test('promotion dialogs create a discount and show dismissible success feedback'
   await expect(page.getByRole('status')).toHaveCount(0);
   await expect(page.getByText('QA UI promotion', { exact: true })).toBeVisible();
   await page.screenshot({ path: path.join(screenshotPath, 'refined-promotion-mobile.png') });
+});
+
+
+test('integration preserves storefront, payroll and table reservation routes', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await openRole(page, 'admin', '/admin/payroll');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/payroll/i);
+  await page.goto('/admin/reservations');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/reservation/i);
+  await page.goto('/japz');
+  await expect(page.getByRole('textbox', { name: 'Search the menu' })).toBeVisible();
+  await expect(page.getByText('Could not load the menu.', { exact: false })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/japz$/);
+  await page.goto('/japz/reserve');
+  await expect(page.locator('main')).toBeVisible();
+  expect(errors).toEqual([]);
 });

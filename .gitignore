@@ -38,3 +38,12 @@ Thumbs.db
 
 # Generated integration and verification artifacts
 /output/
+
+# Docker and local configuration
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Synthetic SQL fixtures used by migration regression tests
+!japz-backend/tests/fixtures/*.sql

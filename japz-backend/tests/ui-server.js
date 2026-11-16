@@ -32,6 +32,7 @@ const { Supplier } = await import("../models/inventoryModels.js");
 const service = await import("../services/inventoryService.js");
 const { saveRecipe, saveMenuAvailability } =
   await import("../services/menuAvailability.js");
+const onlineRouters = await Promise.all(['delivery', 'payments', 'menuImages', 'customerAuth', 'publicOrders', 'reservations'].map(name => import(`../routes/${name}.js`).then(module => module.default)));
 await sequelize.sync({ alter: false });
 const accounts = {};
 for (const role of ["admin", "inventory", "cashier", "kitchen"]) {
@@ -154,6 +155,7 @@ await saveMenuAvailability(coffee.id, { inventoryMode: "recipe" });
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(onlineRouters);
 app.use((await import("../routes/index.js")).default);
 const server = app.listen(0, "127.0.0.1");
 await new Promise((resolve) => server.once("listening", resolve));
