@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Bike, Phone, Clock } from 'lucide-react';
+import type { RiderLocation } from '../../../../types/delivery';
 
 export interface DeliveryInfo {
+    location?: RiderLocation;
     address: string | null;
     lat: number | null;
     lng: number | null;
@@ -22,15 +24,14 @@ const clock = (iso: string) =>
 /**
  * Countdown against the restaurant's configured delivery window.
  *
- * This is an estimate the business sets, not a live prediction — nothing here
- * knows the rider's position, so the copy never claims to.
+ * This is the restaurant's configured window, independent of the live GPS map.
  */
 export default function DeliveryEta({ info, dispatched }: { info: DeliveryInfo; dispatched: boolean }) {
-    const [, tick] = useState(0);
+    const [now, tick] = useState(Date.now);
 
     // Re-render each minute so the remaining time stays truthful.
     useEffect(() => {
-        const id = setInterval(() => tick(n => n + 1), 30000);
+        const id = setInterval(() => tick(Date.now()), 30000);
         return () => clearInterval(id);
     }, []);
 
@@ -48,7 +49,6 @@ export default function DeliveryEta({ info, dispatched }: { info: DeliveryInfo; 
         );
     }
 
-    const now = Date.now();
     const from = new Date(info.etaFrom).getTime();
     const to = new Date(info.etaTo).getTime();
     const minsTo = Math.round((to - now) / 60000);

@@ -5,6 +5,7 @@ import {
     X, Save, Users, UserCheck, ShieldAlert
 } from 'lucide-react';
 import { attendanceAPI, payrollAPI } from '../../services/api';
+import Modal from '../../components/Modal';
 
 interface AttendanceRecord {
     id: number;
@@ -18,6 +19,12 @@ interface AttendanceRecord {
     lateMinutes: number;
     undertimeMinutes: number;
     notes?: string;
+    clockOutSource?: string;
+    autoClockedOutAt?: string | null;
+    autoClockOutOriginalTime?: string | null;
+    overtimeApprovedAt?: string | null;
+    overtimeApprovedBy?: number | null;
+    overtimeApprovalReason?: string | null;
     status: 'ON_TIME' | 'LATE' | 'UNDERTIME' | 'MISSING_CLOCK_OUT' | 'MISSING_CLOCK_IN';
 }
 
@@ -37,7 +44,7 @@ const formatTime = (iso?: string | null) => {
     if (!iso) return '—';
     const d = new Date(iso);
     if (isNaN(d.getTime())) return '—';
-    return d.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return d.toLocaleTimeString('en-PH', { timeZone:'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: true });
 };
 
 const formatDateFull = (dateStr: string) => {
@@ -49,8 +56,8 @@ const formatForInput = (iso?: string | null) => {
     if (!iso) return '';
     const d = new Date(iso);
     if (isNaN(d.getTime())) return '';
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA',{ timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23' }).formatToParts(d).map(part => [part.type,part.value]));
+    return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
 };
 
 export default function AttendanceManagement() {
@@ -69,6 +76,10 @@ export default function AttendanceManagement() {
     const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(null);
     const [editForm, setEditForm] = useState({ clockIn: '', clockOut: '', notes: '' });
     const [saving, setSaving] = useState(false);
+    const [overtimeApproved, setOvertimeApproved] = useState(false);
+    const [overtimeReason, setOvertimeReason] = useState('');
+    const [overtimeSaving, setOvertimeSaving] = useState(false);
+    const [overtimeMessage, setOvertimeMessage] = useState('');
     const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
     // Derived year and month strings
@@ -81,8 +92,9 @@ export default function AttendanceManagement() {
         setLoading(true);
         try {
             // First day and last day of month
-            const firstDay = new Date(currentYear, currentMonthIndex, 1).toISOString().split('T')[0];
-            const lastDay = new Date(currentYear, currentMonthIndex + 1, 0).toISOString().split('T')[0];
+            const prefix = `${currentYear}-${String(currentMonthIndex + 1).padStart(2,'0')}`;
+            const firstDay = `${prefix}-01`;
+            const lastDay = `${prefix}-${new Date(currentYear,currentMonthIndex + 1,0).getDate()}`;
 
             const [recordsRes, validationRes] = await Promise.all([
                 attendanceAPI.getRecords({ startDate: firstDay, endDate: lastDay }),
@@ -171,6 +183,9 @@ export default function AttendanceManagement() {
     // Open correction modal
     const startEdit = (record: AttendanceRecord) => {
         setEditingRecord(record);
+        setOvertimeApproved(Boolean(record.overtimeApprovedAt && record.overtimeApprovedBy));
+        setOvertimeReason(record.overtimeApprovalReason || '');
+        setOvertimeMessage('');
         setEditForm({
             clockIn: formatForInput(record.clockIn),
             clockOut: formatForInput(record.clockOut),
@@ -185,8 +200,8 @@ export default function AttendanceManagement() {
         setSaving(true);
         try {
             await attendanceAPI.correct(editingRecord.id, {
-                clockIn: editForm.clockIn || undefined,
-                clockOut: editForm.clockOut || undefined,
+                clockIn: editForm.clockIn ? `${editForm.clockIn}+08:00` : undefined,
+                clockOut: editForm.clockOut ? `${editForm.clockOut}+08:00` : undefined,
                 notes: editForm.notes || undefined
             });
 
@@ -199,6 +214,18 @@ export default function AttendanceManagement() {
         } finally {
             setSaving(false);
         }
+    };
+
+    const saveOvertime = async () => {
+        if (!editingRecord || overtimeSaving) return;
+        setOvertimeSaving(true); setOvertimeMessage('');
+        try {
+            const response = await attendanceAPI.approveOvertime(editingRecord.id,{ approved:overtimeApproved,reason:overtimeReason });
+            setEditingRecord(previous => previous ? { ...previous,...response.data.data } : null);
+            setOvertimeMessage(overtimeApproved ? 'Overtime approved. This shift will stay open until staff clock out.' : 'Overtime exception removed. The closing-time rule applies again.');
+            await fetchAttendanceData();
+        } catch (error) { setOvertimeMessage(error instanceof Error ? 'Could not save the overtime decision. Check that the shift is still open and enter a reason.' : 'Could not save overtime.'); }
+        finally { setOvertimeSaving(false); }
     };
 
     // Monthly summary stats
@@ -507,7 +534,7 @@ export default function AttendanceManagement() {
                                         <div className="bg-white p-2.5 rounded-xl border border-gray-100 flex items-center justify-between text-xs">
                                             <div className="flex items-center gap-1.5 text-gray-700 font-medium">
                                                 <Clock size={13} className="text-gray-400" />
-                                                <span>{formatTime(rec.clockIn)} – {formatTime(rec.clockOut)}</span>
+                                                <span>{formatTime(rec.clockIn)} – {formatTime(rec.clockOut)}{rec.autoClockedOutAt && <small className="block text-amber-700">Auto clocked out{rec.clockOutSource === 'corrected' ? ' · corrected' : ''}</small>}{rec.overtimeApprovedAt && rec.overtimeApprovedBy && <small className="block text-amber-700">Overtime approved</small>}</span>
                                             </div>
                                             <span className="font-bold text-yellow-800 bg-yellow-50 px-2 py-0.5 rounded-md text-[11px]">
                                                 {rec.totalHours.toFixed(2)} hrs
@@ -593,7 +620,7 @@ export default function AttendanceManagement() {
                                         </td>
                                         <td className="py-3 px-4 font-medium">{rec.date}</td>
                                         <td className="py-3 px-4">{formatTime(rec.clockIn)}</td>
-                                        <td className="py-3 px-4">{formatTime(rec.clockOut)}</td>
+                                        <td className="py-3 px-4">{formatTime(rec.clockOut)}{rec.autoClockedOutAt && <small className="block text-amber-700">Auto clocked out{rec.clockOutSource === 'corrected' ? ' · corrected' : ''}</small>}{rec.overtimeApprovedAt && rec.overtimeApprovedBy && <small className="block text-amber-700">Overtime approved</small>}</td>
                                         <td className="py-3 px-4 font-bold text-gray-900">{rec.totalHours.toFixed(2)} hrs</td>
                                         <td className="py-3 px-4">
                                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
@@ -683,8 +710,8 @@ export default function AttendanceManagement() {
 
             {/* Shift Correction Modal */}
             {editingRecord && (
-                <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-4">
+                <Modal label="Correct Shift Attendance" onClose={() => setEditingRecord(null)}>
+                    <div className="space-y-4">
                         <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                             <div>
                                 <h3 className="font-bold text-gray-900">Correct Shift Attendance</h3>
@@ -692,18 +719,19 @@ export default function AttendanceManagement() {
                                     {editingRecord.employeeName} on {editingRecord.date}
                                 </p>
                             </div>
-                            <button onClick={() => setEditingRecord(null)} className="text-gray-400 hover:text-gray-600">
+                            <button aria-label="Close attendance editor" onClick={() => setEditingRecord(null)} className="min-w-11 min-h-11 grid place-items-center text-gray-400 hover:text-gray-600">
                                 <X size={20} />
                             </button>
                         </div>
 
+                        <p className="text-xs text-gray-500">All times are Philippine time (Asia/Manila).</p>{editingRecord.autoClockedOutAt && <p className="text-sm text-amber-700">Auto clocked out at {formatTime(editingRecord.autoClockOutOriginalTime)}. Corrections retain the original automatic punch in the audit history.</p>}
                         <form onSubmit={saveCorrection} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                    Clock In (Date & Time)
+                                    Clock In (Date & Time, PH)
                                 </label>
                                 <input
-                                    type="datetime-local"
+                                    aria-label="Clock In (Philippine time)" type="datetime-local"
                                     required
                                     value={editForm.clockIn}
                                     onChange={e => setEditForm(f => ({ ...f, clockIn: e.target.value }))}
@@ -713,10 +741,10 @@ export default function AttendanceManagement() {
 
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                    Clock Out (Date & Time)
+                                    Clock Out (Date & Time, PH)
                                 </label>
                                 <input
-                                    type="datetime-local"
+                                    aria-label="Clock Out (Philippine time)" type="datetime-local"
                                     required
                                     value={editForm.clockOut}
                                     onChange={e => setEditForm(f => ({ ...f, clockOut: e.target.value }))}
@@ -755,8 +783,16 @@ export default function AttendanceManagement() {
                                 </button>
                             </div>
                         </form>
+                        {!editingRecord.clockOut && <section className="border-t border-gray-200 pt-4 space-y-3">
+                            <h4 className="font-bold text-sm">Overtime for this shift</h4>
+                            <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={overtimeApproved} onChange={event => setOvertimeApproved(event.target.checked)} />Keep this shift open after closing time</label>
+                            <label className="block text-xs font-semibold">Approval reason<input aria-label="Overtime approval reason" maxLength={255} value={overtimeReason} onChange={event => setOvertimeReason(event.target.value)} className="mt-1 w-full border border-gray-200 rounded-lg p-3" /></label>
+                            <button type="button" disabled={overtimeSaving || !overtimeReason.trim()} onClick={() => void saveOvertime()} className="w-full min-h-12 p-3 bg-brand text-brand-dark font-semibold rounded-lg">{overtimeSaving ? 'Saving overtime…' : 'Save overtime decision'}</button>
+                            <p className="text-xs text-gray-500">Only an owner or manager with an admin account can approve this exception. Staff must clock out manually afterward.</p>
+                            {overtimeMessage && <p role="status" className="text-sm">{overtimeMessage}</p>}
+                        </section>}
                     </div>
-                </div>
+                </Modal>
             )}
         </div>
     );

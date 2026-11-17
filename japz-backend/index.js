@@ -49,6 +49,8 @@ import { User, Order, OrderItem, Payment, MenuItem, Log } from "./models/index.j
 import { upgradeInventorySchema } from './services/inventorySchema.js';
 import { requireJwtSecret } from './services/securityConfig.js';
 import { bootstrapAccounts } from './services/accountBootstrap.js';
+import { startAttendanceScheduler } from './services/attendanceAutoClockOut.js';
+import { blockPublicProofFiles } from './middleware/privateProofFiles.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -57,11 +59,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = requireJwtSecret();
 
+// API data includes current menu prices, identities and payments. Keep it out
+// of browser/proxy caches; the ordering worker only caches static files.
+app.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store, private'); next(); });
+
 if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY));
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use(cors());
 app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } }));
 app.use(express.urlencoded({ extended: true }));
+app.use(blockPublicProofFiles);
 app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use(session({
@@ -259,5 +266,10 @@ app.use("/", router);
 export default app;
 
 if (!process.env.ELECTRON) {
-  app.listen(PORT, '0.0.0.0', () => console.log(`🔥 XianFire running on port ${PORT}`));
+  let stopAttendance;
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🔥 XianFire running on port ${PORT}`);
+    if (process.env.NODE_ENV !== 'test') stopAttendance = startAttendanceScheduler();
+  });
+  server.once('close',() => stopAttendance?.());
 }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader2, RefreshCw, CreditCard } from 'lucide-react';
 import { paymentAPI } from '../../../services/api';
-import { useStorefrontBase } from './StorefrontLayout';
+import { useStorefrontBase } from './storefrontRouting';
 
 type Phase = 'checking' | 'paid' | 'unpaid' | 'cancelled' | 'error';
 

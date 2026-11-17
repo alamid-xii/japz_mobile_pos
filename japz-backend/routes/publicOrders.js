@@ -7,6 +7,8 @@ import { sequelize } from "../models/db.js";
 import { MenuItem } from "../models/menuItemModel.js";
 import { User } from "../models/userModel.js";
 import { Order } from "../models/orderModel.js";
+import { Delivery } from "../models/deliveryModel.js";
+import { proofPhotoUrl, serializeDeliveryLocation } from '../services/deliveryTracking.js';
 import { OrderItem } from "../models/orderItemModel.js";
 import { Payment } from "../models/paymentModel.js";
 import { BusinessHours } from "../models/businessHoursModel.js";
@@ -734,11 +736,16 @@ router.get("/api/public/orders/:orderNumber", async (req, res) => {
 
     // An order belongs to the account that placed it. Anyone else gets the same
     // 404 as a non-existent order, so order numbers cannot be probed.
+    let authorizedCustomer = false;
     if (order.customerUserId) {
       const token = req.headers.authorization?.split(' ')[1];
-      let viewerId = null;
-      try { viewerId = token ? jwt.verify(token, JWT_SECRET).id : null; } catch { viewerId = null; }
-      if (viewerId !== order.customerUserId) {
+      let viewer = null;
+      try {
+        const identity = token ? jwt.verify(token, JWT_SECRET) : null;
+        if (identity?.id === order.customerUserId) viewer = await User.findByPk(identity.id, { attributes: ['id', 'role', 'status'] });
+      } catch { viewer = null; }
+      authorizedCustomer = viewer?.id === order.customerUserId && viewer.role === 'customer' && viewer.status === 'approved';
+      if (!authorizedCustomer) {
         return res.status(404).json({ error: 'Order not found.' });
       }
     }
@@ -746,14 +753,14 @@ router.get("/api/public/orders/:orderNumber", async (req, res) => {
     const items = await OrderItem.findAll({ where: { orderId: order.id } });
     const existingFeedback = await Feedback.findOne({ where: { orderId: order.id } });
 
-    // The estimate is a window the restaurant configures, counted from dispatch.
-    // It is not a live prediction: nothing here knows where the rider is.
+    // The configured dispatch estimate remains separate from live rider GPS.
     let delivery = null;
     if (order.orderType === 'delivery') {
       const hours = await BusinessHours.findOne();
       const minM = hours?.deliveryEtaMinMinutes ?? 30;
       const maxM = hours?.deliveryEtaMaxMinutes ?? 45;
       const dispatched = order.outForDeliveryAt ? new Date(order.outForDeliveryAt) : null;
+      const assignment = authorizedCustomer ? await Delivery.findOne({ where: { orderId: order.id } }) : null;
       delivery = {
         address: order.deliveryAddress,
         storeLat: hours?.storeLat != null ? Number(hours.storeLat) : null,
@@ -762,6 +769,9 @@ router.get("/api/public/orders/:orderNumber", async (req, res) => {
         lng: order.deliveryLng != null ? Number(order.deliveryLng) : null,
         riderName: order.riderName,
         riderPhone: order.riderPhone,
+        location: serializeDeliveryLocation(assignment, order.status),
+        proofPhotoUrl: authorizedCustomer ? proofPhotoUrl(assignment) : null,
+        hasProof: authorizedCustomer && !!proofPhotoUrl(assignment),
         dispatchedAt: order.outForDeliveryAt,
         etaMinMinutes: minM,
         etaMaxMinutes: maxM,

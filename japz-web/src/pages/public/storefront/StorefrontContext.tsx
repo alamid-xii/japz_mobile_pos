@@ -1,3 +1,4 @@
+/* eslint react-refresh/only-export-components: ["error", {"allowExportNames":["useStorefront","peso"]}] -- Existing public context API includes its hook and pure currency formatter. */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { menuCategoryAPI, menuItemAPI, publicOrderAPI, type PaymentMethodOption } from '../../../services/api';
@@ -83,15 +84,15 @@ const StorefrontContext = createContext<StorefrontValue | undefined>(undefined);
 const CART_KEY = 'japz.cart';
 const TABLE_KEY = 'japz.table';
 
-const parseSizes = (raw: any): SizeOption[] => {
+const parseSizes = (raw: unknown): SizeOption[] => {
     if (!Array.isArray(raw)) return [];
     const out: SizeOption[] = [];
-    raw.forEach((s: any) => {
+    raw.forEach((s: unknown) => {
         if (typeof s === 'string') {
             const m = s.match(/(.+?)\s*-\s*₱?([\d.]+)/);
             out.push(m ? { name: m[1].trim(), price: Number(m[2]) } : { name: s, price: 0 });
-        } else if (s?.name) {
-            out.push({ name: s.name, price: Number(s.price || 0) });
+        } else if (s && typeof s === 'object' && 'name' in s && typeof s.name === 'string') {
+            out.push({ name: s.name, price: 'price' in s ? Number(s.price || 0) : 0 });
         }
     });
     return out;
@@ -139,7 +140,10 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
     }, [cart]);
 
     useEffect(() => {
-        (async () => {
+        let active = true;
+        let generation = 0;
+        const refresh = async () => {
+            const current = ++generation;
             try {
                 const [catRes, itemRes, statusRes, popRes, promoRes] = await Promise.all([
                     menuCategoryAPI.getAll(),
@@ -149,18 +153,20 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
                     // Promos are optional decoration; a failure must not blank the menu.
                     publicOrderAPI.getPromos().catch(() => ({ data: { promos: [] } })),
                 ]);
+                if (!active || current !== generation) return;
+                setLoadError(null);
                 setPromos(promoRes.data?.promos || []);
 
                 setAllCategories((catRes.data?.categories || catRes.data || [])
-                    .map((c: any) => ({ id: c.id, name: c.name })));
+                    .map((c: Category) => ({ id: c.id, name: c.name })));
 
-                setAllProducts((itemRes.data?.menuItems || itemRes.data || [])
-                    .map((i: any) => ({
+                const freshProducts: Product[] = (itemRes.data?.menuItems || itemRes.data || [])
+                    .map((i: Omit<Product,'price' | 'sizes'> & { price:number | string; sizes:unknown; MenuCategoryId?:number }) => ({
                         id: i.id,
                         name: i.name,
                         price: Number(i.price || 0),
                         description: i.description || '',
-                        categoryId: i.categoryId ?? i.MenuCategoryId,
+                        categoryId: i.categoryId ?? i.MenuCategoryId ?? 0,
                         imageUrl: i.imageUrl || null,
                         featured: !!i.featured,
                         featuredLabel: i.featuredLabel || null,
@@ -171,21 +177,41 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
                         trackStock: !!i.trackStock,
                         stock: i.stock ?? null,
                     }))
-                    .filter((i: Product) => i.status === 'available'));
+                    .filter((i: Product) => i.status === 'available');
+                setAllProducts(freshProducts);
+                setCart(previous => {
+                    const next = previous.map(line => {
+                        const product = freshProducts.find(value => value.id === line.id);
+                        if (!product) return line;
+                        const size = line.modifiers?.size;
+                        const price = size ? product.sizes.find(value => value.name === size)?.price : product.price;
+                        return price === undefined || price === line.unitPrice ? line : { ...line,unitPrice:price };
+                    });
+                    return next.every((line,index) => line === previous[index]) ? previous : next;
+                });
 
                 const pop = popRes.data?.popular || [];
-                setPopularIds(pop.map((p: any) => p.id));
+                setPopularIds(pop.map((p: {id:number}) => p.id));
                 // Real units sold in the last 30 days, used for honest social proof.
-                setSoldById(new Map(pop.map((p: any) => [Number(p.id), Number(p.sold) || 0])));
+                setSoldById(new Map(pop.map((p: {id:number;sold:number | string}) => [Number(p.id), Number(p.sold) || 0])));
                 setShopOpen(!!statusRes.data?.acceptingOrders);
                 setHours({ openTime: statusRes.data?.openTime, closeTime: statusRes.data?.closeTime });
                 setPaymentMethods(statusRes.data?.paymentMethods || []);
             } catch {
-                setLoadError('Could not load the menu. Please check your connection and try again.');
+                if (active && current === generation) {
+                    setLoadError('Could not refresh the menu. Reconnect before ordering so prices and availability are current.');
+                    setShopOpen(false);
+                }
             } finally {
-                setLoading(false);
+                if (active && current === generation) setLoading(false);
             }
-        })();
+        };
+        const visible = () => { if (document.visibilityState === 'visible') void refresh(); };
+        void refresh();
+        window.addEventListener('online', refresh);
+        document.addEventListener('visibilitychange', visible);
+        const timer = window.setInterval(visible,60000);
+        return () => { active = false; window.clearInterval(timer); window.removeEventListener('online',refresh); document.removeEventListener('visibilitychange',visible); };
     }, []);
 
     // Add-ons are extras chosen inside an item, never products to browse, so

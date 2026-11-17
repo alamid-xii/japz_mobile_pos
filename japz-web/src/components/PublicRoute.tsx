@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { loginDestination } from '../utils/stations';
 
 interface PublicRouteProps {
     children: React.ReactNode;
@@ -21,15 +22,9 @@ export default function PublicRoute({ children }: PublicRouteProps) {
 
     // If user is logged in, redirect to their dashboard
     if (user) {
-        const roleRedirects: Record<string, string> = {
-            admin: '/admin/dashboard',
-            cashier: '/cashier/pos',
-            kitchen: '/kitchen/incoming',
-            rider: '/rider/deliveries',
-            inventory: '/inventory/overview',
-        };
-        const from = (location.state as any)?.from?.pathname || roleRedirects[user.role];
-        return <Navigate to={from} replace />;
+        const previousPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+        const destination = user.role === 'admin' && previousPath?.startsWith('/admin/') ? previousPath : loginDestination(user);
+        return <Navigate to={destination} replace />;
     }
 
     // Not logged in - show the public page

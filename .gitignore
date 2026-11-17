@@ -20,6 +20,7 @@ blob-report/
 # Local runtime data, backups and private development tooling
 .local/
 backups/
+/japz-backend/public/uploads/pod/
 *.sql
 *.sql.gz
 *.sqlite

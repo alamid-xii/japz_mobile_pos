@@ -44,6 +44,13 @@ export const Attendance = sequelize.define("Attendance", {
     // Admin correction notes
     type: DataTypes.STRING,
     allowNull: true
+  },
+  clockOutSource: { type:DataTypes.STRING(16), allowNull:false, defaultValue:'manual' },
+  autoClockedOutAt: { type:DataTypes.DATE, allowNull:true },
+  autoClockOutOriginalTime: { type:DataTypes.DATE, allowNull:true },
+  overtimeApprovedAt: { type:DataTypes.DATE, allowNull:true },
+  overtimeApprovedBy: { type:DataTypes.INTEGER, allowNull:true },
+  overtimeApprovalReason: { type:DataTypes.STRING(255), allowNull:true
   }
 }, {
   indexes: [

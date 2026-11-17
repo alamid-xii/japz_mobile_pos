@@ -1,200 +1,69 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Check, ChefHat, Clock, Send, Utensils } from 'lucide-react';
-import { workflowAPI } from '../../services/api';
+import { useState } from 'react';
+import { Check, CheckCircle2, Play, RotateCcw, Send } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { KitchenBoard, KitchenEmpty, KitchenTicket, type KitchenStatus, type KitchenTicketInfo } from '../../components/kitchen/KitchenBoard';
+import { modifierText } from '../../utils/kitchen';
+import { useKitchenFeed } from '../../hooks/useKitchenFeed';
+import { ordersAPI, workflowAPI } from '../../services/api';
 
 interface PrepItem {
-    id: number;
-    name: string;
-    quantity: number;
-    modifiers: Record<string, string> | null;
-    status: 'pending' | 'preparing' | 'ready';
-    readyAt: string | null;
+  id: number;
+  name: string;
+  quantity: number;
+  modifiers: Record<string, unknown> | null;
+  status: KitchenStatus;
 }
-interface PrepOrder {
-    id: number;
-    orderNumber: string;
-    customerName: string | null;
-    orderType: string | null;
-    source: string | null;
-    tableNumber: string | null;
-    notes: string | null;
-    status: string;
-    placedAt: string;
-    allReady: boolean;
-    items: PrepItem[];
+interface PrepOrder extends KitchenTicketInfo {
+  placedAt: string;
+  allReady: boolean;
+  items: PrepItem[];
 }
+const loadOrders = async () => (await workflowAPI.kitchenOrders()).data.orders as PrepOrder[];
 
-const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-/**
- * Per-item preparation board.
- *
- * An order only becomes READY when every item is marked ready — the server
- * derives that, so the cashier can never be handed a half-finished order.
- */
 export default function PrepBoard() {
-    const [orders, setOrders] = useState<PrepOrder[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [busy, setBusy] = useState<number | null>(null);
+  const feed = useKitchenFeed(loadOrders, 4000);
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const target = Number(params.get('order')) || null;
+  const [filter, setFilter] = useState('all');
+  const sorted = [...feed.orders].sort((a, b) => Number(b.id === target) - Number(a.id === target) || new Date(a.placedAt).getTime() - new Date(b.placedAt).getTime() || a.id - b.id);
+  const missingTarget = Boolean(target && !sorted.some(order => order.id === target));
+  const visible = missingTarget ? [] : sorted.filter(order => filter === 'all' || (filter === 'ready' ? order.allReady : !order.allReady && order.items.some(item => item.status === 'preparing' || item.status === 'ready')));
+  const filters = [
+    { key: 'all', label: 'All tickets', count: sorted.length },
+    { key: 'preparing', label: 'In progress', count: sorted.filter(order => !order.allReady && order.items.some(item => item.status !== 'pending')).length },
+    { key: 'ready', label: 'Ready', count: sorted.filter(order => order.allReady).length },
+  ];
+  const returnToIncoming = (order: PrepOrder) => navigate('/kitchen/incoming', { replace: true, state: { kitchenNotice: `Order ${order.orderNumber} sent to cashier.` } });
+  const update = async (item: PrepItem, status: KitchenStatus, order: PrepOrder) => {
+    let allReady = false;
+    const saved = await feed.act(item.id, async () => { const response = await workflowAPI.setItemStatus(item.id, status); allReady = response.data.allReady; return response; }, `${item.name} is ${status}.`);
+    if (saved && allReady) returnToIncoming(order);
+  };
+  const finish = async (order: PrepOrder) => {
+    if (await feed.act(-order.id, () => ordersAPI.updateOrderStatus(order.id, 'ready'), `Order ${order.orderNumber} is ready.`)) returnToIncoming(order);
+  };
 
-    const load = useCallback(async () => {
-        try {
-            const res = await workflowAPI.kitchenOrders();
-            setOrders(res.data.orders || []);
-            setError(null);
-        } catch (err: any) {
-            setError(err?.response?.data?.error || 'Could not load orders.');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        load();
-        const id = setInterval(load, 4000);
-        return () => clearInterval(id);
-    }, [load]);
-
-    const setItem = async (item: PrepItem, status: PrepItem['status']) => {
-        setBusy(item.id);
-        try {
-            await workflowAPI.setItemStatus(item.id, status);
-            await load();
-        } catch (err: any) {
-            setError(err?.response?.data?.error || 'Could not update that item.');
-        } finally {
-            setBusy(null);
-        }
-    };
-
-    if (loading) return <div className="spinner" />;
-
-    return (
-        <div className="p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-                <div>
-                    <h1 className="text-xl font-extrabold text-slate-900">Prep Board</h1>
-                    <p className="text-sm text-slate-500">Mark each item as you finish it.</p>
-                </div>
-                <span className="text-xs font-bold bg-brand text-slate-900 rounded-full px-3 py-1.5">
-                    {orders.length} active
-                </span>
+  return <KitchenBoard title="Prep Board" description="When the ticket is finished, tap Done to send it and return to incoming." queueLabel={target ? 'Current order first' : 'Oldest first'} filters={filters} selected={filter} onSelect={key => { setFilter(key); if (target) setParams({}); }} loading={feed.loading} refreshing={feed.refreshing} updatedAt={feed.updatedAt} error={feed.error} notice={feed.notice} busy={feed.busy.size > 0} refresh={feed.refresh}>
+    {visible.length ? <div className="kitchen-grid">{visible.map(order => {
+      const ready = order.items.filter(item => item.status === 'ready').length;
+      const sending = feed.busy.has(-order.id), updating = sending || order.items.some(item => feed.busy.has(item.id));
+      return <KitchenTicket key={order.id} order={order} placedAt={order.placedAt} highlighted={order.id === target} footer={<>
+        <div className={`kitchen-progress ${order.allReady ? 'ready' : ''}`}><span>{order.allReady ? <><Send size={17} />Sent to Cashier</> : <>{ready} of {order.items.length} items ready</>}</span><span>{order.allReady ? <CheckCircle2 size={18} /> : `${Math.round(ready / Math.max(1, order.items.length) * 100)}%`}</span></div>
+        <div className="kitchen-progress-track" role="progressbar" aria-label={`Order ${order.orderNumber} preparation`} aria-valuenow={ready} aria-valuemin={0} aria-valuemax={order.items.length || 1}><span style={{ width: `${ready / Math.max(1, order.items.length) * 100}%` }} /></div>
+        <div className="kitchen-actions kitchen-actions-single kitchen-finish"><button type="button" className="kitchen-ready" disabled={updating || Boolean(feed.error) || (!order.allReady && order.status !== 'preparing') || !order.items.length} onClick={() => order.allReady ? returnToIncoming(order) : void finish(order)}><Send size={17} />{sending ? 'Sending…' : order.allReady ? 'Back to incoming' : 'Done · send to cashier'}</button></div>
+      </>}>
+        <ul className="kitchen-items">{order.items.map(item => {
+          const busy = feed.busy.has(item.id), blocked = busy || sending || Boolean(feed.error);
+          return <li className="kitchen-item" key={item.id} aria-label={`${item.name} preparation`}>
+            <div className="kitchen-item-info"><span className="kitchen-quantity">{item.quantity}×</span><div><p className="kitchen-item-name">{item.name}</p>{modifierText(item.modifiers) && <p className="kitchen-modifiers">{modifierText(item.modifiers)}</p>}<p className="kitchen-item-status">{item.status === 'ready' ? 'Ready for handover' : item.status === 'preparing' ? 'Preparing now' : 'Waiting to start'}</p></div></div>
+            <div className="kitchen-actions kitchen-item-actions">
+              <button type="button" className={item.status === 'ready' ? 'kitchen-reopen' : 'kitchen-start'} disabled={blocked || item.status === 'preparing'} aria-label={item.status === 'ready' ? `Reopen ${item.name}` : `Start ${item.name}`} onClick={() => void update(item, 'preparing', order)}>{item.status === 'ready' ? <RotateCcw size={16} /> : <Play size={16} />}{busy ? 'Saving…' : item.status === 'ready' ? 'Reopen' : item.status === 'preparing' ? 'Preparing' : 'Start'}</button>
+              <button type="button" className={`kitchen-ready ${item.status === 'ready' ? 'kitchen-item-done' : ''}`} disabled={blocked || item.status !== 'preparing'} aria-label={`Mark ${item.name} ready`} onClick={() => void update(item, 'ready', order)}><Check size={18} />{busy && item.status === 'preparing' ? 'Saving…' : item.status === 'ready' ? 'Ready' : 'Mark ready'}</button>
             </div>
-
-            {error && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 text-sm">{error}</div>
-            )}
-
-            {orders.length === 0 ? (
-                <div className="text-center py-20">
-                    <ChefHat size={30} className="text-gray-300 mx-auto mb-3" />
-                    <p className="font-bold text-slate-900">Nothing to prepare</p>
-                    <p className="text-sm text-slate-500 mt-1">New orders appear here automatically.</p>
-                </div>
-            ) : (
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    {orders.map(o => (
-                        <section
-                            key={o.id}
-                            className={`bg-white rounded-2xl border-2 shadow-sm overflow-hidden ${
-                                o.allReady ? 'border-green-400' : 'border-gray-100'
-                            }`}
-                        >
-                            <div className="p-4 pb-3">
-                                <div className="flex items-start justify-between gap-2">
-                                    <div className="min-w-0">
-                                        <p className="font-extrabold text-slate-900">{o.orderNumber}</p>
-                                        <p className="text-xs text-slate-500 truncate">
-                                            {o.customerName || 'Walk-in'}
-                                            {o.tableNumber && ` · Table ${o.tableNumber}`}
-                                        </p>
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                        <span className="text-[10px] font-extrabold bg-slate-900 text-brand px-2 py-1 rounded-full">
-                                            {(o.source === 'online' ? 'ONLINE' : o.orderType || 'POS').toUpperCase()}
-                                        </span>
-                                        <p className="text-[11px] text-slate-400 mt-1 flex items-center justify-end gap-1">
-                                            <Clock size={10} /> {clock(o.placedAt)}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {o.notes && (
-                                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mt-2">
-                                        {o.notes}
-                                    </p>
-                                )}
-                            </div>
-
-                            <ul className="divide-y divide-gray-100">
-                                {o.items.map(i => (
-                                    <li key={i.id} className="px-4 py-2.5 flex items-center gap-3">
-                                        <span className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                                            i.status === 'ready' ? 'bg-green-500 text-white'
-                                                : i.status === 'preparing' ? 'bg-blue-100 text-blue-600'
-                                                : 'bg-gray-100 text-gray-400'
-                                        }`}>
-                                            {i.status === 'ready' ? <Check size={13} strokeWidth={3} /> : <Utensils size={12} />}
-                                        </span>
-
-                                        <div className="min-w-0 flex-1">
-                                            <p className={`text-sm font-bold truncate ${
-                                                i.status === 'ready' ? 'text-slate-400 line-through' : 'text-slate-900'
-                                            }`}>
-                                                {i.name} × {i.quantity}
-                                            </p>
-                                            {i.modifiers && Object.keys(i.modifiers).length > 0 && (
-                                                <p className="text-[11px] text-slate-500 truncate">
-                                                    {Object.values(i.modifiers).join(' · ')}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="flex gap-1 shrink-0">
-                                            {i.status === 'pending' && (
-                                                <button
-                                                    onClick={() => setItem(i, 'preparing')}
-                                                    disabled={busy === i.id}
-                                                    className="text-[11px] font-bold bg-blue-500 text-white rounded-full px-3 py-1.5 disabled:opacity-50"
-                                                >
-                                                    Start
-                                                </button>
-                                            )}
-                                            {i.status === 'preparing' && (
-                                                <button
-                                                    onClick={() => setItem(i, 'ready')}
-                                                    disabled={busy === i.id}
-                                                    className="text-[11px] font-bold bg-green-500 text-white rounded-full px-3 py-1.5 disabled:opacity-50"
-                                                >
-                                                    Ready
-                                                </button>
-                                            )}
-                                            {i.status === 'ready' && (
-                                                <button
-                                                    onClick={() => setItem(i, 'preparing')}
-                                                    disabled={busy === i.id}
-                                                    className="text-[11px] font-bold text-slate-400 underline underline-offset-2 px-1"
-                                                >
-                                                    Undo
-                                                </button>
-                                            )}
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <div className={`px-4 py-3 text-sm font-extrabold flex items-center justify-center gap-2 ${
-                                o.allReady ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-slate-400'
-                            }`}>
-                                {o.allReady
-                                    ? <><Send size={15} /> Sent to Cashier</>
-                                    : <>{o.items.filter(i => i.status === 'ready').length} of {o.items.length} ready</>}
-                            </div>
-                        </section>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
+          </li>;
+        })}</ul>
+      </KitchenTicket>;
+    })}</div> : <><KitchenEmpty label={missingTarget ? 'This order is no longer in the kitchen' : filter === 'all' ? 'Nothing to prepare' : filter === 'ready' ? 'No ready tickets' : 'No tickets in progress'} />{missingTarget && <div className="kitchen-actions kitchen-actions-single"><button type="button" onClick={() => navigate('/kitchen/incoming')}>Back to incoming</button></div>}</>}
+  </KitchenBoard>;
 }

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { publicReservationAPI } from '../../../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
-import { useStorefrontBase } from './StorefrontLayout';
+import { useStorefrontBase } from './storefrontRouting';
 
 interface Booking {
     id: number; code: string; partySize: number;

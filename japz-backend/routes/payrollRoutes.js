@@ -68,6 +68,7 @@ payrollRouter.post('/payroll/entries/:id/adjust',       payrollController.addAdj
 payrollRouter.get( '/attendance/records',               payrollController.getAttendanceRecords);
 payrollRouter.get( '/payroll/attendance/records',       payrollController.getAttendanceRecords);
 payrollRouter.put( '/attendance/:id/correct',           payrollController.correctAttendance);
+payrollRouter.put( '/attendance/:id/overtime',          payrollController.approveShiftOvertime);
 
 // ── Employee Pay Management & Sync ───────────────────────────────────────────
 payrollRouter.get( '/payroll/employees',                payrollController.getAllEmployees);

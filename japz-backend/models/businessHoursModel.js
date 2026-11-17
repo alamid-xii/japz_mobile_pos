@@ -12,18 +12,19 @@ export const BusinessHours = sequelize.define(
     openTime: {
       type: DataTypes.TIME,
       allowNull: false,
-      defaultValue: "09:00:00",
+      defaultValue: "07:00:00",
     },
     closeTime: {
       type: DataTypes.TIME,
       allowNull: false,
-      defaultValue: "22:00:00",
+      defaultValue: "20:00:00",
     },
     applyCashier: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
       allowNull: false,
     },
+    autoClockOutEnabled: { type:DataTypes.BOOLEAN, allowNull:false, defaultValue:true },
     gcashNumber: {
       type: DataTypes.STRING(32),
       allowNull: true,

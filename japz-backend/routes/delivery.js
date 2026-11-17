@@ -1,12 +1,9 @@
 import { authenticate, allowRoles } from '../middleware/access.js';
-import { requireJwtSecret } from '../services/securityConfig.js';
 import { applyOrderInventory } from '../services/inventoryOrders.js';
 import express from "express";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
-import crypto from "crypto";
-import jwt from "jsonwebtoken";
+import fs from "node:fs/promises";
 import { Op } from "sequelize";
 import { sequelize } from "../models/db.js";
 import { User } from "../models/userModel.js";
@@ -14,9 +11,9 @@ import { Order } from "../models/orderModel.js";
 import { OrderItem } from "../models/orderItemModel.js";
 import { Payment } from "../models/paymentModel.js";
 import { Delivery, DeliveryEvent } from "../models/deliveryModel.js";
+import { MAX_PROOF_BYTES, clearedLocation, legacyProofFilename, proofPhotoUrl, serializeDeliveryLocation, validateLocationSample, validateProofPhoto } from '../services/deliveryTracking.js';
 
 const router = express.Router();
-const JWT_SECRET = requireJwtSecret();
 
 // ========== KITCHEN → CASHIER → RIDER WORKFLOW ==========
 
@@ -288,24 +285,16 @@ router.post("/api/cashier/orders/:orderId/complete", requireRole('cashier', 'adm
 
 // ---------- RIDER ----------
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "pod");
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
-const ALLOWED = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
 const podUpload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-    filename: (req, file, cb) => {
-      const ext = ALLOWED[file.mimetype] || '.jpg';
-      cb(null, `pod-${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`);
-    },
-  }),
-  limits: { fileSize: 6 * 1024 * 1024, files: 1 },
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_PROOF_BYTES, files: 1, fields: 3, fieldSize: 2048, parts: 4 },
   fileFilter: (req, file, cb) => {
-    if (!ALLOWED[file.mimetype]) return cb(new Error('Proof must be a JPG, PNG or WebP photo.'));
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) return cb(new Error('Proof must be a JPG, PNG or WebP photo.'));
     cb(null, true);
   },
 });
+
+const workflowError = (status, message) => Object.assign(new Error(message), { status });
 
 /** Rider's own deliveries. Scoped by token id — never by a client-supplied id. */
 router.get("/api/rider/deliveries", requireRole('rider'), async (req, res) => {
@@ -329,7 +318,9 @@ router.get("/api/rider/deliveries", requireRole('rider'), async (req, res) => {
         assignedAt: d.assignedAt,
         startedAt: d.startedAt,
         deliveredAt: d.deliveredAt,
-        proofPhotoUrl: d.proofPhotoUrl,
+        proofPhotoUrl: proofPhotoUrl(d),
+        hasProof: !!proofPhotoUrl(d),
+        location: serializeDeliveryLocation(d, o?.status),
         order: o && {
           orderNumber: o.orderNumber,
           customerName: o.customerName,
@@ -355,90 +346,159 @@ router.get("/api/rider/deliveries", requireRole('rider'), async (req, res) => {
   }
 });
 
-/** assigned → out-for-delivery. The only forward move a rider may make here. */
+/** Starts the assigned rider's delivery atomically with the order. */
 router.post("/api/rider/deliveries/:id/start", requireRole('rider'), async (req, res) => {
   try {
-    const delivery = await Delivery.findOne({ where: { id: req.params.id, riderId: req.user.id } });
-    if (!delivery) return res.status(404).json({ error: 'Delivery not found.' });
-    if (delivery.status !== 'assigned') {
-      return res.status(409).json({ error: 'This delivery has already been started.' });
-    }
-
-    await delivery.update({ status: 'out-for-delivery', startedAt: new Date() });
-
-    const order = await Order.findByPk(delivery.orderId);
-    if (order && !['completed', 'cancelled'].includes(order.status)) {
-      await order.update({ status: 'out-for-delivery', outForDeliveryAt: new Date(), riderName: req.user.name });
-    }
+    const delivery = await sequelize.transaction(async transaction => {
+      const d = await Delivery.findOne({ where: { id: req.params.id, riderId: req.user.id }, transaction, lock: transaction.LOCK.UPDATE });
+      if (!d) throw workflowError(404, 'Delivery not found.');
+      if (d.status !== 'assigned') throw workflowError(409, 'This delivery has already been started.');
+      const order = await Order.findByPk(d.orderId, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!order || ['completed', 'cancelled'].includes(order.status)) throw workflowError(409, 'This order is no longer available for delivery.');
+      const now = new Date();
+      await d.update({ status: 'out-for-delivery', startedAt: now, ...clearedLocation() }, { transaction });
+      await order.update({ status: 'out-for-delivery', outForDeliveryAt: now, riderName: req.user.name }, { transaction });
+      return d;
+    });
     await logEvent(delivery.orderId, delivery.id, req.user, 'delivery:started');
-
     res.json({ ok: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.status || 500).json({ error: error.message });
   }
 });
 
-/**
- * out-for-delivery → delivered, with proof.
- *
- * Rule 5: the photo is required. Rule 6: a delivered record is never rewritten.
- */
+/** Only the assigned rider may share a fresh location during an active trip. */
+router.put("/api/rider/deliveries/:id/location", requireRole('rider'), async (req, res) => {
+  const receivedAt = new Date();
+  let sample;
+  try { sample = validateLocationSample(req.body, receivedAt); }
+  catch (error) { return res.status(400).json({ error: error.message }); }
+  try {
+    const delivery = await sequelize.transaction(async transaction => {
+      const d = await Delivery.findOne({ where: { id: req.params.id, riderId: req.user.id }, transaction, lock: transaction.LOCK.UPDATE });
+      if (!d) throw workflowError(404, 'Delivery not found.');
+      const order = await Order.findByPk(d.orderId, { transaction, lock: transaction.LOCK.UPDATE });
+      if (d.status !== 'out-for-delivery' || order?.status !== 'out-for-delivery') throw workflowError(409, 'Location sharing is available only during an active delivery.');
+      if (d.locationCapturedAt && new Date(d.locationCapturedAt) >= sample.locationCapturedAt) throw workflowError(409, 'A newer GPS sample has already been received.');
+      if (d.locationStoppedAt && (new Date(d.locationStoppedAt) >= sample.locationCapturedAt || new Date(d.locationStoppedAt) >= receivedAt)) throw workflowError(409, 'Request a fresh GPS sample to resume sharing.');
+      // The receive time belongs to this server, never the rider's request.
+      await d.update({ ...sample, locationUpdatedAt: new Date() }, { transaction });
+      return d;
+    });
+    res.json({ location: serializeDeliveryLocation(delivery, 'out-for-delivery') });
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+});
+
+/** Stopping sharing also removes the saved coordinates. Safe to repeat. */
+router.delete("/api/rider/deliveries/:id/location", requireRole('rider'), async (req, res) => {
+  try {
+    const delivery = await sequelize.transaction(async transaction => {
+      const d = await Delivery.findOne({ where: { id: req.params.id, riderId: req.user.id }, transaction, lock: transaction.LOCK.UPDATE });
+      if (!d) throw workflowError(404, 'Delivery not found.');
+      // A late cleanup request must never rewrite an immutable delivered record.
+      if (d.status !== 'out-for-delivery') return d;
+      await d.update({ ...clearedLocation(), locationStoppedAt: new Date() }, { transaction });
+      return d;
+    });
+    res.json({ location: serializeDeliveryLocation(delivery, null) });
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+});
+
+/** Photo, completion, rider availability and location clearing commit together. */
 router.post("/api/rider/deliveries/:id/deliver", requireRole('rider'), (req, res) => {
   podUpload.single('proof')(req, res, async (err) => {
-    if (err) {
-      const message = err.code === 'LIMIT_FILE_SIZE'
-        ? 'That photo is larger than 6MB.'
-        : err.message || 'Upload failed.';
-      return res.status(400).json({ error: message });
+    if (err) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'That photo is larger than 6MB.' : err.message || 'Upload failed.' });
+    let proof;
+    try { proof = validateProofPhoto(req.file?.buffer, req.file?.mimetype); }
+    catch (error) { return res.status(400).json({ error: error.message }); }
+    const hasCoordinate = value => value != null && String(value).trim() !== '';
+    const hasFix = hasCoordinate(req.body.lat) && hasCoordinate(req.body.lng);
+    const lat = hasFix ? Number(req.body.lat) : null;
+    const lng = hasFix ? Number(req.body.lng) : null;
+    if ((hasCoordinate(req.body.lat) || hasCoordinate(req.body.lng)) &&
+        (!hasFix || !Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180)) {
+      return res.status(400).json({ error: 'Proof coordinates must contain a valid latitude and longitude.' });
     }
-
-    const cleanup = () => { if (req.file) fs.unlink(req.file.path, () => {}); };
-
     try {
-      const delivery = await Delivery.findOne({ where: { id: req.params.id, riderId: req.user.id } });
-      if (!delivery) { cleanup(); return res.status(404).json({ error: 'Delivery not found.' }); }
-
-      if (delivery.status === 'delivered') {
-        cleanup();
-        return res.status(409).json({ error: 'This delivery is already recorded as delivered.' });
-      }
-      if (delivery.status !== 'out-for-delivery') {
-        cleanup();
-        return res.status(409).json({ error: 'Start the delivery before marking it delivered.' });
-      }
-      if (!req.file) {
-        return res.status(400).json({ error: 'A proof-of-delivery photo is required.' });
-      }
-
-      const lat = Number(req.body.lat);
-      const lng = Number(req.body.lng);
-      const hasFix = Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
-
-      await delivery.update({
-        status: 'delivered',
-        deliveredAt: new Date(),
-        proofPhotoUrl: `/uploads/pod/${req.file.filename}`,
-        proofLat: hasFix ? lat : null,
-        proofLng: hasFix ? lng : null,
-        notes: req.body.notes ? String(req.body.notes).trim().slice(0, 500) : null,
+      const delivery = await sequelize.transaction(async transaction => {
+        const d = await Delivery.findOne({ where: { id: req.params.id, riderId: req.user.id }, transaction, lock: transaction.LOCK.UPDATE });
+        if (!d) throw workflowError(404, 'Delivery not found.');
+        if (d.status === 'delivered') throw workflowError(409, 'This delivery is already recorded as delivered.');
+        if (d.status !== 'out-for-delivery') throw workflowError(409, 'Start the delivery before marking it delivered.');
+        const order = await Order.findByPk(d.orderId, { transaction, lock: transaction.LOCK.UPDATE });
+        if (!order || order.status !== 'out-for-delivery') throw workflowError(409, 'This order is no longer available for delivery.');
+        const now = new Date();
+        await d.update({ status: 'delivered', deliveredAt: now,
+          proofPhotoUrl: null, proofPhotoData: req.file.buffer,
+          proofPhotoMime: proof.mime, proofPhotoSize: proof.size, proofPhotoSha256: proof.sha256,
+          proofLat: lat, proofLng: lng, ...clearedLocation(),
+          notes: req.body.notes ? String(req.body.notes).trim().slice(0, 500) : null,
+        }, { transaction });
+        await order.update({ status: 'completed', completedAt: now }, { transaction });
+        const rider = await User.findByPk(req.user.id, { transaction, lock: transaction.LOCK.UPDATE });
+        const remaining = await Delivery.count({ where: { riderId: req.user.id, id: { [Op.ne]: d.id }, status: { [Op.in]: ['assigned', 'out-for-delivery'] } }, transaction });
+        if (rider) await rider.update({ availability: remaining ? 'on-delivery' : 'available' }, { transaction });
+        return d;
       });
-
-      const order = await Order.findByPk(delivery.orderId);
-      if (order) await order.update({ status: 'completed', completedAt: new Date() });
-
-      // Rule 10: the rider frees up again automatically.
-      const rider = await User.findByPk(req.user.id);
-      if (rider) await rider.update({ availability: 'available' });
-
       await logEvent(delivery.orderId, delivery.id, req.user, 'delivery:delivered',
         hasFix ? `at ${lat.toFixed(5)},${lng.toFixed(5)}` : 'no location fix');
-
-      res.json({ ok: true, proofPhotoUrl: delivery.proofPhotoUrl });
+      res.json({ ok: true, proofPhotoUrl: proofPhotoUrl(delivery) });
     } catch (error) {
-      cleanup();
-      res.status(500).json({ error: error.message });
+      res.status(error.status || 500).json({ error: error.message });
     }
   });
+});
+
+/** Existing files remain readable privately until the optional import runs. */
+async function readLegacyProof(url) {
+  const filename = legacyProofFilename(url);
+  if (!filename) return null;
+  let handle;
+  try {
+    const root = await fs.realpath(path.join(process.cwd(), 'public', 'uploads', 'pod'));
+    const target = await fs.realpath(path.join(root, filename));
+    if (path.dirname(target) !== root) return null;
+    handle = await fs.open(target, 'r');
+    const stat = await handle.stat();
+    if (!stat.isFile() || stat.size <= 0 || stat.size > MAX_PROOF_BYTES) return null;
+    const buffer = Buffer.alloc(stat.size);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+    if (bytesRead !== stat.size) return null;
+    const mime = /\.png$/i.test(filename) ? 'image/png' : /\.webp$/i.test(filename) ? 'image/webp' : 'image/jpeg';
+    return { buffer, ...validateProofPhoto(buffer, mime) };
+  } catch { return null; }
+  finally { await handle?.close(); }
+}
+
+/** Proof is binary and authenticated; ordinary lists never select its BLOB. */
+router.get("/api/deliveries/:id/proof", authenticate, async (req, res) => {
+  try {
+    const d = await Delivery.findByPk(req.params.id);
+    if (!d || d.status !== 'delivered') return res.status(404).json({ error: 'Proof not found.' });
+    const order = await Order.findByPk(d.orderId);
+    const isStaff = ['admin', 'cashier'].includes(req.user.role);
+    const isRider = req.user.role === 'rider' && d.riderId === req.user.id;
+    const isCustomer = req.user.role === 'customer' && order?.customerUserId === req.user.id;
+    if (!isStaff && !isRider && !isCustomer) return res.status(404).json({ error: 'Proof not found.' });
+    const stored = await Delivery.scope('withProof').findByPk(d.id);
+    let proof = null;
+    if (stored?.proofPhotoData) {
+      try { proof = { buffer: stored.proofPhotoData, ...validateProofPhoto(stored.proofPhotoData, stored.proofPhotoMime) }; }
+      catch { return res.status(404).json({ error: 'Proof not found.' }); }
+    } else proof = await readLegacyProof(d.proofPhotoUrl);
+    if (!proof) return res.status(404).json({ error: 'Proof not found.' });
+    res.set({ 'Content-Type': proof.mime, 'Content-Length': String(proof.size),
+      'Content-Disposition': 'inline; filename="delivery-proof.' + (proof.mime === 'image/jpeg' ? 'jpg' : proof.mime.split('/')[1]) + '"',
+      'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff',
+      'Content-Security-Policy': "default-src 'none'; sandbox" });
+    res.send(proof.buffer);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /** Rider toggles their own availability between available and offline. */
@@ -470,12 +530,9 @@ router.put("/api/rider/availability", requireRole('rider'), async (req, res) => 
  * come from the stored order lines, so a receipt always reflects what was
  * actually charged.
  */
-router.get("/api/receipts/:orderNumber", async (req, res) => {
+router.get("/api/receipts/:orderNumber", authenticate, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-    let actor = null;
-    try { actor = token ? jwt.verify(token, JWT_SECRET) : null; } catch { actor = null; }
-    if (!actor) return res.status(401).json({ error: 'Sign in to view this receipt.' });
+    const actor = req.user;
 
     const order = await Order.findOne({ where: { orderNumber: req.params.orderNumber } });
     if (!order) return res.status(404).json({ error: 'Order not found.' });
@@ -536,7 +593,8 @@ router.get("/api/receipts/:orderNumber", async (req, res) => {
           assignedAt: delivery.assignedAt,
           startedAt: delivery.startedAt,
           deliveredAt: delivery.deliveredAt,
-          proofPhotoUrl: delivery.proofPhotoUrl,
+          proofPhotoUrl: actor.role === 'kitchen' ? null : proofPhotoUrl(delivery),
+          hasProof: actor.role !== 'kitchen' && !!proofPhotoUrl(delivery),
           proofLat: delivery.proofLat != null ? Number(delivery.proofLat) : null,
           proofLng: delivery.proofLng != null ? Number(delivery.proofLng) : null,
         } : null,
@@ -567,7 +625,8 @@ router.get("/api/admin/deliveries", requireRole('admin', 'cashier'), async (req,
         assignedAt: d.assignedAt,
         startedAt: d.startedAt,
         deliveredAt: d.deliveredAt,
-        proofPhotoUrl: d.proofPhotoUrl,
+        proofPhotoUrl: proofPhotoUrl(d),
+        hasProof: !!proofPhotoUrl(d),
         proofLat: d.proofLat != null ? Number(d.proofLat) : null,
         proofLng: d.proofLng != null ? Number(d.proofLng) : null,
       };

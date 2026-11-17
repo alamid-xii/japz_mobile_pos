@@ -40,7 +40,27 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+api.interceptors.response.use(response => response, error => {
+    if (error.response?.data?.code === 'CLOCK_IN_REQUIRED') {
+        window.dispatchEvent(new Event('japz:clock-in-required'));
+    }
+    return Promise.reject(error);
+});
+
 export const getApiBaseUrl = () => API_BASE_URL;
+
+const viewingCustomerPages = () => /^\/(japz|order)(\/|$)/.test(window.location.pathname);
+const deliveryIdentityHeaders = () => {
+    const token = localStorage.getItem(viewingCustomerPages() ? CUSTOMER_TOKEN_KEY : 'authToken');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+};
+const workflowChanged = <T,>(response: T) => { window.dispatchEvent(new Event('japz:workflow-changed')); return response; };
+
+/** Private proof bytes: never put tokens in an image URL or cache the photo. */
+export const fetchDeliveryProof = (url: string, signal?: AbortSignal) => {
+    if (!/^\/api\/deliveries\/\d+\/proof$/.test(url)) return Promise.reject(new Error('Invalid proof reference.'));
+    return axios.get<Blob>(url, { baseURL: API_BASE_URL, responseType: 'blob', headers: deliveryIdentityHeaders(), timeout: 20000, signal });
+};
 
 export const authAPI = {
     register: (name: string, email: string, password: string) =>
@@ -126,7 +146,7 @@ export const menuItemAPI = {
         hasFlavor?: boolean;
         flavors?: string[];
     }) => api.post('/api/menu-items', data),
-    update: (id: string | number, data: any) => api.put(`/api/menu-items/${id}`, data),
+    update: (id: string | number, data: unknown) => api.put(`/api/menu-items/${id}`, data),
     delete: (id: string | number) => api.delete(`/api/menu-items/${id}`),
 
     /** Uploads a photo for one item. Staff token only. */
@@ -142,14 +162,14 @@ export const menuItemAPI = {
 };
 
 export const ordersAPI = {
-    create: (data: any) => api.post('/api/orders', data),
+    create: (data: unknown) => api.post('/api/orders', data),
     getAll: (status?: string) => api.get('/api/orders', { params: { status } }),
     getById: (id: string | number) => api.get(`/api/orders/${id}`),
     updateStatus: (id: string | number, status: string) =>
         api.put(`/api/orders/${id}/status`, { status }),
-    getIncomingByCategories: (data?: any) =>
+    getIncomingByCategories: (data?: unknown) =>
         api.post('/api/kitchen/orders/incoming', data || {}),
-    getCompletedByCategories: (data?: any) =>
+    getCompletedByCategories: (data?: unknown) =>
         api.post('/api/kitchen/orders/completed', data || {}),
     updateOrderStatus: (id: string | number, status: string) =>
         api.put(`/api/orders/${id}/status`, { status }),
@@ -164,13 +184,16 @@ export const workflowAPI = {
     readyOrders: () => api.get('/api/cashier/ready-orders'),
     availableRiders: () => api.get('/api/cashier/available-riders'),
     assignRider: (orderId: number, riderId: number) =>
-        api.post(`/api/cashier/orders/${orderId}/assign-rider`, { riderId }),
+        api.post(`/api/cashier/orders/${orderId}/assign-rider`, { riderId }).then(workflowChanged),
     completeOrder: (orderId: number) =>
-        api.post(`/api/cashier/orders/${orderId}/complete`),
+        api.post(`/api/cashier/orders/${orderId}/complete`).then(workflowChanged),
 
     myDeliveries: () => api.get('/api/rider/deliveries'),
     startDelivery: (deliveryId: number) =>
-        api.post(`/api/rider/deliveries/${deliveryId}/start`),
+        api.post(`/api/rider/deliveries/${deliveryId}/start`).then(workflowChanged),
+    shareRiderLocation: (deliveryId: number, point: { lat: number; lng: number; accuracy: number; capturedAt: string }) =>
+        api.put(`/api/rider/deliveries/${deliveryId}/location`, point),
+    stopRiderLocation: (deliveryId: number) => api.delete(`/api/rider/deliveries/${deliveryId}/location`),
     /** Proof photo is mandatory; the server rejects the call without it. */
     markDelivered: (deliveryId: number, proof: File, coords?: { lat: number; lng: number }, notes?: string) => {
         const form = new FormData();
@@ -180,12 +203,14 @@ export const workflowAPI = {
         return api.post(`/api/rider/deliveries/${deliveryId}/deliver`, form, {
             headers: { 'Content-Type': 'multipart/form-data' },
             timeout: 60000,
-        });
+        }).then(workflowChanged);
     },
     setRiderAvailability: (availability: 'available' | 'offline') =>
         api.put('/api/rider/availability', { availability }),
 
-    receipt: (orderNumber: string) => api.get(`/api/receipts/${encodeURIComponent(orderNumber)}`),
+    receipt: (orderNumber: string) => viewingCustomerPages()
+        ? axios.get(`/api/receipts/${encodeURIComponent(orderNumber)}`, { baseURL: API_BASE_URL, headers: deliveryIdentityHeaders(), timeout: 15000 })
+        : api.get(`/api/receipts/${encodeURIComponent(orderNumber)}`),
     adminDeliveries: () => api.get('/api/admin/deliveries'),
     orderEvents: (orderId: number) => api.get(`/api/admin/orders/${orderId}/events`),
     riders: () => api.get('/api/admin/riders'),
@@ -303,7 +328,7 @@ export const feedbackAPI = {
     getAll: (status?: string, limit?: number, offset?: number) =>
         api.get('/api/feedback', { params: { status, limit, offset } }),
     getById: (id: string | number) => api.get(`/api/feedback/${id}`),
-    update: (id: string | number, data: any) => api.put(`/api/feedback/${id}`, data),
+    update: (id: string | number, data: unknown) => api.put(`/api/feedback/${id}`, data),
     delete: (id: string | number) => api.delete(`/api/feedback/${id}`),
     getAnalytics: (startDate?: string, endDate?: string, limit?: number) =>
         api.get('/api/feedback/analytics', { params: { startDate, endDate, limit } }),
@@ -338,7 +363,7 @@ export const discountsVouchersAPI = {
 
 export const businessHoursAPI = {
     get: () => api.get('/api/business-hours'),
-    update: (data: { openTime: string; closeTime: string; applyCashier: boolean; applyKitchen: boolean }) =>
+    update: (data: { openTime: string; closeTime: string; applyCashier: boolean; applyKitchen: boolean; autoClockOutEnabled?: boolean }) =>
         api.put('/api/business-hours', data),
 };
 
@@ -465,6 +490,7 @@ export const payrollAPI = {
 };
 
 export const attendanceAPI = {
+    approveOvertime: (id:number, data:{ approved:boolean; reason:string }) => api.put(`/api/attendance/${id}/overtime`,data),
     getRecords: (params?: { startDate?: string; endDate?: string; month?: string; employeeId?: number }) =>
         api.get('/api/attendance/records', { params }),
     clockIn:  (employeeId: number, clockInTime?: string) =>

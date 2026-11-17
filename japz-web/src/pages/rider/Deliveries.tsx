@@ -3,11 +3,14 @@ import {
     Bike, MapPin, Phone, Camera, Check, X, Package, Navigation,
     LogOut, CircleDot, History, Receipt as ReceiptIcon, ExternalLink,
 } from 'lucide-react';
-import { workflowAPI, getApiBaseUrl } from '../../services/api';
+import { workflowAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import DeliveryMap from '../public/storefront/components/DeliveryMap';
 import DeliveryReceipt from '../../components/DeliveryReceipt';
-import TimeClock from '../../components/TimeClock';
+import DeliveryProofPhoto from '../../components/DeliveryProofPhoto';
+import Modal from '../../components/Modal';
+import { useRiderLocationSharing } from '../../hooks/useRiderLocationSharing';
+import { googleMapsDirectionsUrl } from '../../utils/googleMaps';
 
 interface DeliveryOrder {
     orderNumber: string;
@@ -32,6 +35,7 @@ interface DeliveryRow {
 
 const money = (n: number | string) => `₱${Number(n).toFixed(2)}`;
 const clock = (iso: string | null) => iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+const deliveryError = (error: unknown, fallback: string) => (error as { response?: { data?: { error?: string } } })?.response?.data?.error || fallback;
 
 export default function RiderDeliveries() {
     const { user, logout } = useAuth();
@@ -49,16 +53,16 @@ export default function RiderDeliveries() {
     const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    const proofRequest = useRef<number | null>(null);
+    const [viewProof, setViewProof] = useState<string | null>(null);
 
     const [mapFor, setMapFor] = useState<DeliveryRow | null>(null);
     const [receiptFor, setReceiptFor] = useState<string | null>(null);
     const [busyId, setBusyId] = useState<number | null>(null);
 
-    // The rider's own live position. Used as the route origin so the road route
-    // is drawn from where they actually are, not from the restaurant.
-    const [myPos, setMyPos] = useState<{ lat: number; lng: number } | null>(null);
-    const [posError, setPosError] = useState<string | null>(null);
-    const watchRef = useRef<number | null>(null);
+    const [sharing, setSharing] = useState(false);
+    const inTransit = active.filter(delivery => delivery.status === 'out-for-delivery');
+    const { position: myPos, lastSharedAt, error: posError } = useRiderLocationSharing(inTransit.map(delivery => delivery.deliveryId), sharing, Boolean(mapFor));
 
     // A rider approved by the admin starts offline and must go on shift before
     // the cashier can assign them anything.
@@ -72,8 +76,8 @@ export default function RiderDeliveries() {
             setHistory(res.data.history || []);
             if (res.data.availability) setAvailability(res.data.availability);
             setError(null);
-        } catch (err: any) {
-            setError(err?.response?.data?.error || 'Could not load your deliveries.');
+        } catch (err: unknown) {
+            setError(deliveryError(err, 'Could not load your deliveries.'));
         } finally {
             setLoading(false);
         }
@@ -93,48 +97,28 @@ export default function RiderDeliveries() {
             const next = availability === 'available' ? 'offline' : 'available';
             const res = await workflowAPI.setRiderAvailability(next);
             setAvailability(res.data.availability);
-        } catch (err: any) {
-            setError(err?.response?.data?.error || 'Could not change your status.');
+        } catch (err: unknown) {
+            setError(deliveryError(err, 'Could not change your status.'));
         } finally {
             setTogglingShift(false);
         }
     };
 
-    // Only watch GPS while a map is on screen, so the battery is not drained
-    // for the whole shift.
     useEffect(() => {
-        if (!mapFor) {
-            if (watchRef.current != null) {
-                navigator.geolocation?.clearWatch(watchRef.current);
-                watchRef.current = null;
-            }
-            return;
-        }
-        if (!navigator.geolocation) {
-            setPosError('This device cannot share a location.');
-            return;
-        }
-        setPosError(null);
-        watchRef.current = navigator.geolocation.watchPosition(
-            pos => setMyPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-            () => setPosError('Location unavailable — showing the route from the store instead.'),
-            { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 },
-        );
-        return () => {
-            if (watchRef.current != null) {
-                navigator.geolocation.clearWatch(watchRef.current);
-                watchRef.current = null;
-            }
-        };
-    }, [mapFor]);
+        if (!proofFile) { setProofPreview(null); return; }
+        const url = URL.createObjectURL(proofFile);
+        setProofPreview(url);
+        return () => URL.revokeObjectURL(url);
+    }, [proofFile]);
 
     const start = async (d: DeliveryRow) => {
         setBusyId(d.deliveryId);
         try {
             await workflowAPI.startDelivery(d.deliveryId);
             await load();
-        } catch (err: any) {
-            setError(err?.response?.data?.error || 'Could not start that delivery.');
+            setSharing(true);
+        } catch (err: unknown) {
+            setError(deliveryError(err, 'Could not start that delivery.'));
         } finally {
             setBusyId(null);
         }
@@ -144,31 +128,35 @@ export default function RiderDeliveries() {
         setProofFor(d);
         setProofFile(null);
         setProofPreview(null);
+        setCoords(null);
+        proofRequest.current = d.deliveryId;
         setError(null);
         // Best-effort location stamp for the record; never blocks the hand-off.
         navigator.geolocation?.getCurrentPosition(
-            pos => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-            () => setCoords(null),
+            pos => { if (proofRequest.current === d.deliveryId) setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); },
+            () => { if (proofRequest.current === d.deliveryId) setCoords(null); },
             { enableHighAccuracy: true, timeout: 8000 },
         );
     };
 
     const pickProof = (file: File) => {
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 6 * 1024 * 1024) { setProofFile(null); setError('Choose a JPEG, PNG or WebP photo up to 6 MB.'); return; }
+        setError(null);
         setProofFile(file);
-        setProofPreview(URL.createObjectURL(file));
     };
+
+    const closeProof = () => { proofRequest.current = null; setProofFor(null); setProofFile(null); setCoords(null); };
 
     const submitProof = async () => {
         if (!proofFor || !proofFile) return;
         setSubmitting(true);
         try {
             await workflowAPI.markDelivered(proofFor.deliveryId, proofFile, coords ?? undefined);
-            setProofFor(null);
-            setProofFile(null);
-            setProofPreview(null);
+            closeProof();
+            setSharing(false);
             await load();
-        } catch (err: any) {
-            setError(err?.response?.data?.error || 'Could not record the delivery.');
+        } catch (err: unknown) {
+            setError(deliveryError(err, 'Could not record the delivery.'));
         } finally {
             setSubmitting(false);
         }
@@ -217,7 +205,7 @@ export default function RiderDeliveries() {
                 </div>
             </header>
 
-            <main className="flex-1 overflow-y-auto overflow-x-hidden">
+            <section aria-label="Deliveries" className="flex-1 overflow-y-auto overflow-x-hidden">
                 <div className="max-w-3xl mx-auto px-4 py-4 space-y-4">
                     <div className="flex gap-2">
                         {(['active', 'history'] as const).map(t => (
@@ -233,6 +221,13 @@ export default function RiderDeliveries() {
                         ))}
                     </div>
 
+                    {inTransit.length > 0 && <section aria-label="Live location sharing" className="rounded-2xl border border-yellow-300 bg-yellow-50 p-4 text-slate-900">
+                        <div className="flex items-center justify-between gap-3"><p className="flex items-center gap-2 text-sm font-extrabold"><CircleDot size={17} />{sharing ? (lastSharedAt && !posError ? 'Live location is sharing' : 'Connecting to GPS…') : 'Live location is paused'}</p><button type="button" onClick={() => setSharing(value => !value)} className="min-h-11 shrink-0 rounded-xl border border-yellow-600 px-3 text-xs font-bold">{sharing ? 'Pause sharing' : 'Share live location'}</button></div>
+                        <p className="mt-2 text-xs">Customers can see your latest location during delivery. Keep this screen open; sharing stops when you leave or complete the delivery.</p>
+                        {sharing && lastSharedAt && <p className="mt-1 text-xs">Last sent {clock(lastSharedAt)}</p>}
+                        {sharing && posError && <p role="status" className="mt-2 text-xs font-semibold text-red-800">{posError}</p>}
+                    </section>}
+
                     {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 text-sm">{error}</div>
                     )}
@@ -244,7 +239,6 @@ export default function RiderDeliveries() {
                         </div>
                     )}
 
-                    {tab === 'history' && <TimeClock />}
 
                     {rows.length === 0 ? (
                         <div className="text-center py-16">
@@ -351,14 +345,13 @@ export default function RiderDeliveries() {
                                             <ReceiptIcon size={15} /> Receipt
                                         </button>
                                         {d.proofPhotoUrl && (
-                                            <a
-                                                href={`${getApiBaseUrl()}${d.proofPhotoUrl}`}
-                                                target="_blank"
-                                                rel="noreferrer noopener"
+                                            <button
+                                                type="button"
+                                                onClick={() => setViewProof(d.proofPhotoUrl)}
                                                 className="flex-1 flex items-center justify-center gap-1.5 text-sm font-bold text-slate-700 border border-gray-200 rounded-2xl py-2.5"
                                             >
                                                 <Camera size={15} /> Proof
-                                            </a>
+                                            </button>
                                         )}
                                     </div>
                                 )}
@@ -366,7 +359,7 @@ export default function RiderDeliveries() {
                         );
                     })}
                 </div>
-            </main>
+            </section>
 
             {/* Map */}
             {mapFor?.order?.deliveryLat != null && (
@@ -387,6 +380,7 @@ export default function RiderDeliveries() {
                                 storeLat={myPos?.lat ?? null}
                                 storeLng={myPos?.lng ?? null}
                                 originLabel="You"
+                                originKind="rider"
                                 liveOrigin
                                 label={mapFor.order.deliveryAddress || undefined}
                             />
@@ -400,14 +394,12 @@ export default function RiderDeliveries() {
 
                             {/* Hands off to the phone's own maps app for turn-by-turn. */}
                             <a
-                                href={myPos
-                                    ? `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${myPos.lat}%2C${myPos.lng}%3B${mapFor.order.deliveryLat}%2C${mapFor.order.deliveryLng}`
-                                    : `https://www.openstreetmap.org/?mlat=${mapFor.order.deliveryLat}&mlon=${mapFor.order.deliveryLng}#map=17/${mapFor.order.deliveryLat}/${mapFor.order.deliveryLng}`}
+                                href={googleMapsDirectionsUrl(mapFor.order.deliveryLat!, mapFor.order.deliveryLng!, myPos ?? undefined)}
                                 target="_blank"
                                 rel="noreferrer noopener"
                                 className="w-full bg-slate-900 text-white font-extrabold rounded-2xl py-3.5 flex items-center justify-center gap-2 active:scale-[0.99] transition duration-150"
                             >
-                                <Navigation size={16} /> Navigate <ExternalLink size={13} />
+                                <Navigation size={16} /> Navigate in Google Maps <ExternalLink size={13} />
                             </a>
                         </div>
                     </div>
@@ -418,21 +410,23 @@ export default function RiderDeliveries() {
                 <DeliveryReceipt orderNumber={receiptFor} onClose={() => setReceiptFor(null)} />
             )}
 
+            {viewProof && <Modal label="Proof of delivery" onClose={() => setViewProof(null)} className="max-h-[90dvh] w-full max-w-lg overflow-y-auto"><div className="mb-3 flex items-center justify-between"><h2 className="font-extrabold">Proof of delivery</h2><button type="button" aria-label="Close proof" onClick={() => setViewProof(null)} className="grid min-h-11 min-w-11 place-items-center"><X size={20} /></button></div><DeliveryProofPhoto key={viewProof} proofUrl={viewProof} /></Modal>}
+
             {/* Proof of delivery */}
             {proofFor && (
-                <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center" onClick={() => !submitting && setProofFor(null)}>
-                    <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+                <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center" onClick={() => !submitting && closeProof()}>
+                    <div className="bg-white w-full sm:max-w-md max-h-[92dvh] flex flex-col rounded-t-3xl sm:rounded-3xl overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="flex shrink-0 items-center justify-between px-5 py-3.5 border-b border-gray-100">
                             <div>
                                 <p className="font-extrabold text-slate-900">Proof of delivery</p>
                                 <p className="text-[11px] text-slate-500">{proofFor.order?.orderNumber} · {proofFor.order?.customerName}</p>
                             </div>
-                            <button onClick={() => setProofFor(null)} disabled={submitting} aria-label="Close" className="p-1.5 rounded-full hover:bg-gray-100">
+                            <button onClick={closeProof} disabled={submitting} aria-label="Close" className="p-1.5 rounded-full hover:bg-gray-100">
                                 <X size={18} />
                             </button>
                         </div>
 
-                        <div className="p-5 space-y-3">
+                        <div className="min-h-0 overflow-y-auto p-5 space-y-3">
                             <div className="w-full aspect-[4/3] rounded-2xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
                                 {proofPreview
                                     ? <img src={proofPreview} alt="Proof" className="w-full h-full object-cover" />

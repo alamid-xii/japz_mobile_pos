@@ -9,7 +9,7 @@ import Thumb from './components/Thumb';
 import EmptyState from './components/EmptyState';
 import AddressPicker from './components/AddressPicker';
 import MapPicker from './components/MapPicker';
-import { useStorefrontBase } from './StorefrontLayout';
+import { useStorefrontBase } from './storefrontRouting';
 
 type OrderType = 'dine-in' | 'take-out' | 'delivery';
 
@@ -219,7 +219,7 @@ export default function CartPage() {
     const field = 'w-full rounded-2xl bg-gray-50 text-gray-900 placeholder-gray-400 border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition duration-150';
 
     return (
-        <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+        <div className="storefront-cart-page max-w-2xl mx-auto px-4 py-4 space-y-4">
             <div className="flex items-center gap-2">
                 {step === 'details' && (
                     <button onClick={() => setStep('cart')} aria-label="Back to cart" className="p-1.5 -ml-1.5 rounded-full hover:bg-gray-100">
@@ -435,7 +435,7 @@ export default function CartPage() {
                 <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 text-sm">{error}</div>
             )}
 
-            <button
+            <div className="storefront-checkout-summary"><div className="flex items-center justify-between mb-3"><span className="text-sm">Total · {cartCount} items</span><strong>{peso(cartTotal)}</strong></div><button
                 onClick={() => {
                     if (step === 'cart') {
                         // An account is required to order, so send the customer to
@@ -457,6 +457,7 @@ export default function CartPage() {
                     : step === 'cart' ? (customer ? 'Check out' : 'Sign in to check out')
                     : 'Place Order'}
             </button>
+            </div>
 
             {mapOpen && (
                 <MapPicker

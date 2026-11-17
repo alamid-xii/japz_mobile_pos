@@ -4,6 +4,11 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { screenshotPath } from "./local-paths";
 let child: ChildProcessWithoutNullStreams;
+let fixtureErrors = '';
+const inFlightProxies = new Set<Promise<void>>();
+async function drainProxies() {
+  while (inFlightProxies.size) await Promise.all([...inFlightProxies]);
+}
 interface Account {
   token: string;
   password: string;
@@ -38,8 +43,8 @@ test.beforeAll(async () => {
         resolve(JSON.parse(line.slice(9)));
       }
     });
-    child.stderr.on("data", () => {
-      /* Process exit reports fixture failures; warnings are not failures. */
+    child.stderr.on("data", (data) => {
+      fixtureErrors = (fixtureErrors + data.toString()).slice(-12000);
     });
     child.on("exit", (code) => {
       if (code) reject(new Error("Test fixture exited"));
@@ -47,7 +52,9 @@ test.beforeAll(async () => {
   });
 });
 test.afterEach(async ({ page }) => {
-  // Drain intercepted API handlers before Playwright closes the page/context.
+  // Finish fixture fetches before unrouteAll releases their browser routes.
+  // Releasing a route first can race a late fulfill in Playwright 1.63.
+  await drainProxies();
   await page.unrouteAll({ behavior: 'wait' });
 });
 test.afterAll(async () => {
@@ -57,18 +64,29 @@ test.afterAll(async () => {
   }
 });
 async function openRole(page: Page, role: string, route: string) {
+  await drainProxies();
   await page.unrouteAll({ behavior: 'wait' });
-  await page.route("**/api/**", async (route) => {
+  await page.route("**/api/**", (route) => {
+    const pending = (async () => {
     const request = route.request(),
       url = new URL(request.url());
     if (url.port === "3000") {
-      const response = await route.fetch({
-        url: fixture.url + url.pathname + url.search,
-      });
-      await route.fulfill({ response });
+      try {
+        // Reused Node keep-alive sockets can reset during rapid page changes.
+        // Retry transport failures for reads only; never repeat a mutation.
+        const response = await route.fetch({ url: fixture.url + url.pathname + url.search, maxRetries: request.method() === 'GET' ? 2 : 0 });
+        await route.fulfill({ response });
+      } catch (error) {
+        throw new Error(`${String(error)}\nRequest: ${request.method()} ${url.pathname}; failure=${request.failure()?.errorText || 'none'}; pageClosed=${page.isClosed()}; page=${page.url()}\nFixture diagnostics: ${fixtureErrors || 'No server errors.'}`);
+      }
     } else await route.continue();
+    })();
+    inFlightProxies.add(pending);
+    return pending.finally(() => { inFlightProxies.delete(pending); });
   });
-  await page.goto("/login");
+  // Seed the disposable account on a static same-origin page. A mounted login
+  // route can redirect while its auth request races the next role navigation.
+  await page.goto("/logo.jpg");
   await page.evaluate(
     (token) => localStorage.setItem("authToken", token),
     fixture.accounts[role].token,
@@ -315,6 +333,14 @@ test("Cashier order reservations and Kitchen consumption update Inventory togeth
         .reserved,
     ),
   ).toBe(0);
+  await expect(page).toHaveURL(new RegExp(`/kitchen/prep\\?order=${order.id}$`));
+  await page.getByRole('article', { name: `Order ${order.orderNumber}`, exact: true }).getByRole('button', { name: 'Done · send to cashier', exact: true }).click();
+  await expect(page).toHaveURL(/\/kitchen\/incoming$/);
+  const finished = await (await request.get(fixture.url + `/api/orders/${order.id}`, { headers: { Authorization: `Bearer ${fixture.accounts.kitchen.token}` } })).json();
+  expect(finished.status).toBe('ready');
+  expect(finished.items.every((item: { status: string }) => item.status === 'ready')).toBe(true);
+  const afterReady = await (await request.get(fixture.url + '/api/inventory/items', { headers: { Authorization: `Bearer ${fixture.accounts.inventory.token}` } })).json();
+  expect(Number(afterReady.find((item: { id: number }) => item.id === fixture.ids.cup).onHand)).toBe(11);
 });
 test("Inventory settings save on mobile, persist and handle another Admin edit", async ({
   page,
@@ -411,6 +437,22 @@ test('all workspaces render without viewport overflow', async ({ page }) => {
   }
   expect(failures, failures.join('\n')).toEqual([]);
   expect(errors).toEqual([]);
+});
+
+test('inventory stays light with a dark ordering preference and device setting', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('japz.ordering.theme','dark'));
+  await page.emulateMedia({colorScheme:'dark'});
+  await openRole(page, 'inventory', '/inventory/receiving');
+  await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+  await expect(page.getByRole('button',{name:/Switch to (dark|light) mode/})).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 700 });
+  await page.getByRole('button', { name: 'Receive delivery', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await expect(dialog.locator('.inv-field > span').first()).toHaveCSS('color', 'rgb(37, 37, 37)');
+  await noOverflow(page);
+  await page.screenshot({ path: path.join(screenshotPath, 'inventory-light-receiving.png'), animations: 'disabled' });
 });
 
 test('public pages reflow on narrow and short screens; authentication stays keyboard accessible', async ({ page }) => {

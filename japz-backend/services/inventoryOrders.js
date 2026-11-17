@@ -414,6 +414,9 @@ export async function changeOrderStatus(orderId, target, user, details = {}) {
         !(target === 'cancelled' && ['pending', 'awaiting-payment'].includes(order.status) && (order.cashierId === user.id || order.source === 'online'))) {
       throw new InventoryError('Cashiers can cancel their pending orders or hand over ready orders.', 403);
     }
+    if (target === 'completed' && order.orderType === 'delivery') {
+      throw new InventoryError('Delivery orders must be completed by the assigned rider with a proof-of-delivery photo.', 409);
+    }
     if (target === 'out-for-delivery' && order.orderType !== 'delivery') throw new InventoryError('Only delivery orders can be dispatched.');
     const previousStatus = order.status;
     await applyOrderInventory(order, target, user, transaction);

@@ -1,10 +1,16 @@
 import { createRequestId } from '../../utils/requestId';
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { Delete, Check, ChevronLeft, Receipt, X } from 'lucide-react';
+import { isAxiosError } from 'axios';
+import Modal from '../../components/Modal';
+import type { CheckoutDraft } from '../../types/checkout';
 import PosGatewayPayment from '../../components/PosGatewayPayment';
 import { ordersAPI } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
+import '../../styles/checkout.css';
+
+const paymentError = (error: unknown, fallback: string) => isAxiosError<{ error?: string }>(error) ? error.response?.data?.error || fallback : fallback;
 
 export default function CashPayment() {
     const navigate = useNavigate();
@@ -13,24 +19,25 @@ export default function CashPayment() {
     const {
         total, subtotal, discount, discountId, voucherCode, voucherAmount, items, paymentMethod = 'cash',
         customerName, orderType, tableNumber, deliveryAddress, notes, gatewayMethod
-    } = (location.state as any) || {};
+    } = (location.state as CheckoutDraft | null) || {};
 
     const [amountReceived, setAmountReceived] = useState('');
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState('');
-    const [clientRequestId] = useState(createRequestId());
+    const [clientRequestId] = useState(createRequestId);
     const [orderNumber] = useState(() => `ORD-${Date.now()}-${createRequestId().slice(0, 8)}`);
 
+    const paying = useRef(false);
+    const [reviewOpen, setReviewOpen] = useState(false);
     const totalNum = Number(total || 0);
     const received = Number(amountReceived || 0);
     const change = received - totalNum;
     const isCash = paymentMethod === 'cash';
     const isFree = totalNum === 0;
-    const isValidPayment = isFree || (isCash ? received >= totalNum : true);
+    const isValidPayment = isFree || (isCash ? Number.isFinite(received) && received >= totalNum : true);
 
     const quickAmounts = [50, 100, 200, 500, 1000];
 
-    if (total === undefined || total === null) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><h1 className="text-xl font-semibold text-gray-900">No order to check out</h1><p>Add items from the menu to start an order.</p><button className="mt-4 px-5 py-3 bg-brand text-brand-dark rounded-md font-semibold" onClick={() => navigate('/cashier/pos')}>Back to POS</button></div>;
 
     // Gateway payments have no cash to count: the order is created unpaid and
     // released only once PayMongo confirms.
@@ -61,7 +68,7 @@ export default function CashPayment() {
                 provider: 'PayMongo',
                 status: 'pending',
             },
-            items: itemsArray.map((i: any) => ({
+            items: itemsArray.map((i) => ({
                 id: i.id.toString(),
                 name: i.name,
                 price: i.itemPrice || i.price,
@@ -87,8 +94,8 @@ export default function CashPayment() {
             try {
                 await ordersAPI.create(buildOrder(orderNumber));
                 setGatewayOrder(orderNumber);
-            } catch (e: any) {
-                setGatewayError(e?.response?.data?.error || 'Could not start the order.');
+            } catch (e: unknown) {
+                setGatewayError(paymentError(e, 'Could not start the order.'));
                 startedRef.current = false;
             }
         })();
@@ -117,6 +124,8 @@ export default function CashPayment() {
         });
     };
 
+    if (total === undefined || total === null || !items?.length) return <div className="checkout-empty"><h1>No order to check out</h1><p>Add items from the menu to start an order.</p><button className="checkout-primary" onClick={() => navigate('/cashier/pos')}>Back to POS</button></div>;
+
     if (isGateway) {
         return (
             <div className="p-4 md:p-8 flex flex-col items-center justify-center h-full">
@@ -144,7 +153,8 @@ export default function CashPayment() {
     }
 
     const handlePay = async () => {
-        if (!isValidPayment || processing) return;
+        if (!isValidPayment || processing || paying.current) return;
+        paying.current = true;
         setError('');
 
         setProcessing(true);
@@ -168,7 +178,7 @@ export default function CashPayment() {
                     amountReceived: isCash ? received : totalNum,
                     change: isCash ? Math.round(change * 100) / 100 : 0
                 },
-                items: itemsArray.map((i: any) => ({
+                items: itemsArray.map((i) => ({
                     id: i.id.toString(),
                     name: i.name,
                     price: i.itemPrice || i.price,
@@ -205,136 +215,32 @@ export default function CashPayment() {
                 },
                 replace: true
             });
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error('Payment error:', e);
-            setError(e.response?.data?.error || 'Payment could not be saved. Retry the payment or return to the cart.');
+            setError(paymentError(e, 'Payment could not be saved. Retry the payment or return to the cart.'));
         }
-        finally { setProcessing(false); }
+        finally { paying.current = false; setProcessing(false); }
     };
 
-    return (
-        <div className="min-h-full flex flex-col items-center p-5 md:p-8 md:pt-10 overflow-y-auto">
-            <div className="w-full max-w-md">
-                <button className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 cursor-pointer font-medium text-sm mb-4"
-                    onClick={() => navigate(-1)}>
-                    <ChevronLeft size={18} /> Back
-                </button>
-                <h1 className="text-xl md:text-2xl font-bold text-center capitalize">{paymentMethod} Payment</h1>
-
-                {error && <div role="alert" className="p-3 my-4 rounded-md bg-red-50 border border-red-200 text-red-800 text-sm">{error}<button className="block min-h-11 mt-2 underline" onClick={() => navigate('/cashier/pos')}>Return to cart</button></div>}
-                {/* Order Info Summary */}
-                <div className="bg-gray-50 rounded-xl p-4 my-4">
-                    <div className="flex justify-between py-1">
-                        <span className="text-gray-500">Customer:</span>
-                        <span className="font-semibold">{customerName}</span>
-                    </div>
-                    <div className="flex justify-between py-1">
-                        <span className="text-gray-500">Order Type:</span>
-                        <span className="font-semibold capitalize">{orderType}</span>
-                    </div>
-                    {tableNumber && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-gray-500">Table:</span>
-                            <span className="font-semibold">{tableNumber}</span>
-                        </div>
-                    )}
-                    {deliveryAddress && (
-                        <div className="flex justify-between py-1">
-                            <span className="text-gray-500">Address:</span>
-                            <span className="font-semibold text-right max-w-[60%]">{deliveryAddress}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between py-2 border-t border-gray-200 mt-2 pt-2">
-                        <span className="text-gray-500">Amount Due:</span>
-                        <span className="text-xl font-bold text-brand-dark">₱{totalNum.toFixed(2)}</span>
-                    </div>
-                </div>
-
-                {/* Cash Payment - Amount Received */}
-                {isCash && !isFree && (
-                    <>
-                        <div className="mb-4">
-                            <label htmlFor="cashpayment-field-1" className="text-sm font-semibold text-gray-700 mb-2 block">Amount Received</label>
-                            <input id="cashpayment-field-1"
-                                type="number"
-                                placeholder="0.00"
-                                value={amountReceived}
-                                onChange={(e) => setAmountReceived(e.target.value)}
-                                className={`w-full py-4 text-2xl font-bold text-center border-2 rounded-xl outline-none font-[inherit] ${received > 0 ? (isValidPayment ? 'border-emerald-500' : 'border-red-400') : 'border-gray-200'
-                                    } focus:border-brand`}
-                            />
-                        </div>
-
-                        {/* Quick Amounts */}
-                        <div className="mb-4">
-                            <p className="text-sm font-semibold text-gray-500 mb-2">Quick Amounts</p>
-                            <div className="grid grid-cols-5 gap-2">
-                                {quickAmounts.map(amt => (
-                                    <button
-                                        key={amt}
-                                        onClick={() => setAmountReceived(amt.toString())}
-                                        className={`py-2.5 rounded-xl font-semibold text-sm transition font-[inherit] border ${amountReceived === amt.toString()
-                                                ? 'bg-brand border-brand text-brand-dark'
-                                                : 'bg-white border-gray-200 hover:bg-yellow-50 hover:border-brand cursor-pointer'
-                                            }`}
-                                    >
-                                        ₱{amt}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Change Display */}
-                        {received > 0 && (
-                            <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                                <div className="flex justify-between py-1">
-                                    <span className="text-gray-500">Amount Received:</span>
-                                    <span className="font-semibold">₱{received.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between py-1 border-b border-gray-200 pb-2">
-                                    <span className="text-gray-500">Amount Due:</span>
-                                    <span className="font-semibold">₱{totalNum.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between py-2 mt-1">
-                                    <span className="font-bold">Change:</span>
-                                    <span className={`font-bold ${isValidPayment ? 'text-emerald-500' : 'text-red-500'}`}>
-                                        {isValidPayment ? '+' : '-'}₱{Math.abs(change).toFixed(2)}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
-
-                {/* Free Order Message */}
-                {isFree && (
-                    <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-6 mb-6 text-center">
-                        <p className="text-emerald-700 font-bold text-lg">✓ Order is Complimentary</p>
-                        <p className="text-emerald-600 text-sm mt-2">No charge due to applied discount/voucher</p>
-                        <p className="text-emerald-500 text-2xl font-bold mt-3">₱0.00</p>
-                    </div>
-                )}
-
-                {/* Card/Digital Payment Info */}
-                {!isCash && !isFree && (
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 text-center">
-                        <p className="text-emerald-700 font-medium">Ready to process {paymentMethod} payment</p>
-                        <p className="text-emerald-600 text-sm mt-1">Amount: ₱{totalNum.toFixed(2)}</p>
-                    </div>
-                )}
-
-                {/* Complete Button */}
-                <button
-                    disabled={!isValidPayment || processing}
-                    onClick={handlePay}
-                    className={`w-full py-4 rounded-xl text-lg font-semibold transition font-[inherit] ${isValidPayment && !processing
-                            ? 'bg-brand text-brand-dark cursor-pointer hover:shadow-md hover:shadow-yellow-300/40'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        }`}
-                >
-                    {processing ? 'Processing...' : isFree ? 'Complete Order (Free)' : 'Complete Transaction'}
-                </button>
-            </div>
+    const pressKey = (key: string) => setAmountReceived(previous => {
+        if (key === 'clear') return '';
+        if (key === 'backspace') return previous.slice(0, -1);
+        if (key === '.') return previous.includes('.') ? previous : `${previous || '0'}.`;
+        const next = previous === '0' ? key : previous + key;
+        return /^\d{0,9}(\.\d{0,2})?$/.test(next) ? next : previous;
+    });
+    const overview = <><dl className="cash-order-facts"><div><dt>Customer</dt><dd>{customerName || 'Walk-in'}</dd></div><div><dt>Order type</dt><dd>{(orderType || '').replaceAll('-', ' ')}</dd></div>{tableNumber && <div><dt>Table</dt><dd>{tableNumber}</dd></div>}{deliveryAddress && <div><dt>Address</dt><dd>{deliveryAddress}</dd></div>}</dl><ul className="cash-order-items">{items.map((item, index) => <li key={`${item.id}-${index}`}><div><strong>{item.quantity}× {item.name}</strong><p>{[item.selectedSize, item.selectedFlavor, item.selectedTemperature].filter(Boolean).join(' · ')}</p></div><span>₱{((item.itemPrice || item.price) * item.quantity).toFixed(2)}</span></li>)}</ul><dl className="checkout-breakdown"><div><dt>Subtotal</dt><dd>₱{Number(subtotal || totalNum).toFixed(2)}</dd></div><div><dt>Discount</dt><dd>−₱{Number(discount || 0).toFixed(2)}</dd></div><div><dt>Voucher</dt><dd>−₱{Number(voucherAmount || 0).toFixed(2)}</dd></div></dl>{notes && <p className="checkout-note-text">Notes: {notes}</p>}</>;
+    return <div className="checkout-page cash-page">
+        <header className="checkout-header"><button type="button" className="checkout-back" disabled={processing} onClick={() => navigate(-1)}><ChevronLeft size={19} />Back</button><div><h1>{paymentMethod[0].toUpperCase() + paymentMethod.slice(1)} Payment</h1><p>{customerName || 'Walk-in'} · {(orderType || '').replaceAll('-', ' ')}</p></div><button type="button" className="cash-review-button" aria-label="Review order" onClick={() => setReviewOpen(true)}><Receipt size={18} /><span>Review order</span></button></header>
+        {error && <div className="checkout-error" role="alert"><span>{error}</span><button type="button" disabled={processing} onClick={() => navigate('/cashier/pos')}>Return to cart</button></div>}
+        <div className="cash-layout">
+            <section className="cash-overview checkout-panel" aria-label="Order summary"><div className="checkout-panel-title"><Receipt size={19} /><h2>Order summary</h2></div><div className="cash-overview-scroll">{overview}</div><div className="checkout-total"><span>Amount due</span><strong>₱{totalNum.toFixed(2)}</strong></div></section>
+            <section className="cash-collector checkout-panel" aria-label="Collect payment"><div className="cash-due"><span>Amount due</span><strong>₱{totalNum.toFixed(2)}</strong></div>
+                {isCash && !isFree ? <><div className="cash-amount"><label htmlFor="cashpayment-field-1">Amount Received</label><div><input id="cashpayment-field-1" type="text" inputMode="decimal" autoComplete="off" placeholder="0.00" value={amountReceived} disabled={processing} onChange={event => { if (/^\d{0,9}(\.\d{0,2})?$/.test(event.target.value)) setAmountReceived(event.target.value); }} onKeyDown={event => { if (event.key === 'Enter') void handlePay(); }} /><button type="button" disabled={processing} aria-label="Exact amount" onClick={() => setAmountReceived(totalNum.toFixed(2))}>Exact</button><button type="button" disabled={processing} aria-label="Clear amount" onClick={() => pressKey('clear')}>Clear</button></div></div>
+                <div className="cash-keypad-area"><div className="cash-quick-grid" role="group" aria-label="Quick cash amounts">{quickAmounts.map(amount => <button type="button" disabled={processing} aria-pressed={Number(amountReceived) === amount} key={amount} onClick={() => setAmountReceived(String(amount))}>₱{amount}</button>)}</div><div className="cash-keypad" role="group" aria-label="Cash keypad">{['1','2','3','4','5','6','7','8','9','.','0','backspace'].map(key => <button type="button" key={key} disabled={processing} aria-label={key === 'backspace' ? 'Delete last digit' : key === '.' ? 'Decimal point' : key} onClick={() => pressKey(key)}>{key === 'backspace' ? <Delete size={23} /> : key}</button>)}</div></div></> : <div className="cash-payment-message"><Check size={32} /><h2>{isFree ? 'Order is Complimentary' : `Ready for ${paymentMethod} payment`}</h2><p>{isFree ? 'No charge due to applied discount or voucher.' : 'Confirm the payment has been collected before completing the transaction.'}</p></div>}
+                <div className="cash-confirm"><div className="cash-change" aria-live="polite"><span>{isCash && !isFree && received < totalNum ? 'Still due' : 'Change'}</span><strong>{isCash && !isFree ? `₱${Math.abs(change).toFixed(2)}` : '₱0.00'}</strong></div><button type="button" className="checkout-primary" disabled={!isValidPayment || processing} onClick={() => void handlePay()}>{processing ? 'Processing…' : isFree ? 'Complete Order (Free)' : 'Complete Transaction'}<Check size={20} /></button></div>
+            </section>
         </div>
-    );
+        {reviewOpen && <Modal label="Review payment order" onClose={() => setReviewOpen(false)} className="checkout-promotions"><header><h2>Review order</h2><button type="button" aria-label="Close order review" onClick={() => setReviewOpen(false)}><X size={20} /></button></header>{overview}<div className="checkout-total"><span>Amount due</span><strong>₱{totalNum.toFixed(2)}</strong></div><button type="button" className="checkout-primary" onClick={() => setReviewOpen(false)}>Back to payment</button></Modal>}
+    </div>;
 }

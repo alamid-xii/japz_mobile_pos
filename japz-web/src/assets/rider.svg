@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 35 600 310" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <ellipse class="rider-halo" cx="337" cy="210" rx="269" ry="96" fill="var(--staff-accent-soft)" stroke="none" opacity=".65"/>
+  <g class="rider-destination" stroke-width="3">
+    <path d="M524 301V141h-12l51-45 51 45h-12v160M515 301h97"/>
+    <path class="rider-window" d="M546 153h35v43h-35z" fill="var(--staff-accent)"/>
+    <path d="M563 154v41m-17-21h35M542 301v-66h43v66M574 266h2"/>
+    <path d="M537 307h54" stroke="var(--staff-accent)" stroke-width="5"/>
+  </g>
+  <path class="rider-road" d="M25 307h590" stroke-width="3" opacity=".6"/>
+  <path class="rider-road-dashes" d="M30 325h580" stroke-width="3" stroke-dasharray="28 24" opacity=".35"/>
+  <g transform="translate(52 89)"><g class="rider-food-icon rider-food-burger" stroke-width="2.5">
+    <circle cx="28" cy="28" r="27" fill="var(--app-surface)" stroke="var(--app-border)" stroke-width="1.5"/>
+    <path d="M12 25c1-17 31-17 32 0zM13 37h30q-1 9-15 9t-15-9z" fill="#ffce1b"/>
+    <path d="M12 31h32" stroke="#f47b20" stroke-width="5"/>
+    <path d="M13 32l7 3 8-3 8 3 7-3M21 19h1m9-1h1"/>
+  </g></g>
+  <g transform="translate(135 47)"><g class="rider-food-icon rider-food-fries" stroke-width="2.5">
+    <circle cx="28" cy="28" r="27" fill="var(--app-surface)" stroke="var(--app-border)" stroke-width="1.5"/>
+    <path d="M18 15v17m7-21v21m7-18v18m7-15v15" stroke="#ffce1b" stroke-width="5"/>
+    <path d="M14 28h28l-4 20H18z" fill="#f47b20"/>
+    <path d="M24 37q4 4 8 0"/>
+  </g></g>
+  <g transform="translate(427 87)"><g class="rider-food-icon rider-food-drink" stroke-width="2.5">
+    <circle cx="28" cy="28" r="27" fill="var(--app-surface)" stroke="var(--app-border)" stroke-width="1.5"/>
+    <path d="M28 22l6-12h8" stroke="#f47b20"/>
+    <path d="M16 24h26l-4 24H20z" fill="var(--staff-accent-soft)"/>
+    <path d="M19 33h20v9H20z" fill="#ffce1b" stroke="none"/>
+    <path d="M14 23h30"/>
+  </g></g>
+  <ellipse class="rider-box-shadow" cx="477" cy="305" rx="38" ry="4" fill="currentColor" stroke="none"/>
+  <g class="rider-vehicle">
+    <g class="rider-wheel rider-wheel-back"><circle cx="174" cy="278" r="28" fill="var(--app-background)"/><circle cx="174" cy="278" r="10"/><path d="M174 250v18m0 20v18m-28-28h18m20 0h18" stroke-width="2"/></g>
+    <g class="rider-wheel rider-wheel-front"><circle cx="371" cy="278" r="28" fill="var(--app-background)"/><circle cx="371" cy="278" r="10"/><path d="M371 250v18m0 20v18m-28-28h18m20 0h18" stroke-width="2"/></g>
+    <path d="M319 173h25l24 59h-29z" fill="var(--staff-accent-soft)" stroke="none"/>
+    <path d="M135 267q-1-41 48-43h47l28 34h46l15-85h25l27 67q28-1 40 25M207 278h110q21-3 23-21l1-31M145 220h88M151 208h63q12 0 12 12h-81zM320 174l-9-22h-17M343 179h16q12 0 12 14h-22M366 230l-3-21M133 240h-14"/>
+    <g class="rider-body">
+      <path d="M236 204l-14-45q-3-14 10-23l26-13q13-5 19 10l15 37 22 4M234 150l21 32 26-5M233 200h43l-16 35h31M246 236l-4 15h32"/>
+      <path d="M245 116q-11-9-9-24 2-17 19-22 19-4 29 12l3 14h-29M257 98v20q12 8 23-8l4-13M235 88h59M255 104h12"/>
+      <path d="M238 87q-4-28 23-29 25 0 30 29z" fill="#ffce1b"/>
+      <path d="M261 65q13 1 18 13" stroke="#f47b20" stroke-width="3"/>
+    </g>
+    <path class="rider-speed" d="M105 171H68m29 19H42m58 20H70" stroke-width="3"/>
+    <g class="rider-box"><path class="rider-box-accent" fill="#ffce1b" d="M137 145h70v58h-70z"/><path d="M132 143h80v-11h-80zM166 145v58M157 132v-10q9-8 18 0v10"/><path d="M149 163h8m-8 10h8" stroke-width="2"/><path class="rider-flame-accent" fill="#f47b20" stroke="none" d="M184 188c-10-3-10-12-3-18-1 5 2 6 3 1 2-4 1-7 0-10 11 9 15 23 0 27z"/></g>
+    <path class="rider-delivery-arm" d="M278 143l34 13 28-16M337 137l12-3m-10 8 13-2"/>
+  </g>
+  <g class="rider-steam" stroke-width="2.5"><path d="M461 236q-6-7 0-14m12 14q-6-7 0-14m12 14q-6-7 0-14"/></g>
+  <g transform="translate(566 67)"><g class="rider-delivered" stroke-width="3.5">
+    <circle r="22" fill="#ffce1b" stroke="var(--staff-accent-deep)" stroke-width="2"/>
+    <path d="m-9 0 6 6L10-7" stroke="#292414"/>
+  </g></g>
+  <g class="rider-sparkles" stroke-width="2.5" stroke="#f47b20"><path d="M521 64v12m-6-6h12M602 91v10m-5-5h10M507 215v10m-5-5h10"/><circle cx="534" cy="105" r="2" fill="#ffce1b" stroke="none"/><circle cx="601" cy="61" r="3" fill="#ffce1b" stroke="none"/></g>
+</svg>

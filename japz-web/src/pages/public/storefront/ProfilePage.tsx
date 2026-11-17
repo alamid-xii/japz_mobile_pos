@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, LogOut, Receipt, ChevronRight, Save, UserCircle2 } from 'lucide-react';
 import { customerAuthAPI } from '../../../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
-import { useStorefrontBase } from './StorefrontLayout';
+import { useStorefrontBase } from './storefrontRouting';
 import EmptyState from './components/EmptyState';
 
 interface PastOrder {

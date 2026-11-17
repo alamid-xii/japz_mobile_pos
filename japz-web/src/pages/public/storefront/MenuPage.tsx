@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SearchX } from 'lucide-react';
 import { useStorefront, type ChosenAddon, type Product, type SizeOption } from './StorefrontContext';
-import { useStorefrontBase } from './StorefrontLayout';
+import { useStorefrontBase } from './storefrontRouting';
 import SearchBar, { type SortKey } from './components/SearchBar';
 import CategoryChips from './components/CategoryChips';
 import ProductCard from './components/ProductCard';
@@ -106,7 +106,7 @@ export default function MenuPage() {
                             <h2 className="font-extrabold text-slate-900 text-[17px]">{heading}</h2>
                             <span className="text-xs text-gray-400">{shown.length} item{shown.length > 1 ? 's' : ''}</span>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <div className="storefront-product-grid">
                             {shown.map(p => (
                                 <ProductCard
                                     key={p.id}

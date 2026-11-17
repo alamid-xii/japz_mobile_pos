@@ -284,6 +284,17 @@ router.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ error: 'Incorrect email or password' });
     }
 
+    // A verified per-shift approval can keep staff working after closing.
+    // This is not the payroll eligibility flag and cannot be supplied by the client.
+    let overtimeApprovedForShift = false;
+    if (['cashier','kitchen'].includes(user.role)) {
+      try {
+        const { getMyTodayAttendance } = await import('../services/attendanceService.js');
+        const attendance = await getMyTodayAttendance(user.id);
+        overtimeApprovedForShift = Boolean(attendance.isClockedIn && attendance.record?.overtimeApprovedAt && attendance.record?.overtimeApprovedBy);
+      } catch (error) { console.warn('Could not check shift overtime approval:',error.message); }
+    }
+
     // Create JWT token
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name, role: user.role },
@@ -305,6 +316,7 @@ router.post("/api/auth/login", async (req, res) => {
     res.json({
       message: 'Login successful',
       token,
+      overtimeApprovedForShift,
       user: {
         id: user.id,
         name: user.name,
@@ -2677,8 +2689,8 @@ router.get("/api/business-hours", async (req, res) => {
     // If no business hours record exists, create a default one
     if (!businessHours) {
       businessHours = await BusinessHours.create({
-        openTime: "09:00:00",
-        closeTime: "22:00:00",
+        openTime: "07:00:00",
+        closeTime: "20:00:00",
         applyCashier: true,
         applyKitchen: true
       });
@@ -2693,8 +2705,9 @@ router.get("/api/business-hours", async (req, res) => {
 // Update business hours
 router.put("/api/business-hours", verifyToken, allowRoles('admin'), async (req, res) => {
   try {
-    const { openTime, closeTime, applyCashier, applyKitchen, deliveryEtaMinMinutes, deliveryEtaMaxMinutes, storeLat, storeLng, gcashNumber, gcashName } = req.body;
-    console.log('PUT /api/business-hours body:', req.body, 'user:', req.user?.id);
+    const { openTime, closeTime, applyCashier, applyKitchen, autoClockOutEnabled, deliveryEtaMinMinutes, deliveryEtaMaxMinutes, storeLat, storeLng, gcashNumber, gcashName } = req.body;
+    if ((openTime !== undefined && !/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(openTime)) || (closeTime !== undefined && !/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(closeTime))) return res.status(400).json({error:"Enter valid opening and closing times (HH:MM), Philippine time."});
+    if (autoClockOutEnabled !== undefined && typeof autoClockOutEnabled !== "boolean") return res.status(400).json({error:"autoClockOutEnabled must be true or false."});
 
     // Convert HH:MM format to HH:MM:SS if needed
     const formatTime = (time) => {
@@ -2711,10 +2724,10 @@ router.put("/api/business-hours", verifyToken, allowRoles('admin'), async (req, 
     // If no business hours record exists, create one
     if (!businessHours) {
       businessHours = await BusinessHours.create({
-        openTime: formatTime(openTime) || "09:00:00",
-        closeTime: formatTime(closeTime) || "22:00:00",
+        openTime: formatTime(openTime) || "07:00:00",
+        closeTime: formatTime(closeTime) || "20:00:00",
         applyCashier: applyCashier !== undefined ? applyCashier : true,
-        applyKitchen: applyKitchen !== undefined ? applyKitchen : true
+        applyKitchen: applyKitchen !== undefined ? applyKitchen : true, autoClockOutEnabled:autoClockOutEnabled ?? true
       });
     } else {
       // Update existing record
@@ -2722,6 +2735,7 @@ router.put("/api/business-hours", verifyToken, allowRoles('admin'), async (req, 
       if (closeTime !== undefined) businessHours.closeTime = formatTime(closeTime);
       if (applyCashier !== undefined) businessHours.applyCashier = applyCashier;
       if (applyKitchen !== undefined) businessHours.applyKitchen = applyKitchen;
+      if (autoClockOutEnabled !== undefined) businessHours.autoClockOutEnabled = autoClockOutEnabled;
 
       // Delivery estimate window shown to customers.
       const clampMinutes = (v) => Math.max(1, Math.min(240, parseInt(v, 10)));
@@ -2755,7 +2769,7 @@ router.put("/api/business-hours", verifyToken, allowRoles('admin'), async (req, 
       await businessHours.save();
     }
 
-    await createLog(req.user.id, 'update', 'business_hours', businessHours.id, req);
+    await createLog({ userId:req.user.id,userName:req.user.name,action:'OTHER',module:'business_hours',entityId:businessHours.id,entityType:'BusinessHours',description:'Admin updated Philippine business hours and automatic clock-out settings',changes:{after:{openTime:businessHours.openTime,closeTime:businessHours.closeTime,autoClockOutEnabled:businessHours.autoClockOutEnabled}},status:'success' });
 
     res.json({ message: 'Business hours updated successfully', businessHours });
   } catch (error) {

@@ -30,10 +30,10 @@ export default function Settings() {
     const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [downloadingLogs, setDownloadingLogs] = useState(false);
     const [businessHoursData, setBusinessHoursData] = useState({
-        openTime: '09:00',
-        closeTime: '22:00',
+        openTime: '07:00',
+        closeTime: '20:00',
         applyCashier: true,
-        applyKitchen: true
+        applyKitchen: true, autoClockOutEnabled:true
     });
     const [savingBusinessHours, setSavingBusinessHours] = useState(false);
     const [formData, setFormData] = useState({
@@ -66,13 +66,13 @@ export default function Settings() {
             businessHoursAPI.get().then(res => {
                 if (res.data) {
                     // Convert time format from HH:MM:SS to HH:MM
-                    const openTime = res.data.openTime?.substring(0, 5) || '09:00';
-                    const closeTime = res.data.closeTime?.substring(0, 5) || '22:00';
+                    const openTime = res.data.openTime?.substring(0, 5) || '07:00';
+                    const closeTime = res.data.closeTime?.substring(0, 5) || '20:00';
                     setBusinessHoursData({
                         openTime,
                         closeTime,
                         applyCashier: res.data.applyCashier ?? true,
-                        applyKitchen: res.data.applyKitchen ?? true
+                        applyKitchen: res.data.applyKitchen ?? true, autoClockOutEnabled:res.data.autoClockOutEnabled ?? true
                     });
                 }
             }).catch(() => { });
@@ -161,13 +161,13 @@ export default function Settings() {
             // Refetch business hours to confirm they were saved
             const hoursResponse = await businessHoursAPI.get();
             if (hoursResponse.data) {
-                const openTime = hoursResponse.data.openTime?.substring(0, 5) || '09:00';
-                const closeTime = hoursResponse.data.closeTime?.substring(0, 5) || '22:00';
+                const openTime = hoursResponse.data.openTime?.substring(0, 5) || '07:00';
+                const closeTime = hoursResponse.data.closeTime?.substring(0, 5) || '20:00';
                 setBusinessHoursData({
                     openTime,
                     closeTime,
                     applyCashier: hoursResponse.data.applyCashier ?? true,
-                    applyKitchen: hoursResponse.data.applyKitchen ?? true
+                    applyKitchen: hoursResponse.data.applyKitchen ?? true, autoClockOutEnabled:hoursResponse.data.autoClockOutEnabled ?? true
                 });
             }
             
@@ -456,7 +456,7 @@ export default function Settings() {
             >
                 <div className="text-left">
                     <h2 className="text-base font-semibold">Business Hours</h2>
-                    <p className="text-sm text-gray-500">Set operating hours for cashier and kitchen staff</p>
+                    <p className="text-sm text-gray-500">Opening hours and automatic staff clock-out · Philippine time</p>
                 </div>
                 <ChevronDown size={20} className={`text-brand-dark transition-transform ${expandedSections.businessHours ? 'rotate-180' : ''}`} />
             </button>
@@ -465,7 +465,7 @@ export default function Settings() {
                 <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 space-y-4">
                     <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg mb-2">
                         <Clock size={18} className="text-blue-600" />
-                        <p className="text-sm text-blue-700">Set the opening and closing times for your staff members</p>
+                        <p className="text-sm text-blue-700">Philippine time (Asia/Manila). Closing time also controls automatic clock-out for all staff, except shifts with manager-approved overtime.</p>
                     </div>
 
                     {/* Opening Time */}
@@ -490,7 +490,7 @@ export default function Settings() {
                         />
                     </div>
 
-                    {/* Apply to Roles */}
+                    <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg"><input type="checkbox" checked={businessHoursData.autoClockOutEnabled} onChange={event => setBusinessHoursData({ ...businessHoursData,autoClockOutEnabled:event.target.checked })} /><span><strong>Automatically clock out staff at closing</strong><small className="block text-gray-500">All staff roles. Approve overtime in Attendance to keep a shift open.</small></span></label>{/* Apply to Roles */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">Apply to Roles</label>
                         <div className="space-y-2">
@@ -532,7 +532,7 @@ export default function Settings() {
                     {/* Save Button */}
                     <button
                         onClick={handleSaveBusinessHours}
-                        disabled={savingBusinessHours || (!businessHoursData.applyCashier && !businessHoursData.applyKitchen)}
+                        disabled={savingBusinessHours}
                         className="w-full py-2 bg-brand text-brand-dark rounded-lg font-semibold hover:shadow-md disabled:opacity-50 transition"
                     >
                         {savingBusinessHours ? 'Saving...' : 'Save Business Hours'}

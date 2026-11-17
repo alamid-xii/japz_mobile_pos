@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft, MailCheck } from 'lucide-react';
 import { useCustomerAuth } from './CustomerAuthContext';
-import { useStorefrontBase } from './StorefrontLayout';
+import { useStorefrontBase } from './storefrontRouting';
 
 type Mode = 'signin' | 'signup';
 type SignupStep = 'details' | 'otp';

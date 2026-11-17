@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { MapPin, Store, ExternalLink, Route as RouteIcon } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Bike, MapPin, Store, ExternalLink, Route as RouteIcon } from 'lucide-react';
 import { publicOrderAPI } from '../../../../services/api';
+import { googleMapsDirectionsUrl } from '../../../../utils/googleMaps';
 
 interface Props {
     lat: number;
@@ -12,15 +13,21 @@ interface Props {
     originLabel?: string;
     /** Live origin: re-routes as it changes, for a rider en route. */
     liveOrigin?: boolean;
+    originKind?: 'store' | 'rider';
 }
 
 const TILE = 256;
 const HEIGHT = 240;
+const MERCATOR_MAX_LAT = 85.05112878;
+const GOOGLE_EMBED_KEY = import.meta.env.VITE_GOOGLE_MAPS_EMBED_API_KEY?.trim();
+const validCoordinates = (lat: unknown, lng: unknown) =>
+    typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng)
+    && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
 
 // --- Web Mercator projection ---------------------------------------------
 const lngToX = (lng: number, z: number) => ((lng + 180) / 360) * Math.pow(2, z);
 const latToY = (lat: number, z: number) => {
-    const r = (lat * Math.PI) / 180;
+    const r = (Math.max(-MERCATOR_MAX_LAT, Math.min(MERCATOR_MAX_LAT, lat)) * Math.PI) / 180;
     return ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * Math.pow(2, z);
 };
 
@@ -32,22 +39,62 @@ const haversineKm = (aLat: number, aLng: number, bLat: number, bLng: number) => 
     const s =
         Math.sin(dLat / 2) ** 2 +
         Math.cos((aLat * Math.PI) / 180) * Math.cos((bLat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-    return R * 2 * Math.asin(Math.sqrt(s));
+    return R * 2 * Math.asin(Math.sqrt(Math.max(0, Math.min(1, s))));
 };
 
 /**
- * Delivery map rendered from OpenStreetMap raster tiles with an SVG overlay, so
- * a line can be drawn between the store and the customer. No API key and no
- * mapping library.
- *
- * The line is the STRAIGHT-LINE path, not a driving route — there is no routing
- * engine here, so it shows direction and distance, nothing more. And it is not
- * a rider's position: nothing in this system reports where a rider is.
+ * The default map uses OpenStreetMap tiles and the existing road-route service.
+ * A live origin marks the rider's latest reported position. Google Embed is an
+ * optional, separate provider; its directions are never drawn on the free map.
  */
-export default function DeliveryMap({
+export default function DeliveryMap(props: Props) {
+    const [preferFree, setPreferFree] = useState(false);
+    const [googleFailed, setGoogleFailed] = useState(false);
+    const { lat, lng, storeLat, storeLng, label, liveOrigin, originKind, originLabel } = props;
+    const hasOrigin = validCoordinates(storeLat, storeLng);
+    const isRider = originKind === 'rider' || liveOrigin;
+    const originName = originLabel || (isRider ? 'Rider location' : 'JAPZ Grill');
+
+    if (!validCoordinates(lat, lng)) {
+        return <section className="bg-white rounded-2xl border border-gray-100 p-4 text-xs text-gray-500">A delivery map is not available for this location.</section>;
+    }
+
+    const showGoogle = Boolean(GOOGLE_EMBED_KEY && !preferFree && !googleFailed);
+    if (!showGoogle) {
+        return <FreeDeliveryMap {...props} originLabel={originName}
+            storeLat={hasOrigin ? storeLat : undefined} storeLng={hasOrigin ? storeLng : undefined}
+            providerControls={GOOGLE_EMBED_KEY && !googleFailed ? <button type="button" onClick={() => setPreferFree(false)} className="text-[11px] font-bold text-gray-500 underline underline-offset-4">Use Google map</button> : undefined} />;
+    }
+
+    const params = new URLSearchParams({ key: GOOGLE_EMBED_KEY! });
+    if (hasOrigin) {
+        params.set('origin', `${storeLat},${storeLng}`);
+        params.set('destination', `${lat},${lng}`);
+        params.set('mode', 'driving');
+    } else params.set('q', `${lat},${lng}`);
+    const embedUrl = `https://www.google.com/maps/embed/v1/${hasOrigin ? 'directions' : 'place'}?${params}`;
+
+    return <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <iframe title={hasOrigin ? `Delivery directions from ${originName}` : 'Delivery destination map'}
+            src={embedUrl} width="100%" height={HEIGHT} style={{ border: 0, display: 'block', minWidth: 200 }}
+            referrerPolicy="strict-origin-when-cross-origin" allowFullScreen loading="lazy" onError={() => setGoogleFailed(true)} />
+        <div className="p-4 space-y-2 text-xs">
+            {hasOrigin && <div className="flex items-center gap-2 font-bold text-slate-900">{isRider ? <Bike size={16} className="text-blue-600" /> : <Store size={16} />}<span>{originName} · origin A</span></div>}
+            <div className="flex items-start gap-2"><MapPin size={16} className="shrink-0" /><div><strong>Delivering to</strong>{label && <p className="text-gray-500 break-words mt-0.5">{label}</p>}</div></div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <a href={googleMapsDirectionsUrl(lat, lng, hasOrigin ? { lat: storeLat!, lng: storeLng! } : undefined)} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-500 underline underline-offset-4">Navigate with Google Maps <ExternalLink size={11} /></a>
+                <button type="button" onClick={() => setPreferFree(true)} className="text-[11px] font-bold text-gray-500 underline underline-offset-4">Use free map</button>
+            </div>
+        </div>
+    </section>;
+}
+
+interface RouteData { points: [number, number][]; km: number; mins: number }
+
+function FreeDeliveryMap({
     lat, lng, storeLat, storeLng, label,
-    originLabel = 'JAPZ Grill', liveOrigin = false,
-}: Props) {
+    originLabel = 'JAPZ Grill', liveOrigin = false, originKind, providerControls,
+}: Props & { providerControls?: ReactNode }) {
     const boxRef = useRef<HTMLDivElement>(null);
     const [width, setWidth] = useState(0);
 
@@ -61,70 +108,77 @@ export default function DeliveryMap({
         return () => ro.disconnect();
     }, []);
 
-    const hasStore = storeLat != null && storeLng != null;
+    const hasStore = validCoordinates(storeLat, storeLng);
+    const isRider = originKind === 'rider' || liveOrigin;
+    // About 110 m: keep the marker precise, but avoid re-routing for GPS jitter.
+    const routeOriginLat = hasStore ? (liveOrigin ? Number(storeLat!.toFixed(3)) : storeLat!) : null;
+    const routeOriginLng = hasStore ? (liveOrigin ? Number(storeLng!.toFixed(3)) : storeLng!) : null;
+    const routeKey = hasStore ? `${routeOriginLat},${routeOriginLng}:${lat},${lng}` : '';
 
     // Road route between the store and the drop-off. If routing is unavailable
     // the map falls back to a straight line, and the caption says which it is.
-    const [route, setRoute] = useState<{ points: [number, number][]; km: number; mins: number } | null>(null);
-    const [routeTried, setRouteTried] = useState(false);
+    const [routeResult, setRouteResult] = useState<{ key: string; route: RouteData | null }>({ key: '', route: null });
+    // A result belongs to its coordinates. A changed destination or rider cell
+    // immediately hides an earlier route, including while the new lookup runs.
+    const route = routeKey && routeResult.key === routeKey ? routeResult.route : null;
+    const routeTried = Boolean(routeKey && routeResult.key === routeKey);
 
     useEffect(() => {
-        if (!hasStore) return;
+        if (routeOriginLat == null || routeOriginLng == null) return;
         let cancelled = false;
         (async () => {
             try {
-                const res = await publicOrderAPI.route(storeLat!, storeLng!, lat, lng);
+                const res = await publicOrderAPI.route(routeOriginLat, routeOriginLng, lat, lng);
                 if (cancelled) return;
                 const pts = res.data?.points;
-                if (Array.isArray(pts) && pts.length > 1) {
-                    setRoute({
-                        points: pts,
-                        km: (res.data.distanceMeters || 0) / 1000,
-                        mins: Math.round((res.data.durationSeconds || 0) / 60),
-                    });
-                }
+                const distance = Number(res.data?.distanceMeters), duration = Number(res.data?.durationSeconds);
+                const validRoute = Array.isArray(pts) && pts.length > 1
+                    && pts.every(point => Array.isArray(point) && validCoordinates(point[0], point[1]))
+                    && Number.isFinite(distance) && distance >= 0 && Number.isFinite(duration) && duration >= 0;
+                setRouteResult({ key: routeKey, route: validRoute ? {
+                    points: pts, km: distance / 1000, mins: Math.round(duration / 60),
+                } : null });
             } catch {
                 // Straight-line fallback; not an error the customer needs to see.
-            } finally {
-                if (!cancelled) setRouteTried(true);
+                if (!cancelled) setRouteResult({ key: routeKey, route: null });
             }
         })();
         return () => { cancelled = true; };
-        // A live origin moves constantly; rounding the dependency to ~4dp
-        // (about 11 m) stops every GPS jitter triggering a new route lookup.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [hasStore, liveOrigin ? storeLat?.toFixed(3) : storeLat, liveOrigin ? storeLng?.toFixed(3) : storeLng, lat, lng]);
+    }, [routeOriginLat, routeOriginLng, routeKey, lat, lng]);
 
     // Everything that must stay on screen: the endpoints, plus the route when we
     // have one, so a curving road is not clipped at the edges.
-    const fitPoints: [number, number][] = hasStore
-        ? (route ? route.points : [[storeLat!, storeLng!], [lat, lng]])
-        : [[lat, lng]];
+    const fitPoints: [number, number][] = route ? route.points.concat([[lat, lng]]) : [[lat, lng]];
+    if (hasStore) fitPoints.push([storeLat!, storeLng!]);
 
-    const minLat = Math.min(...fitPoints.map(p => p[0]));
-    const maxLat = Math.max(...fitPoints.map(p => p[0]));
-    const minLng = Math.min(...fitPoints.map(p => p[1]));
-    const maxLng = Math.max(...fitPoints.map(p => p[1]));
+    // Keep longitude near the destination, so a short antimeridian crossing
+    // fits across the map instead of stretching across the whole world.
+    const unwrapLng = (value: number) => lng + (((value - lng + 180) % 360 + 360) % 360 - 180);
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const [pointLat, pointLng] of fitPoints) {
+        const x = lngToX(unwrapLng(pointLng), 0), y = latToY(pointLat, 0);
+        minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    }
 
     let zoom = 16;
     if (hasStore && width > 0) {
         const pad = 56;
-        for (let z = 18; z >= 2; z--) {
-            const dx = Math.abs(lngToX(maxLng, z) - lngToX(minLng, z)) * TILE;
-            const dy = Math.abs(latToY(minLat, z) - latToY(maxLat, z)) * TILE;
+        zoom = 0;
+        for (let z = 18; z >= 0; z--) {
+            const dx = (maxX - minX) * Math.pow(2, z) * TILE;
+            const dy = (maxY - minY) * Math.pow(2, z) * TILE;
             if (dx <= width - pad * 2 && dy <= HEIGHT - pad * 2) { zoom = z; break; }
         }
     }
 
-    const centerLat = hasStore ? (minLat + maxLat) / 2 : lat;
-    const centerLng = hasStore ? (minLng + maxLng) / 2 : lng;
-
     // World-pixel origin of the visible viewport.
-    const originX = lngToX(centerLng, zoom) * TILE - width / 2;
-    const originY = latToY(centerLat, zoom) * TILE - HEIGHT / 2;
+    const scale = Math.pow(2, zoom) * TILE;
+    const originX = (minX + maxX) / 2 * scale - width / 2;
+    const originY = (minY + maxY) / 2 * scale - HEIGHT / 2;
 
     const toScreen = (la: number, ln: number) => ({
-        x: lngToX(ln, zoom) * TILE - originX,
+        x: lngToX(unwrapLng(ln), zoom) * TILE - originX,
         y: latToY(la, zoom) * TILE - originY,
     });
 
@@ -176,7 +230,7 @@ export default function DeliveryMap({
                 ))}
 
                 {width > 0 && (
-                    <svg className="absolute inset-0 pointer-events-none" width={width} height={HEIGHT}>
+                    <svg className="absolute inset-0 pointer-events-none" width={width} height={HEIGHT} role="img" aria-label={hasStore ? `Map from ${originLabel} to delivery destination` : 'Delivery destination map'}>
                         {store && route && (() => {
                             // Solid polyline following the actual street geometry.
                             const d = route.points
@@ -212,9 +266,9 @@ export default function DeliveryMap({
                         )}
 
                         {store && (
-                            <g>
-                                <circle cx={store.x} cy={store.y} r={11} fill="#111827" stroke="white" strokeWidth={3} />
-                                <circle cx={store.x} cy={store.y} r={3.5} fill="#FFCE1B" />
+                            <g role="img" aria-label={isRider ? 'Rider location' : originLabel}>
+                                <circle cx={store.x} cy={store.y} r={isRider ? 14 : 11} fill={isRider ? '#2563eb' : '#111827'} stroke="white" strokeWidth={3} />
+                                {isRider ? <Bike x={store.x - 9} y={store.y - 9} width={18} height={18} stroke="white" strokeWidth={2} aria-hidden="true" /> : <circle cx={store.x} cy={store.y} r={3.5} fill="#FFCE1B" />}
                             </g>
                         )}
 
@@ -239,8 +293,8 @@ export default function DeliveryMap({
             <div className="p-4 space-y-2">
                 {hasStore && (
                     <div className="flex items-center gap-2 text-xs">
-                        <span className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
-                            <Store size={11} className="text-brand" />
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isRider ? 'bg-blue-600' : 'bg-gray-900'}`}>
+                            {isRider ? <Bike size={12} className="text-white" /> : <Store size={11} className="text-brand" />}
                         </span>
                         <span className="font-bold text-slate-900">{originLabel}</span>
                         {route ? (
@@ -267,14 +321,11 @@ export default function DeliveryMap({
                     </div>
                 </div>
 
-                <a
-                    href={openFull}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-500 underline underline-offset-4"
-                >
-                    {hasStore ? 'Get directions' : 'Open in maps'} <ExternalLink size={11} />
-                </a>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <a href={googleMapsDirectionsUrl(lat, lng, hasStore ? { lat: storeLat!, lng: storeLng! } : undefined)} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-500 underline underline-offset-4">Navigate with Google Maps <ExternalLink size={11} /></a>
+                    <a href={openFull} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-500 underline underline-offset-4">Open free map <ExternalLink size={11} /></a>
+                    {providerControls}
+                </div>
 
                 {hasStore && routeTried && !route && (
                     <p className="text-[10px] text-slate-400">

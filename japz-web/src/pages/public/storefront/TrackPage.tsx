@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CheckCircle, ChefHat, Clock, PackageCheck, XCircle, Search, Bike, CreditCard } from 'lucide-react';
 import { publicOrderAPI } from '../../../services/api';
 import { peso } from './StorefrontContext';
-import { useStorefrontBase } from './StorefrontLayout';
-import DeliveryMap from './components/DeliveryMap';
+import { useStorefrontBase } from './storefrontRouting';
+import LiveDeliveryTracking from './components/LiveDeliveryTracking';
 import DeliveryEta, { type DeliveryInfo } from './components/DeliveryEta';
 import RateOrder from './components/RateOrder';
 import DeliveryReceipt from '../../../components/DeliveryReceipt';
@@ -51,23 +51,33 @@ export default function TrackPage() {
     const [loading, setLoading] = useState(!!orderNumber);
     const [error, setError] = useState<string | null>(null);
     const [showReceipt, setShowReceipt] = useState(false);
+    const currentNumber = useRef(orderNumber);
+    const requestVersion = useRef(0);
+    currentNumber.current = orderNumber;
 
     const fetchOrder = useCallback(async (num: string) => {
+        const version = ++requestVersion.current;
         try {
             const res = await publicOrderAPI.track(num);
+            if (currentNumber.current !== num || version !== requestVersion.current) return;
             setOrder(res.data.order);
             setError(null);
             try { localStorage.setItem(LAST_ORDER_KEY, num); } catch { /* private mode */ }
-        } catch (err: any) {
-            setError(err?.response?.data?.error || 'Could not find that order.');
-            setOrder(null);
+        } catch (err: unknown) {
+            if (currentNumber.current !== num || version !== requestVersion.current) return;
+            const failure = err as { response?: { status?: number; data?: { error?: string } } };
+            setError(failure?.response?.data?.error || 'Could not find that order.');
+            setOrder(previous => [401, 403, 404].includes(failure?.response?.status || 0) ? null : previous?.orderNumber === num ? previous : null);
         } finally {
-            setLoading(false);
+            if (currentNumber.current === num && version === requestVersion.current) setLoading(false);
         }
     }, []);
 
     useEffect(() => {
         if (!orderNumber) return;
+        setLoading(true);
+        setOrder(null);
+        setError(null);
         fetchOrder(orderNumber);
         // Same 5s cadence the cashier's ActiveOrders page uses.
         const id = setInterval(() => fetchOrder(orderNumber), 5000);
@@ -118,7 +128,7 @@ export default function TrackPage() {
         );
     }
 
-    if (error || !order) {
+    if (!order) {
         return (
             <div className="max-w-md mx-auto px-4 py-16 text-center">
                 <div className="w-16 h-16 bg-white border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -163,18 +173,14 @@ export default function TrackPage() {
                 />
             )}
 
+            {error && <p role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Connection interrupted. Showing the last order details; updates will retry automatically.</p>}
+
             {isDelivery && order.delivery && !cancelled && (
-                <DeliveryEta info={order.delivery} dispatched={dispatched} />
+                <LiveDeliveryTracking info={order.delivery} status={order.status} connected={!error} />
             )}
 
-            {isDelivery && order.delivery?.lat != null && order.delivery?.lng != null && !cancelled && (
-                <DeliveryMap
-                    lat={order.delivery.lat}
-                    lng={order.delivery.lng}
-                    storeLat={order.delivery.storeLat}
-                    storeLng={order.delivery.storeLng}
-                    label={order.delivery.address || undefined}
-                />
+            {isDelivery && order.delivery && !cancelled && order.status !== 'completed' && (
+                <DeliveryEta info={order.delivery} dispatched={dispatched} />
             )}
 
             {awaitingPayment && (

@@ -13,7 +13,7 @@ export default function FloatingCart({ count, total, onView }: Props) {
     return (
         <button
             onClick={onView}
-            className="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-3 bg-slate-900 text-white rounded-full pl-5 pr-4 py-3.5 shadow-2xl shadow-slate-900/30 active:scale-95 transition duration-150 animate-[slideUp_200ms_ease-out]"
+            className="hidden lg:flex fixed bottom-6 right-6 z-40 items-center gap-3 bg-slate-900 text-white rounded-full pl-5 pr-4 py-3.5 shadow-2xl shadow-slate-900/30 active:scale-95 transition duration-150 animate-[slideUp_200ms_ease-out]"
         >
             <span className="relative flex items-center justify-center">
                 <ShoppingBag size={18} className="text-brand" />

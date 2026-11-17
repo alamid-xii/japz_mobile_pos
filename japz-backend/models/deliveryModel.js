@@ -22,11 +22,26 @@ export const Delivery = sequelize.define(
     deliveredAt: { type: DataTypes.DATE, allowNull: true, defaultValue: null },
     // Proof of delivery: required before a rider can mark an order delivered.
     proofPhotoUrl: { type: DataTypes.STRING, allowNull: true, defaultValue: null },
+    proofPhotoData: { type: DataTypes.BLOB('long'), allowNull: true, defaultValue: null },
+    proofPhotoMime: { type: DataTypes.STRING(32), allowNull: true, defaultValue: null },
+    proofPhotoSize: { type: DataTypes.INTEGER, allowNull: true, defaultValue: null },
+    proofPhotoSha256: { type: DataTypes.CHAR(64), allowNull: true, defaultValue: null },
     proofLat: { type: DataTypes.DECIMAL(10, 7), allowNull: true, defaultValue: null },
     proofLng: { type: DataTypes.DECIMAL(10, 7), allowNull: true, defaultValue: null },
+    locationSharing: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    locationLat: { type: DataTypes.DECIMAL(10, 7), allowNull: true, defaultValue: null },
+    locationLng: { type: DataTypes.DECIMAL(10, 7), allowNull: true, defaultValue: null },
+    locationAccuracy: { type: DataTypes.FLOAT, allowNull: true, defaultValue: null },
+    locationCapturedAt: { type: DataTypes.DATE(3), allowNull: true, defaultValue: null },
+    locationUpdatedAt: { type: DataTypes.DATE(3), allowNull: true, defaultValue: null },
+    locationStoppedAt: { type: DataTypes.DATE(3), allowNull: true, defaultValue: null },
     notes: { type: DataTypes.TEXT, allowNull: true, defaultValue: null },
   },
-  { tableName: "deliveries", timestamps: true },
+  { tableName: "deliveries", timestamps: true,
+    // Lists, receipts and location polling must never fetch multi-megabyte images.
+    defaultScope: { attributes: { exclude: ['proofPhotoData'] } },
+    scopes: { withProof: {} },
+  },
 );
 
 /** Append-only trail of who changed what, and when. */

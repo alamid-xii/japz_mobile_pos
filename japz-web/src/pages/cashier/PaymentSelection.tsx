@@ -1,425 +1,111 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Banknote, CreditCard, Smartphone, Check, User, UtensilsCrossed, ShoppingBag, Truck, Gift, Receipt } from 'lucide-react';
-import api, { discountsVouchersAPI, paymentAPI } from '../../services/api';
+import { ArrowRight, Banknote, Check, ChevronLeft, CreditCard, Gift, Receipt, ShoppingBag, Smartphone, Truck, UtensilsCrossed, X } from 'lucide-react';
 import { isAxiosError } from 'axios';
-
-type PaymentMethod = 'cash' | 'card' | 'digital' | 'gateway';
-type OrderType = 'dine-in' | 'take-out' | 'delivery';
-
-interface CartStockItem {
-    id: number | string;
-    quantity: number;
-    selectedSize?: string | null;
-    selectedFlavor?: string | null;
-    selectedTemperature?: string | null;
-}
+import Modal from '../../components/Modal';
+import api, { discountsVouchersAPI, paymentAPI } from '../../services/api';
+import type { CheckoutDiscount, CheckoutDraft, CheckoutVoucher, OrderType, PaymentMethod } from '../../types/checkout';
+import '../../styles/checkout.css';
 
 export default function PaymentSelection() {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { total, items, itemCount } = (location.state as any) || {};
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
-    const [discounts, setDiscounts] = useState<any[]>([]);
-    const [selectedDiscount, setSelectedDiscount] = useState<any>(null);
-    const [voucherCode, setVoucherCode] = useState('');
-    const [voucherError, setVoucherError] = useState('');
-    const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
-    const [customerName, setCustomerName] = useState('');
-    const [orderType, setOrderType] = useState<OrderType | ''>('');
-    const [tableNumber, setTableNumber] = useState('');
-    const [deliveryAddress, setDeliveryAddress] = useState('');
-    const [notes, setNotes] = useState('');
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    // Card/GCash through PayMongo is only offered when a key is configured.
-    const [gatewayLive, setGatewayLive] = useState(false);
-    const [checkingStock, setCheckingStock] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { total, items = [], itemCount } = (location.state as CheckoutDraft | null) || {};
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
+  const [discounts, setDiscounts] = useState<CheckoutDiscount[]>([]);
+  const [selectedDiscount, setSelectedDiscount] = useState<CheckoutDiscount | null>(null);
+  const [voucherCode, setVoucherCode] = useState('');
+  const [voucherError, setVoucherError] = useState('');
+  const [appliedVoucher, setAppliedVoucher] = useState<CheckoutVoucher | null>(null);
+  const [customerName, setCustomerName] = useState('');
+  const [orderType, setOrderType] = useState<OrderType | ''>('');
+  const [tableNumber, setTableNumber] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [notes, setNotes] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [gatewayLive, setGatewayLive] = useState(false);
+  const [checkingStock, setCheckingStock] = useState(false);
+  const [voucherBusy, setVoucherBusy] = useState(false);
+  const [promotionsOpen, setPromotionsOpen] = useState(false);
+  const proceeding = useRef(false);
 
-    useEffect(() => {
-        const fetchDiscounts = async () => {
-            try {
-                const response = await discountsVouchersAPI.getDiscounts();
-                const enabledDiscounts = response.data.filter((d: any) => d.enabled);
-                setDiscounts(enabledDiscounts);
-            } catch (error) {
-                console.error('Error fetching discounts:', error);
-            }
-        };
-        fetchDiscounts();
-    }, []);
+  useEffect(() => {
+    void discountsVouchersAPI.getDiscounts().then(response => setDiscounts((response.data as CheckoutDiscount[]).filter(discount => discount.enabled))).catch(() => setDiscounts([]));
+    void paymentAPI.config().then(response => setGatewayLive(Boolean(response.data.enabled))).catch(() => setGatewayLive(false));
+  }, []);
+  const subtotal = Number(total || 0);
+  const discountAmount = selectedDiscount ? subtotal * Number(selectedDiscount.percentage) / 100 : 0;
+  const voucherAmount = appliedVoucher ? Number(appliedVoucher.amount) || 0 : 0;
+  const finalTotal = Math.max(0, subtotal - discountAmount - voucherAmount);
+  const count = itemCount ?? items.reduce((sum, item) => sum + item.quantity, 0);
 
-    const subtotal = Number(total || 0);
-    const discountAmount = selectedDiscount
-        ? (subtotal * selectedDiscount.percentage) / 100
-        : 0;
-    const voucherAmount = appliedVoucher ? Number(appliedVoucher.amount) || 0 : 0;
-    const finalTotal = Math.max(0, subtotal - discountAmount - voucherAmount);
+  const validateVoucher = async () => {
+    if (voucherBusy) return;
+    if (!voucherCode.trim()) { setVoucherError(''); setAppliedVoucher(null); return; }
+    setVoucherBusy(true);
+    try {
+      const vouchers = (await discountsVouchersAPI.getVouchers()).data as CheckoutVoucher[];
+      const voucher = vouchers.find(value => value.code === voucherCode.trim().toUpperCase());
+      const now = Date.now();
+      const message = !voucher ? 'Voucher code not found' : voucher.used ? 'This voucher has already been used' : !voucher.enabled ? 'This voucher is disabled' : now < Date.parse(voucher.startDate) || now > Date.parse(voucher.endDate) ? 'This voucher is not valid for today' : '';
+      if (message || !voucher) { setVoucherError(message); setAppliedVoucher(null); }
+      else { setAppliedVoucher(voucher); setVoucherError(''); }
+    } catch { setVoucherError('Error validating voucher'); setAppliedVoucher(null); }
+    finally { setVoucherBusy(false); }
+  };
+  const validate = () => {
+    const invalid: Record<string, string> = {};
+    if (!customerName.trim()) invalid.customerName = 'Customer name is required';
+    if (!orderType) invalid.orderType = 'Please select an order type';
+    if (orderType === 'dine-in' && !tableNumber.trim()) invalid.tableNumber = 'Table number is required for dine-in';
+    if (orderType === 'delivery' && !deliveryAddress.trim()) invalid.deliveryAddress = 'Delivery address is required';
+    setErrors(invalid);
+    const first = Object.keys(invalid)[0];
+    if (first) requestAnimationFrame(() => document.getElementById(`checkout-${first}`)?.focus());
+    return !first;
+  };
+  const handleProceed = async () => {
+    if (proceeding.current || !validate()) return;
+    proceeding.current = true;
+    setCheckingStock(true);
+    try {
+      await api.post('/api/inventory/cart-check', { orderType, items: items.map(item => ({ id: item.id, quantity: item.quantity, modifiers: { size: item.selectedSize || null, flavor: item.selectedFlavor || null, temperature: item.selectedTemperature || null } })) });
+      const useGateway = finalTotal > 0 && gatewayLive && (paymentMethod === 'card' || paymentMethod === 'digital');
+      navigate('/cashier/cash-payment', { state: {
+        total: finalTotal.toFixed(2), subtotal: subtotal.toFixed(2), discount: discountAmount.toFixed(2), discountPercent: selectedDiscount ? selectedDiscount.percentage : 0,
+        discountId: selectedDiscount?.id, voucherCode: appliedVoucher?.code, voucherAmount: appliedVoucher?.amount,
+        items, itemCount: count, paymentMethod: useGateway ? 'gateway' : paymentMethod, gatewayMethod: useGateway ? paymentMethod === 'card' ? 'card' : 'gcash' : undefined,
+        customerName: customerName.trim(), orderType, tableNumber: orderType === 'dine-in' ? tableNumber.trim() : undefined,
+        deliveryAddress: orderType === 'delivery' ? deliveryAddress.trim() : undefined, notes: notes.trim() || undefined,
+      } });
+    } catch (failure) {
+      const message = isAxiosError<{ error?: string }>(failure) ? failure.response?.data?.error : undefined;
+      setErrors(previous => ({ ...previous, stock: message || 'Could not check stock. Try again.' }));
+    } finally { proceeding.current = false; setCheckingStock(false); }
+  };
+  if (total === undefined || total === null || !items.length) return <div className="checkout-empty"><h1>No order to check out</h1><p>Add items from the menu to start an order.</p><button className="checkout-primary" onClick={() => navigate('/cashier/pos')}>Back to POS</button></div>;
 
-    if (!total) return <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2 py-8"><h1 className="text-xl font-semibold text-gray-900">No order to check out</h1><p>Add items from the menu to start an order.</p><button className="mt-4 px-5 py-3 bg-brand text-brand-dark rounded-md font-semibold" onClick={() => navigate('/cashier/pos')}>Back to POS</button></div>;
+  const methods = [{ key: 'cash', label: 'Cash Payment', short: 'Cash', icon: Banknote }, { key: 'card', label: 'Card Payment', short: 'Card', icon: CreditCard }, { key: 'digital', label: 'Digital Payment', short: 'Digital', icon: Smartphone }] as const;
+  const orderTypes = [{ key: 'dine-in', label: 'Dine In', icon: UtensilsCrossed }, { key: 'take-out', label: 'Takeout', icon: ShoppingBag }, { key: 'delivery', label: 'Delivery', icon: Truck }] as const;
+  const breakdown = <dl className="checkout-breakdown"><div><dt>Subtotal ({count} items)</dt><dd>₱{subtotal.toFixed(2)}</dd></div><div><dt>Discount{selectedDiscount ? ` (${selectedDiscount.percentage}%)` : ''}</dt><dd>−₱{discountAmount.toFixed(2)}</dd></div><div><dt>Voucher{appliedVoucher ? ` (${appliedVoucher.code})` : ''}</dt><dd>−₱{voucherAmount.toFixed(2)}</dd></div></dl>;
 
-    const validateVoucher = async () => {
-        if (!voucherCode.trim()) {
-            setVoucherError('');
-            setAppliedVoucher(null);
-            return;
-        }
-
-        try {
-            const vouchers = await discountsVouchersAPI.getVouchers();
-            const voucher = vouchers.data.find((v: any) => v.code === voucherCode.toUpperCase());
-
-            if (!voucher) {
-                setVoucherError('Voucher code not found');
-                setAppliedVoucher(null);
-                return;
-            }
-
-            if (voucher.used) {
-                setVoucherError('This voucher has already been used');
-                setAppliedVoucher(null);
-                return;
-            }
-
-            if (!voucher.enabled) {
-                setVoucherError('This voucher is disabled');
-                setAppliedVoucher(null);
-                return;
-            }
-
-            const now = new Date();
-            const start = new Date(voucher.startDate);
-            const end = new Date(voucher.endDate);
-
-            if (now < start || now > end) {
-                setVoucherError('This voucher is not valid for today');
-                setAppliedVoucher(null);
-                return;
-            }
-
-            setAppliedVoucher(voucher);
-            setVoucherError('');
-        } catch {
-            setVoucherError('Error validating voucher');
-            setAppliedVoucher(null);
-        }
-    };
-
-    useEffect(() => {
-        paymentAPI.config()
-            .then(r => setGatewayLive(!!r.data.enabled))
-            .catch(() => setGatewayLive(false));
-    }, []);
-
-    const validate = (): boolean => {
-        const newErrors: Record<string, string> = {};
-        if (!customerName.trim()) newErrors.customerName = 'Customer name is required';
-        if (!orderType) newErrors.orderType = 'Please select an order type';
-        if (orderType === 'dine-in' && !tableNumber.trim()) newErrors.tableNumber = 'Table number is required for dine-in';
-        if (orderType === 'delivery' && !deliveryAddress.trim()) newErrors.deliveryAddress = 'Delivery address is required';
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleProceed = async () => {
-        if (checkingStock || !validate()) return;
-        setCheckingStock(true);
-        try {
-            await api.post('/api/inventory/cart-check', { orderType, items: (items || []).map((item: CartStockItem) => ({ id: item.id, quantity: item.quantity, modifiers: { size: item.selectedSize || null, flavor: item.selectedFlavor || null, temperature: item.selectedTemperature || null } })) });
-        } catch (error) {
-            const message = isAxiosError<{ error?: string }>(error) ? error.response?.data?.error : undefined;
-            setErrors(previous => ({ ...previous, stock: message || 'Could not check stock. Try again.' }));
-            setCheckingStock(false); return;
-        }
-        setCheckingStock(false);
-        // When PayMongo is live, Card and Digital go through the gateway.
-        const useGateway = gatewayLive && (paymentMethod === 'card' || paymentMethod === 'digital');
-        const resolvedMethod = useGateway ? 'gateway' : paymentMethod;
-        const gatewayMethod = paymentMethod === 'card' ? 'card' : paymentMethod === 'digital' ? 'gcash' : undefined;
-
-        navigate('/cashier/cash-payment', {
-            state: {
-                total: finalTotal.toFixed(2),
-                subtotal: subtotal.toFixed(2),
-                discount: discountAmount.toFixed(2),
-                discountPercent: selectedDiscount ? selectedDiscount.percentage : 0,
-                discountId: selectedDiscount ? selectedDiscount.id : undefined,
-                voucherCode: appliedVoucher ? appliedVoucher.code : undefined,
-                voucherAmount: appliedVoucher ? appliedVoucher.amount : undefined,
-                items,
-                itemCount,
-                paymentMethod: resolvedMethod,
-                gatewayMethod: useGateway ? gatewayMethod : undefined,
-                customerName: customerName.trim(),
-                orderType,
-                tableNumber: orderType === 'dine-in' ? tableNumber.trim() : undefined,
-                deliveryAddress: orderType === 'delivery' ? deliveryAddress.trim() : undefined,
-                notes: notes.trim() || undefined
-            }
-        });
-    };
-
-    const methods: { key: PaymentMethod; label: string; icon: typeof Banknote; enabled: boolean }[] = [
-        { key: 'cash', label: 'Cash Payment', icon: Banknote, enabled: true },
-        { key: 'card', label: 'Card Payment', icon: CreditCard, enabled: true },
-        { key: 'digital', label: 'Digital Payment', icon: Smartphone, enabled: true },
-    ];
-
-    const orderTypes: { key: OrderType; label: string; icon: typeof UtensilsCrossed }[] = [
-        { key: 'dine-in', label: 'Dine In', icon: UtensilsCrossed },
-        { key: 'take-out', label: 'Takeout', icon: ShoppingBag },
-        { key: 'delivery', label: 'Delivery', icon: Truck },
-    ];
-
-    return (
-        <div className="min-h-full flex flex-col items-center p-5 md:p-8 md:pt-12">
-            <div className="w-full max-w-3xl">
-                {errors.stock && <div role="alert" className="p-3 mb-4 border border-red-200 bg-red-50 text-red-800 rounded-md text-sm">{errors.stock}<button className="block min-h-11 underline" onClick={() => navigate('/cashier/pos')}>Return to cart</button></div>}
-                <div className="relative flex justify-center mb-6">
-                    <button className="absolute left-0 inline-flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 cursor-pointer font-medium text-sm"
-                        onClick={() => navigate(-1)}>
-                        <ChevronLeft size={18} /> Back
-                    </button>
-                    <h1 className="text-xl md:text-2xl font-bold">Complete Order</h1>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Left Column - Order Details */}
-                    <div className="space-y-6">
-                        {/* Order Details Header */}
-                        <div className="border-b-2 border-brand pb-2 mb-4">
-                            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                <Receipt size={20} className="text-brand" />
-                                Order Details
-                            </h2>
-                        </div>
-                        {/* Customer Name */}
-                        <div>
-                            <label htmlFor="paymentselection-field-1" className="text-sm font-semibold text-gray-700 mb-2 block">
-                                Customer Name <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative">
-                                <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                <input id="paymentselection-field-1"
-                                    type="text"
-                                    placeholder="Enter customer name"
-                                    value={customerName}
-                                    onChange={(e) => { setCustomerName(e.target.value); setErrors(prev => ({ ...prev, customerName: '' })); }}
-                                    className={`w-full pl-10 pr-4 py-3 border rounded-xl text-base outline-none transition font-[inherit] ${errors.customerName ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/20'}`}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Order Type */}
-                        <div>
-                            <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                                Order Type <span className="text-red-500">*</span>
-                            </label>
-                            <div className={`grid grid-cols-3 gap-2 ${errors.orderType ? 'ring-2 ring-red-300 rounded-xl p-1' : ''}`}>
-                                {orderTypes.map(({ key, label, icon: Icon }) => (
-                                    <button
-                                        key={key}
-                                        onClick={() => { setOrderType(key); setErrors(prev => ({ ...prev, orderType: '', tableNumber: '', deliveryAddress: '' })); }}
-                                        className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition font-[inherit] cursor-pointer ${orderType === key
-                                            ? 'bg-brand border-brand'
-                                            : errors.orderType
-                                                ? 'bg-white border-red-300 hover:border-red-400'
-                                                : 'bg-white border-gray-200 hover:border-brand/50'
-                                            }`}
-                                    >
-                                        <Icon size={20} className={orderType === key ? 'text-brand-dark' : 'text-gray-600'} />
-                                        <span className={`text-xs font-semibold ${orderType === key ? 'text-brand-dark' : 'text-gray-700'}`}>{label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Table Number (for dine-in) */}
-                        {orderType === 'dine-in' && (
-                            <div>
-                                <label htmlFor="paymentselection-field-2" className="text-sm font-semibold text-gray-700 mb-2 block">
-                                    Table Number <span className="text-red-500">*</span>
-                                </label>
-                                <input id="paymentselection-field-2"
-                                    type="text"
-                                    placeholder="Enter table number"
-                                    value={tableNumber}
-                                    onChange={(e) => { setTableNumber(e.target.value); setErrors(prev => ({ ...prev, tableNumber: '' })); }}
-                                    className={`w-full px-4 py-3 border rounded-xl text-base outline-none transition font-[inherit] ${errors.tableNumber ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/20'}`}
-                                />
-                            </div>
-                        )}
-
-                        {/* Delivery Address (for delivery) */}
-                        {orderType === 'delivery' && (
-                            <div>
-                                <label htmlFor="paymentselection-field-3" className="text-sm font-semibold text-gray-700 mb-2 block">
-                                    Delivery Address <span className="text-red-500">*</span>
-                                </label>
-                                <textarea id="paymentselection-field-3"
-                                    placeholder="Enter delivery address"
-                                    value={deliveryAddress}
-                                    onChange={(e) => { setDeliveryAddress(e.target.value); setErrors(prev => ({ ...prev, deliveryAddress: '' })); }}
-                                    rows={2}
-                                    className={`w-full px-4 py-3 border rounded-xl text-base outline-none transition font-[inherit] resize-none ${errors.deliveryAddress ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/20'}`}
-                                />
-                            </div>
-                        )}
-
-                        {/* Notes (optional) */}
-                        <div>
-                            <label htmlFor="paymentselection-field-4" className="text-sm font-semibold text-gray-700 mb-2 block">
-                                Notes <span className="text-gray-400 font-normal">(optional)</span>
-                            </label>
-                            <textarea id="paymentselection-field-4"
-                                placeholder="Any special instructions..."
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                rows={2}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition font-[inherit] resize-none min-h-24"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Right Column - Payment & Summary */}
-                    <div className="space-y-4">
-                        {/* Payment Section Header */}
-                        <div className="border-b-2 border-brand pb-2">
-                            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                <Banknote size={20} className="text-brand" />
-                                Payment & Discounts
-                            </h2>
-                        </div>
-
-                        {/* Payment Methods Card */}
-                        <div className="bg-white border-2 border-gray-100 rounded-xl p-3">
-                            <h3 className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Payment Method</h3>
-                            <div className="flex flex-col gap-2">
-                                {methods.map(({ key, label, icon: Icon, enabled }) => (
-                                    <button
-                                        key={key}
-                                        onClick={() => enabled && setPaymentMethod(key)}
-                                        disabled={!enabled}
-                                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition font-[inherit] ${paymentMethod === key
-                                            ? 'bg-brand border-brand'
-                                            : 'bg-white border-gray-200 hover:border-brand/50'
-                                            } ${!enabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                    >
-                                        <Icon size={20} className={paymentMethod === key ? 'text-brand-dark' : 'text-brand'} />
-                                        <span className={`flex-1 text-left text-sm font-semibold ${paymentMethod === key ? 'text-brand-dark' : 'text-gray-900'}`}>
-                                            {label} {!enabled && '(Coming Soon)'}
-                                        </span>
-                                        {paymentMethod === key && <Check size={18} className="text-brand-dark" />}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Discount & Voucher Section - Compact */}
-                        <div className="space-y-3">
-                            {/* Discount Selection */}
-                            <div className="bg-white border-2 border-gray-100 rounded-xl p-3">
-                                <h3 className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide flex items-center gap-1">
-                                    <Gift size={14} className="text-emerald-600" />
-                                    Discount
-                                </h3>
-                                {discounts.length > 0 ? (
-                                    <div className="grid grid-cols-2 gap-2 mb-2">
-                                        {discounts.map((discount) => (
-                                            <button
-                                                key={discount.id}
-                                                onClick={() => setSelectedDiscount(selectedDiscount?.id === discount.id ? null : discount)}
-                                                className={`px-2.5 py-2 rounded-lg border-2 transition font-semibold text-xs cursor-pointer ${selectedDiscount?.id === discount.id
-                                                    ? 'bg-emerald-100 border-emerald-500 text-emerald-700'
-                                                    : 'bg-white border-gray-200 text-gray-700 hover:border-emerald-300'
-                                                    }`}
-                                            >
-                                                {discount.name}
-                                                <span className="block text-xs font-normal">{discount.percentage}% off</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-500 text-xs">None available</p>
-                                )}
-                                {selectedDiscount && (
-                                    <button
-                                        onClick={() => setSelectedDiscount(null)}
-                                        className="w-full px-2 py-1.5 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50 transition cursor-pointer"
-                                    >
-                                        Clear
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Voucher Code */}
-                            <div className="bg-white border-2 border-gray-100 rounded-xl p-3">
-                                <h3 className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide flex items-center gap-1">
-                                    <Gift size={14} className="text-blue-600" />
-                                    Voucher
-                                </h3>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Code"
-                                        value={voucherCode}
-                                        onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                                        className={`flex-1 px-3 py-2 border rounded-lg text-sm outline-none transition font-mono ${appliedVoucher ? 'border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200' :
-                                            voucherError ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200' :
-                                                'border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/20'
-                                            }`}
-                                    />
-                                    <button
-                                        onClick={validateVoucher}
-                                        className="px-3 py-2 bg-brand text-brand-dark rounded-lg font-semibold text-sm hover:shadow-md transition cursor-pointer"
-                                    >
-                                        Apply
-                                    </button>
-                                </div>
-                                {voucherError && <p className="text-red-500 text-xs mt-1">{voucherError}</p>}
-                                {appliedVoucher && <p className="text-emerald-600 text-xs mt-1">✓ -{`₱${Number(appliedVoucher.amount).toFixed(2)}`}</p>}
-                            </div>
-                        </div>
-
-                        {/* Summary Card - Compact */}
-                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 text-white border-2 border-brand">
-                            <h3 className="text-xs font-semibold text-gray-300 mb-3 uppercase tracking-widest">Summary</h3>
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-300">Subtotal</span>
-                                    <span className="font-semibold">₱{subtotal.toFixed(2)}</span>
-                                </div>
-                                {discountAmount > 0 && (
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-300">Discount</span>
-                                        <span className="font-semibold text-emerald-400">-₱{discountAmount.toFixed(2)}</span>
-                                    </div>
-                                )}
-                                {appliedVoucher && (
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-300">Voucher</span>
-                                        <span className="font-semibold text-emerald-400">-₱{Number(appliedVoucher.amount).toFixed(2)}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between pt-2 border-t border-gray-700">
-                                    <span className="font-semibold">Total</span>
-                                    <span className="text-xl font-bold text-brand">₱{finalTotal.toFixed(2)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {Object.keys(errors).some(k => errors[k]) && (
-                            <p className="text-red-500 text-xs text-center bg-red-50 border border-red-200 rounded-lg p-2">⚠️ Fill all required fields</p>
-                        )}
-
-                        <button
-                            onClick={handleProceed}
-                            className="w-full py-3 bg-brand text-brand-dark rounded-lg font-semibold cursor-pointer hover:bg-yellow-400 transition-colors text-base"
-                        >
-                            ✓ Proceed to Payment
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+  return <div className="checkout-page">
+    <header className="checkout-header"><button type="button" className="checkout-back" onClick={() => navigate(-1)}><ChevronLeft size={19} />Back</button><div><h1>Complete Order</h1><p>Order details → Collect payment</p></div><span className="checkout-item-count">{count} items</span></header>
+    {errors.stock && <div role="alert" className="checkout-error"><span>{errors.stock}</span><button type="button" onClick={() => navigate('/cashier/pos')}>Return to cart</button></div>}
+    <div className="checkout-layout">
+      <section className="checkout-details checkout-panel" aria-label="Order details"><div className="checkout-panel-title"><Receipt size={19} /><h2>Order details</h2></div><div className="checkout-details-scroll">
+        <label className="checkout-field" htmlFor="checkout-customerName"><span>Customer Name <em>*</em></span><input id="checkout-customerName" type="text" placeholder="Enter customer name" value={customerName} aria-invalid={Boolean(errors.customerName)} aria-describedby={errors.customerName ? 'checkout-customer-error' : undefined} onChange={event => { setCustomerName(event.target.value); setErrors(previous => ({ ...previous, customerName: '' })); }} />{errors.customerName && <small id="checkout-customer-error">{errors.customerName}</small>}</label>
+        <div className="checkout-field"><span>Order Type <em>*</em></span><div id="checkout-orderType" tabIndex={-1} role="group" aria-label="Order type" aria-invalid={Boolean(errors.orderType)} className="checkout-order-types">{orderTypes.map(({ key, label, icon: Icon }) => <button type="button" aria-pressed={orderType === key} key={key} onClick={() => { setOrderType(key); setErrors(previous => ({ ...previous, orderType: '', tableNumber: '', deliveryAddress: '' })); }}><Icon size={20} /><span>{label}</span></button>)}</div>{errors.orderType && <small>{errors.orderType}</small>}</div>
+        {orderType === 'dine-in' && <label className="checkout-field" htmlFor="checkout-tableNumber"><span>Table Number <em>*</em></span><input id="checkout-tableNumber" type="text" placeholder="Enter table number" value={tableNumber} aria-invalid={Boolean(errors.tableNumber)} onChange={event => { setTableNumber(event.target.value); setErrors(previous => ({ ...previous, tableNumber: '' })); }} />{errors.tableNumber && <small>{errors.tableNumber}</small>}</label>}
+        {orderType === 'delivery' && <label className="checkout-field" htmlFor="checkout-deliveryAddress"><span>Delivery Address <em>*</em></span><textarea id="checkout-deliveryAddress" rows={2} placeholder="Enter delivery address" value={deliveryAddress} aria-invalid={Boolean(errors.deliveryAddress)} onChange={event => { setDeliveryAddress(event.target.value); setErrors(previous => ({ ...previous, deliveryAddress: '' })); }} />{errors.deliveryAddress && <small>{errors.deliveryAddress}</small>}</label>}
+        <details className="checkout-notes"><summary>Notes / special instructions <span>Optional</span></summary><label className="checkout-field" htmlFor="checkout-notes"><span className="sr-only">Notes</span><textarea id="checkout-notes" aria-label="Notes" placeholder="Any special instructions…" rows={3} value={notes} onChange={event => setNotes(event.target.value)} /></label></details>
+      </div></section>
+      <section className="checkout-payment-pane checkout-panel" aria-label="Payment controls"><div className="checkout-panel-title"><Banknote size={19} /><h2>Payment</h2></div>
+        <div className="checkout-payment-methods" role="group" aria-label="Payment method">{methods.map(({ key, label, short, icon: Icon }) => <button type="button" key={key} aria-label={label} aria-pressed={paymentMethod === key} onClick={() => setPaymentMethod(key)}><Icon size={22} /><span>{short}</span>{paymentMethod === key && <Check size={15} className="checkout-method-check" />}</button>)}</div>
+        <button type="button" className="checkout-promotion-trigger" onClick={() => setPromotionsOpen(true)}><Gift size={18} /><span>Discount, voucher & breakdown</span><span>{selectedDiscount || appliedVoucher ? 'Applied' : 'Optional'}</span></button>
+        <div className="checkout-pay-controls"><div className="checkout-desktop-breakdown">{breakdown}</div><div className="checkout-total"><span>Total due</span><strong>₱{finalTotal.toFixed(2)}</strong></div><button type="button" className="checkout-primary" disabled={checkingStock} onClick={() => void handleProceed()}>{checkingStock ? 'Checking stock…' : 'Proceed to Payment'}<ArrowRight size={19} /></button></div>
+      </section>
+    </div>
+    {promotionsOpen && <Modal label="Discounts and voucher" onClose={() => setPromotionsOpen(false)} className="checkout-promotions"><header><h2>Discounts & voucher</h2><button type="button" aria-label="Close discounts" onClick={() => setPromotionsOpen(false)}><X size={20} /></button></header><h3>Discount</h3>{discounts.length ? <div className="checkout-discounts">{discounts.map(discount => <button type="button" key={discount.id} aria-pressed={selectedDiscount?.id === discount.id} onClick={() => setSelectedDiscount(previous => previous?.id === discount.id ? null : discount)}><strong>{discount.name}</strong><span>{discount.percentage}% off</span></button>)}</div> : <p>No discounts available.</p>}{selectedDiscount && <button type="button" className="checkout-clear" onClick={() => setSelectedDiscount(null)}>Clear discount</button>}<h3>Voucher</h3><div className="checkout-voucher"><input aria-label="Voucher code" value={voucherCode} onChange={event => setVoucherCode(event.target.value.toUpperCase())} placeholder="Enter code" /><button type="button" disabled={voucherBusy} onClick={() => void validateVoucher()}>{voucherBusy ? 'Checking…' : 'Apply'}</button></div>{voucherError && <p className="checkout-voucher-error" role="alert">{voucherError}</p>}{appliedVoucher && <div className="checkout-applied"><span>{appliedVoucher.code} · −₱{Number(appliedVoucher.amount).toFixed(2)}</span><button type="button" onClick={() => { setAppliedVoucher(null); setVoucherCode(''); }}>Remove voucher</button></div>}<h3>Order breakdown</h3>{breakdown}<div className="checkout-total"><span>Total due</span><strong>₱{finalTotal.toFixed(2)}</strong></div><button type="button" className="checkout-primary" onClick={() => setPromotionsOpen(false)}>Done</button></Modal>}
+  </div>;
 }

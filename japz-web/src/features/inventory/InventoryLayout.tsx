@@ -1,194 +1,43 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Package,
-  Truck,
-  ClipboardCheck,
-  Utensils,
-  Boxes,
-  List,
-  ChartNoAxesCombined,
-  Users,
-  Settings,
-  Menu as MenuIcon,
-  X,
-  RefreshCw,
-  ArrowLeft,
-  LogOut,
-} from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
-import { useInventory, dateTime, useInventoryBase } from "./data";
-import { Notice } from "./shared";
-import InventoryData from "./InventoryData";
-import "./inventory.css";
-const links = [
-  ["overview", "Overview", LayoutDashboard],
-  ["supplies", "Ingredients & packaging", Package],
-  ["receiving", "Receiving", Truck],
-  ["prepared", "Prepared stock", Boxes],
-  ["menu", "Menu availability", Utensils],
-  ["counts", "Stock counts", ClipboardCheck],
-  ["losses", "Waste & returns", List],
-  ["suppliers", "Suppliers", Users],
-  ["movements", "Movement history", List],
-  ["reports", "Reports", ChartNoAxesCombined],
-  ["settings", "Settings", Settings],
-] as const;
+import { Outlet } from 'react-router-dom';
+import { LayoutDashboard, Package, Truck, ClipboardCheck, Utensils, Boxes, List, ChartNoAxesCombined, Users, Settings, RefreshCw, ArrowLeft, BookOpen, UserCircle, FileText } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import WorkspaceShell, { type NavigationGroup } from '../../components/WorkspaceShell';
+import { useInventory, useInventoryBase } from './data';
+import { Notice } from './shared';
+import InventoryData from './InventoryData';
+import './inventory.css';
 function Shell() {
-  const { user, logout } = useAuth(),
-    data = useInventory(),
-    base = useInventoryBase(),
-    location = useLocation();
-  const [openedPath, setOpenedPath] = useState(""),
-    open = openedPath === location.pathname,
-    setOpen = (value: boolean) => setOpenedPath(value ? location.pathname : ""),
-    toggle = useRef<HTMLButtonElement>(null),
-    sidebar = useRef<HTMLElement>(null);
-  const wasOpen = useRef(false);
-  useEffect(() => {
-    if (wasOpen.current && !open) {
-      const navigated = openedPath && openedPath !== location.pathname;
-      if (navigated || window.matchMedia('(min-width: 768px)').matches) document.getElementById('main-content')?.focus();
-      else toggle.current?.focus();
-    }
-    wasOpen.current = open;
-  }, [open, openedPath, location.pathname]);
-  useEffect(() => {
-    if (!open) return;
-    sidebar.current?.querySelector<HTMLAnchorElement>("a")?.focus();
-    const key = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpenedPath("");
-        toggle.current?.focus();
-      }
-      if (event.key === "Tab") {
-        const focusable = [
-          ...(sidebar.current?.querySelectorAll<HTMLElement>("a,button") || []),
-        ];
-        const first = focusable[0],
-          last = focusable[focusable.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        }
-        if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", key);
-    return () => document.removeEventListener("keydown", key);
-  }, [open]);
-  useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 768px)');
-    const close = () => { if (desktop.matches) setOpenedPath(''); };
-    desktop.addEventListener('change', close);
-    return () => desktop.removeEventListener('change', close);
-  }, []);
-  return (
-    <div className="inv-shell"><a className="skip-link" href="#main-content">Skip to content</a>
-      {open && (
-        <div
-          className="inv-nav-backdrop"
-          onClick={() => {
-            setOpen(false);
-            toggle.current?.focus();
-          }}
-        />
-      )}
-      <aside
-        ref={sidebar}
-        id="inventory-navigation"
-        className={`inv-sidebar ${open ? "inv-sidebar-open" : ""}`}
-        role={open ? "dialog" : undefined} aria-modal={open || undefined} aria-label="Inventory navigation"
-      >
-        <div className="inv-brand">
-          <img src="/logo.jpg" alt="JAPZ" />
-          <div>
-            <strong>JAPZ POS</strong>
-            <span>Inventory</span>
-          </div>
-          <button className="inv-sidebar-close" aria-label="Close navigation" onClick={() => { setOpen(false); toggle.current?.focus(); }}><X size={20} /></button>
-        </div>
-        <nav>
-          {user?.role === "admin" && (
-            <Link to="/admin/dashboard">
-              <ArrowLeft />
-              Admin dashboard
-            </Link>
-          )}
-          {links.map(([path, label, Icon]) => (
-            <NavLink key={path} to={`${base}/${path}`}>
-              <Icon />
-              {label}
-            </NavLink>
-          ))}
-          <NavLink to={`${base}/guide`}>Inventory guide</NavLink>
-          <NavLink to={`${base}/profile`}>My account</NavLink>
-        </nav>
-        <div className="inv-user">
-          <strong>{user?.name}</strong>
-          <small>{user?.email}</small>
-          <button onClick={() => void logout()}>
-            <LogOut size={16} />
-            Sign out
-          </button>
-        </div>
-      </aside>
-      <div className="inv-main">
-        <div className="inv-topbar" inert={open} aria-hidden={open || undefined}>
-          <button
-            ref={toggle}
-            className="inv-menu-toggle"
-            aria-expanded={open}
-            aria-controls="inventory-navigation"
-            aria-label={open ? "Close navigation" : "Open navigation"}
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <X size={20} /> : <MenuIcon size={20} />}
-          </button>
-          <span>
-            Inventory{" "}
-            <small>
-              · Updated {data.updated ? dateTime(data.updated) : "—"}
-            </small>
-          </span>
-          <button
-            disabled={data.refreshing}
-            onClick={() => void data.refresh()}
-            aria-label="Refresh inventory"
-          >
-            <RefreshCw size={16} />
-            <span>{data.refreshing ? "Refreshing…" : "Refresh"}</span>
-          </button>
-        </div>
-        <main id="main-content" tabIndex={-1} className="inv-content" inert={open}>
-          {data.error && (
-            <div className="inv-page" style={{ paddingBottom: 0 }}>
-              <Notice error>
-                {data.error}{" "}
-                <button onClick={() => void data.refresh()}>Retry</button>
-              </Notice>
-            </div>
-          )}
-          {data.loading ? (
-            <div className="inv-page" role="status">
-              Loading inventory…
-            </div>
-          ) : (
-            <Outlet />
-          )}
-        </main>
-      </div>
-    </div>
-  );
+  const { user } = useAuth();
+  const data = useInventory();
+  const base = useInventoryBase();
+  const groups: NavigationGroup[] = [
+    ...(user?.role === 'admin' ? [{ label: 'Administration', items: [{ path: '/admin/dashboard', label: 'Admin dashboard', icon: ArrowLeft }] }] : []),
+    { label: 'Inventory', items: [
+      { path: `${base}/overview`, label: 'Overview', icon: LayoutDashboard },
+      { path: `${base}/supplies`, label: 'Ingredients & packaging', icon: Package },
+      { path: `${base}/receiving`, label: 'Receiving', icon: Truck },
+      { path: `${base}/prepared`, label: 'Prepared stock', icon: Boxes },
+      { path: `${base}/menu`, label: 'Menu availability', icon: Utensils },
+    ] },
+    { label: 'Control & records', items: [
+      { path: `${base}/counts`, label: 'Stock counts', icon: ClipboardCheck },
+      { path: `${base}/losses`, label: 'Waste & returns', icon: List },
+      { path: `${base}/suppliers`, label: 'Suppliers', icon: Users },
+      { path: `${base}/movements`, label: 'Movement history', icon: List },
+      { path: `${base}/reports`, label: 'Reports', icon: ChartNoAxesCombined },
+    ] },
+    { label: 'My workspace', items: [
+      ...(user?.role !== 'admin' ? [{ path: `${base}/payslips`, label: 'My payslips', icon: FileText }] : []),
+      { path: `${base}/guide`, label: 'Inventory guide', icon: BookOpen },
+      { path: `${base}/profile`, label: 'My account', icon: UserCircle },
+      { path: `${base}/settings`, label: 'Settings', icon: Settings },
+    ] },
+  ];
+  return <WorkspaceShell title="Inventory" groups={groups} contentClassName="inv-content" headerActions={<button disabled={data.refreshing} onClick={() => void data.refresh()} aria-label="Refresh inventory"><RefreshCw size={16} /><span>{data.refreshing ? 'Refreshing...' : 'Refresh'}</span></button>}>
+    {data.error && <div className="inv-page" style={{ paddingBottom: 0 }}><Notice error>{data.error} <button onClick={() => void data.refresh()}>Retry</button></Notice></div>}
+    {data.loading ? <div className="inv-page" role="status">Loading inventory...</div> : <Outlet />}
+  </WorkspaceShell>;
 }
 export default function InventoryLayout() {
-  return (
-    <InventoryData>
-      <Shell />
-    </InventoryData>
-  );
+  return <InventoryData><Shell /></InventoryData>;
 }

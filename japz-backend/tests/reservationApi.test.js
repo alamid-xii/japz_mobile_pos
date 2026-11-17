@@ -31,6 +31,7 @@ before(async () => {
     const actualRole = role === 'othercustomer' ? 'customer' : role;
     people[role] = await models.User.create({ name: role, email: `${role}@reservation-test.local`, password: await bcrypt.hash('ReservationTestPassword123!', 4), phone: '09123456789', role: actualRole, status: 'approved' });
     tokens[role] = jwt.sign({ id: people[role].id, role: actualRole }, process.env.JWT_SECRET);
+    if (actualRole !== 'admin' && actualRole !== 'customer') await (await import('../services/attendanceService.js')).clockIn(people[role].id);
   }
   await models.BusinessHours.create({ openTime: '09:00:00', closeTime: '22:00:00', applyCashier: false, applyKitchen: false });
   table = await models.RestaurantTable.create({ name: 'Physical table A', capacity: 4, status: 'active' });

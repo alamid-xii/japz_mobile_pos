@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/userModel.js";
 import { requireJwtSecret } from "../services/securityConfig.js";
+import { requireActiveShift } from './shiftAccess.js';
 
 const JWT_SECRET = requireJwtSecret();
 
@@ -28,7 +29,7 @@ export async function authenticate(req, res, next) {
         .status(401)
         .json({ error: "This account no longer has access. Sign in again." });
     req.user = user.toJSON();
-    next();
+    return requireActiveShift(req, res, next);
   } catch (error) {
     if (
       error.name === "JsonWebTokenError" ||

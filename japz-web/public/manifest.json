@@ -1,22 +1,27 @@
 {
-    "name": "JAPZ POS",
-    "short_name": "JAPZ POS",
-    "description": "Complete POS and Communication System",
-    "start_url": "/",
+    "id": "/japz",
+    "name": "JAPZ GRILL",
+    "short_name": "JAPZ GRILL",
+    "description": "Fresh food from the JAPZ kitchen. Browse, order and track your delivery.",
+    "start_url": "/japz/",
+    "scope": "/japz/",
     "display": "standalone",
-    "background_color": "#ffffff",
+    "background_color": "#f6f7f5",
     "theme_color": "#FFCE1B",
-    "orientation": "portrait",
+    "orientation": "any",
     "icons": [
         {
-            "src": "/logo.jpg",
+            "src": "/icons/japz-192.png",
             "sizes": "192x192",
-            "type": "image/jpeg"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
-            "src": "/logo.jpg",
+            "src": "/icons/japz-512.png",
             "sizes": "512x512",
-            "type": "image/jpeg"
-        }
+            "type": "image/png",
+            "purpose": "any"
+        },
+        { "src": "/icons/japz-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
     ]
 }

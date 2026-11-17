@@ -54,6 +54,7 @@ for (const role of ["admin", "inventory", "cashier", "kitchen"]) {
     ),
   };
   delete accounts[role].user.password;
+  if (role !== 'admin') await (await import('../services/attendanceService.js')).clockIn(user.id);
 }
 const supplier = await Supplier.create({
   name: "QA Supply Co",

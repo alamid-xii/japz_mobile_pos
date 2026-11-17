@@ -8,11 +8,20 @@
   <meta name="theme-color" content="#FFCE1B" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="JAPZ POS" />
+  <meta name="apple-mobile-web-app-title" content="JAPZ GRILL" />
   <meta name="description" content="JAPZ POS – Complete POS and Communication System" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/jpeg" href="/logo.jpg" />
-  <link rel="apple-touch-icon" href="/logo.jpg" />
+  <link rel="apple-touch-icon" href="/icons/japz-180.png" />
+  <script>
+    try {
+      var ordering = /^\/(japz|order)(\/|$)/.test(location.pathname);
+      var choice = localStorage.getItem('japz.ordering.theme') || localStorage.getItem('japz.theme');
+      var mode = ordering ? choice === 'light' || choice === 'dark' ? choice : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' : 'light';
+      document.documentElement.dataset.theme = mode;
+      document.documentElement.style.colorScheme = mode;
+    } catch (error) { /* Device settings will be applied when the app starts. */ }
+  </script>
   <link rel="preload" href="/fonts/Inter-latin.woff" as="font" type="font/woff" crossorigin />
   <title>JAPZ POS</title>
 </head>

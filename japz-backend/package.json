@@ -11,6 +11,8 @@
     "xian-start": "node index.js",
     "xian": "nodemon index.js",
     "migrate": "node migrate.js",
+    "attendance:close": "node scripts/close-attendance.js",
+    "migrate:attendance": "node migrations/add-attendance-auto-clock-out.js",
     "seed": "node seed.js",
     "seed:menu": "node seedMenu.js",
     "create:model": "node create.js model",
@@ -25,7 +27,7 @@
     "test:integration": "node --test tests/integrationSchema.test.js tests/integrationModels.test.js tests/integrationMigration.test.js",
     "test:reservations": "node --test tests/reservationRules.test.js tests/reservationApi.test.js",
     "test:unit": "vitest run",
-    "test:db": "node --test tests/inventory.test.js tests/integrationMigration.test.js tests/reservationApi.test.js tests/appSmoke.test.js"
+    "test:db": "node --test tests/inventory.test.js tests/integrationMigration.test.js tests/reservationApi.test.js tests/appSmoke.test.js tests/attendanceAutoClockOut.test.js"
   },
   "dependencies": {
     "axios": "^1.13.2",

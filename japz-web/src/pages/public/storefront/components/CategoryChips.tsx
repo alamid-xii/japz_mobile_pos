@@ -33,7 +33,7 @@ export default function CategoryChips({ categories, activeId, onSelect }: Props)
 
     return (
         // The rail scrolls; the page never does.
-        <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
+        <div className="storefront-category-rail -mx-4 px-4 overflow-x-auto scrollbar-none">
             <div className="flex gap-2 w-max pb-0.5">
                 <button onClick={() => onSelect(null)} aria-pressed={activeId === null} className={chip(activeId === null)}>
                     <UtensilsCrossed size={14} /> All

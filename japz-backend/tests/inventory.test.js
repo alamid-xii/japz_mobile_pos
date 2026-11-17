@@ -55,6 +55,7 @@ before(async () => {
       { id: users[role].id, role },
       process.env.JWT_SECRET,
     );
+    if (role !== 'admin') await (await import('../services/attendanceService.js')).clockIn(users[role].id);
   }
   const app = express();
   app.use(express.json());

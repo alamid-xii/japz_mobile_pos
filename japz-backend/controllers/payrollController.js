@@ -279,6 +279,13 @@ export const correctAttendance = async (req, res) => {
   }
 };
 
+export const approveShiftOvertime = async (req,res) => {
+  try {
+    const record = await attendanceService.approveShiftOvertime(req.params.id,req.body,req.user,req);
+    res.json({success:true,data:record});
+  } catch (error) { res.status(400).json({success:false,message:error.message}); }
+};
+
 // ─── PAYROLL CONFIG ───────────────────────────────────────────────────────────
 
 export const getPayrollConfigs = async (req, res) => {

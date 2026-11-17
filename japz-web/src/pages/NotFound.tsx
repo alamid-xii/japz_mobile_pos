@@ -5,5 +5,6 @@ export default function NotFound() {
         <h1 className="text-2xl font-semibold mb-2">Page not found</h1>
         <p className="text-gray-600 mb-6">This page may have moved. Return to your workspace to continue.</p>
         <Link to="/" className="bg-brand rounded-md px-5 py-3 font-semibold">Return to JAPZ POS</Link>
+        <Link to="/japz" className="mt-4 underline">Open Online Ordering</Link>
     </div></main>;
 }

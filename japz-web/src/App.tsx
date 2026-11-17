@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import OrderingThemeScope from './components/OrderingThemeScope';
 import { AuthProvider } from './hooks/useAuth';
+import { ShiftProvider } from './hooks/useShift';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 const Welcome = lazy(() => import('./pages/Welcome'));
@@ -42,6 +44,7 @@ const KitchenProfile = lazy(() => import('./pages/kitchen/Profile'));
 const ReadyOrders = lazy(() => import('./pages/cashier/ReadyOrders'));
 const PrepBoard = lazy(() => import('./pages/kitchen/PrepBoard'));
 const RiderDeliveries = lazy(() => import('./pages/rider/Deliveries'));
+const RiderLayout = lazy(() => import('./layouts/RiderLayout'));
 const Feedback = lazy(() => import('./pages/public/Feedback'));
 const StorefrontLayout = lazy(() => import('./pages/public/storefront/StorefrontLayout'));
 const StorefrontHome = lazy(() => import('./pages/public/storefront/Home'));
@@ -74,15 +77,18 @@ const InventorySettingsPage = lazy(() => import('./features/inventory/Settings')
 import { FeedbackProvider } from './components/FeedbackProvider';
 import RouteAnnouncement from './components/RouteAnnouncement';
 import NotFound from './pages/NotFound';
+import AppLoading from './components/AppLoading';
 
 
 export default function App() {
   return (
     <BrowserRouter>
+      <OrderingThemeScope />
       <AuthProvider>
+        <ShiftProvider>
         <FeedbackProvider>
         <RouteAnnouncement />
-        <Suspense fallback={<div className="spinner" role="status" aria-label="Loading page" />}><Routes>
+        <Suspense fallback={<AppLoading />}><Routes>
           {/* Public Routes - Redirect logged-in users to their dashboard */}
           <Route path="/" element={<PublicRoute><Welcome /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -90,6 +96,7 @@ export default function App() {
           <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
           <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
           <Route path="/role-selection" element={<PublicRoute><RoleSelection /></PublicRoute>} />
+          <Route path="/attendance" element={<ProtectedRoute allowedRoles={['cashier', 'kitchen', 'inventory', 'rider']}><ClockInOut entrance /></ProtectedRoute>} />
 
           {/* Customer Feedback - Fully Public (no auth check) */}
           <Route path="/feedback" element={<Feedback />} />
@@ -129,6 +136,8 @@ export default function App() {
               <Route path="guide" element={<InventoryGuide />} />
               <Route path="profile" element={<InventoryProfile />} />
               <Route path="settings" element={<InventorySettingsPage />} />
+              <Route path="attendance" element={<ClockInOut />} />
+              <Route path="payslips" element={<MyPayslips />} />
             </Route>
           ))}
 
@@ -181,14 +190,14 @@ export default function App() {
           {/* Rider Routes - Protected. Riders reach nothing else in the app. */}
           <Route path="/rider" element={
             <ProtectedRoute allowedRoles={['rider']}>
-              <RiderDeliveries />
+              <RiderLayout />
             </ProtectedRoute>
-          } />
-          <Route path="/rider/deliveries" element={
-            <ProtectedRoute allowedRoles={['rider']}>
-              <RiderDeliveries />
-            </ProtectedRoute>
-          } />
+          }>
+            <Route index element={<Navigate to="deliveries" replace />} />
+            <Route path="deliveries" element={<RiderDeliveries />} />
+            <Route path="attendance" element={<ClockInOut />} />
+            <Route path="payslips" element={<MyPayslips />} />
+          </Route>
 
           {/* Kitchen Routes - Protected */}
           <Route path="/kitchen" element={
@@ -210,6 +219,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes></Suspense>
         </FeedbackProvider>
+        </ShiftProvider>
       </AuthProvider>
     </BrowserRouter>
   );

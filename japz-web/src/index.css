@@ -32,6 +32,11 @@
     --app-muted: #656963;
     --app-border: #e2e3e0;
     --app-focus: #665512;
+    --staff-accent: #ffce1b;
+    --staff-accent-hover: #e6b800;
+    --staff-accent-deep: #b18c0b;
+    --staff-accent-ink: #030213;
+    --staff-accent-soft: #fffde7;
     scrollbar-color: #a6aaa1 #f6f7f5;
     scrollbar-width: thin;
   }

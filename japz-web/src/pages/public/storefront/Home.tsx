@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SearchX } from 'lucide-react';
 import { useStorefront, type ChosenAddon, type Product, type SizeOption } from './StorefrontContext';
-import { useStorefrontBase } from './StorefrontLayout';
+import { useStorefrontBase } from './storefrontRouting';
 import HeroBanner from './components/HeroBanner';
 import SearchBar, { type SortKey } from './components/SearchBar';
 import CategoryChips from './components/CategoryChips';
@@ -107,7 +107,7 @@ export default function Home() {
                         title={`Results for “${search.trim()}”`}
                         subtitle={`${results.length} item${results.length > 1 ? 's' : ''}`}
                     >
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <div className="storefront-product-grid">
                             {results.map(p => <ProductCard key={p.id} {...cardProps(p)} />)}
                         </div>
                     </ProductSection>
@@ -156,7 +156,7 @@ export default function Home() {
                             subtitle="More from our kitchen"
                             onViewAll={() => navigate(`${base}/menu`)}
                         >
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            <div className="storefront-product-grid">
                                 {recommended.map(p => <ProductCard key={p.id} {...cardProps(p)} />)}
                             </div>
                         </ProductSection>

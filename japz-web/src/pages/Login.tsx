@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Clock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { loginDestination } from '../utils/stations';
 
 export default function Login() {
     const navigate = useNavigate();
@@ -25,11 +26,7 @@ export default function Login() {
             const result = await login(email, password);
             
             // Navigate based on role
-            if (result?.role === 'cashier') navigate('/cashier/pos', { replace: true });
-            else if (result?.role === 'kitchen') navigate('/kitchen/incoming', { replace: true });
-            else if (result?.role === 'rider') navigate('/rider/deliveries', { replace: true });
-            else if (result?.role === 'inventory') navigate('/inventory/overview', { replace: true });
-            else navigate('/admin/dashboard', { replace: true });
+            if (result) navigate(loginDestination(result), { replace: true });
         } catch (err: any) {
             if (err.message?.includes('Access is restricted')) {
                 setBusinessHoursWarning(err.message);

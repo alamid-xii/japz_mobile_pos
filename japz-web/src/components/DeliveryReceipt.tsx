@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, Printer, Bike, MapPin, Check } from 'lucide-react';
-import { workflowAPI, getApiBaseUrl } from '../services/api';
+import { workflowAPI } from '../services/api';
+import DeliveryProofPhoto from './DeliveryProofPhoto';
 
 export interface ReceiptData {
     orderNumber: string;
@@ -251,11 +252,7 @@ export default function DeliveryReceipt({ orderNumber, onClose }: { orderNumber:
                             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                                 <Check size={12} className="text-green-600" /> Proof of delivery
                             </p>
-                            <img
-                                src={`${getApiBaseUrl()}${data.delivery.proofPhotoUrl}`}
-                                alt="Proof of delivery"
-                                className="w-full rounded-xl border border-gray-200"
-                            />
+                            <DeliveryProofPhoto key={data.delivery.proofPhotoUrl} proofUrl={data.delivery.proofPhotoUrl} />
                         </div>
                     )}
 

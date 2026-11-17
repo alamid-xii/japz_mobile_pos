@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CheckCircle, Loader2, RefreshCw, X, Smartphone, CreditCard } from 'lucide-react';
+import { isAxiosError } from 'axios';
 import { posPaymentAPI } from '../services/api';
+import '../styles/pos-gateway.css';
 
 interface Props {
     orderNumber: string;
@@ -36,8 +38,8 @@ export default function PosGatewayPayment({ orderNumber, total, onPaid, onClose,
             const res = await posPaymentAPI.checkout(orderNumber, m);
             setQr(res.data.qr);
             setUrl(res.data.checkoutUrl);
-        } catch (err: any) {
-            setError(err?.response?.data?.error || 'Could not start the payment.');
+        } catch (err: unknown) {
+            setError(isAxiosError<{ error?: string }>(err) ? err.response?.data?.error || 'Could not start the payment.' : 'Could not start the payment.');
             setMethod(null);
         } finally {
             setStarting(false);
@@ -93,76 +95,74 @@ export default function PosGatewayPayment({ orderNumber, total, onPaid, onClose,
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl w-full max-w-sm p-5">
-                <div className="flex items-center justify-between mb-1">
-                    <p className="font-extrabold text-slate-900">Pay by card or GCash</p>
+        <div className="pos-gateway-overlay">
+            <section className="pos-gateway-card" aria-label="Card or GCash payment">
+                <header className="pos-gateway-header">
+                    <div><h2>Pay by card or GCash</h2><p>{orderNumber} · ₱{total.toFixed(2)}</p></div>
                     {!paid && (
-                        <button onClick={abandon} aria-label="Close" className="p-1.5 rounded-full hover:bg-gray-100">
-                            <X size={17} className="text-slate-500" />
+                        <button onClick={abandon} aria-label="Close payment">
+                            <X size={20} />
                         </button>
                     )}
-                </div>
-                <p className="text-sm text-slate-500 mb-4">{orderNumber} · ₱{total.toFixed(2)}</p>
+                </header>
 
+                <div className="pos-gateway-body">
                 {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-3 py-2.5 text-sm mb-3">{error}</div>
+                    <div className="pos-gateway-error" role="alert">{error}</div>
                 )}
 
                 {paid ? (
-                    <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <CheckCircle size={32} className="text-emerald-500" />
-                        </div>
-                        <p className="font-extrabold text-lg text-slate-900">Payment received</p>
-                        <p className="text-sm text-slate-500">₱{total.toFixed(2)} confirmed by PayMongo.</p>
+                    <div className="pos-gateway-success">
+                        <CheckCircle size={40} />
+                        <h3>Payment received</h3>
+                        <p>₱{total.toFixed(2)} confirmed by PayMongo.</p>
                     </div>
                 ) : !qr ? (
-                    <div className="space-y-2">
-                        <p className="text-xs font-bold text-slate-600 mb-1">How is the customer paying?</p>
+                    <div className="pos-gateway-methods">
+                        <p>How is the customer paying?</p>
                         {([['gcash', 'GCash', Smartphone], ['card', 'Credit / Debit Card', CreditCard]] as const).map(([key, label, Icon]) => (
                             <button
                                 key={key}
                                 onClick={() => start(key)}
                                 disabled={starting}
-                                className="w-full flex items-center gap-3 rounded-2xl border-2 border-gray-200 px-4 py-3.5 text-left disabled:opacity-50"
                             >
-                                <Icon size={18} className="text-slate-600" />
-                                <span className="font-bold text-sm text-slate-900">{label}</span>
+                                <Icon size={21} />
+                                <span>{label}</span>
                                 {starting && method === key && <Loader2 size={15} className="ml-auto animate-spin text-slate-400" />}
                             </button>
                         ))}
                     </div>
                 ) : (
                     <>
-                        <div className="bg-gray-50 rounded-2xl p-4 text-center">
-                            <img src={qr} alt={`Payment QR for ${orderNumber}`} className="w-44 h-44 mx-auto rounded-xl bg-white" />
-                            <p className="text-sm font-bold text-slate-900 mt-3">Ask the customer to scan this</p>
-                            <p className="text-xs text-slate-500 mt-0.5">
+                        <div className="pos-gateway-qr">
+                            <img src={qr} alt={`Payment QR for ${orderNumber}`} />
+                            <h3>Ask the customer to scan this</h3>
+                            <p>
                                 They pay on their own phone. Nothing is charged here.
                             </p>
                         </div>
 
-                        <div className="flex items-center justify-center gap-2 mt-4 text-sm text-slate-500">
+                        {url && <p className="pos-gateway-url">{url}</p>}
+                    </>
+                )}
+                </div>
+                {!paid && qr && <footer className="pos-gateway-actions">
+                        <div className="pos-gateway-waiting" role="status">
                             <Loader2 size={15} className="animate-spin" />
                             Waiting for payment… {waited > 0 && `${waited}s`}
                         </div>
 
                         <button
                             onClick={check}
-                            className="mt-3 w-full flex items-center justify-center gap-2 rounded-2xl border border-gray-200 py-3 text-sm font-bold text-slate-700"
+                            className="pos-gateway-check"
                         >
                             <RefreshCw size={15} /> Check now
                         </button>
-                        {url && (
-                            <p className="text-[10px] text-slate-400 break-all mt-3 text-center">{url}</p>
-                        )}
-                        <button onClick={abandon} className="mt-2 w-full text-xs text-slate-400 underline underline-offset-4">
+                        <button onClick={abandon} className="pos-gateway-cancel">
                             Cancel and pay another way
                         </button>
-                    </>
-                )}
-            </div>
+                </footer>}
+            </section>
         </div>
     );
 }
